@@ -9,17 +9,17 @@
         * { box-sizing: border-box; }
         body { 
             font-family: sans-serif; text-align: center; background-color: #fef3c7; 
-            margin: 0; padding: env(safe-area-inset-top, 2px) env(safe-area-inset-right, 2px) env(safe-area-inset-bottom, 2px) env(safe-area-inset-left, 2px); 
+            margin: 0; padding: env(safe-area-inset-top, 5px) 8px env(safe-area-inset-bottom, 20px) 8px; 
             min-height: 100vh; min-height: calc(100vh - env(safe-area-inset-bottom));
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
             overflow: hidden; touch-action: manipulation; 
         }
-        h1 { color: #b45309; font-size: 17px; margin: 2px 0; }
+        h1 { color: #b45309; font-size: 16px; margin: 2px 0; }
         
         #gameScreen { 
-            width: 100%; max-width: 500px; height: 98vh; max-height: 820px;
+            width: 100%; max-width: 500px; height: 96vh; max-height: 800px;
             display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
-            background: #fff; border-radius: 14px; border: 3px solid #f59e0b; padding: 6px; 
+            background: #fff; border-radius: 14px; border: 3px solid #f59e0b; padding: 8px; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: auto;
             position: relative;
         }
@@ -58,7 +58,7 @@
 
         .control-btn {
             background-color: #f59e0b; color: white; border: none; border-radius: 6px;
-            padding: 3px 8px; font-size: 12px; font-weight: bold; cursor: pointer;
+            padding: 4px 10px; font-size: 12px; font-weight: bold; cursor: pointer;
         }
         .control-btn:active { transform: scale(0.95); background-color: #d97706; }
 
@@ -79,13 +79,13 @@
         .vertical-math {
             display: inline-flex; flex-direction: column; align-items: flex-end;
             background: #f8fafc; padding: 4px 10px; border-radius: 10px; border: 2px solid #cbd5e1;
-            position: relative; font-family: monospace; font-size: 20px; font-weight: bold;
+            position: relative; font-family: monospace; font-size: 18px; font-weight: bold;
         }
         .math-row { display: flex; gap: 4px; width: 100%; justify-content: flex-end; margin: 1px 0; align-items: center; }
         .math-line { width: 100%; height: 2px; background: #333; margin: 2px 0; }
-        .operator { position: absolute; left: 6px; top: 90px; font-size: 18px; color: #333; }
+        .operator { position: absolute; left: 6px; top: 80px; font-size: 16px; color: #333; }
 
-        .cell { width: 32px; height: 30px; text-align: center; display: flex; align-items: center; justify-content: center; background: #fff; border: 2px solid #cbd5e1; border-radius: 5px; color: #1e293b; font-size: 17px; }
+        .cell { width: 30px; height: 28px; text-align: center; display: flex; align-items: center; justify-content: center; background: #fff; border: 2px solid #cbd5e1; border-radius: 5px; color: #1e293b; font-size: 16px; }
         .cell.answer-cell { border: 2px dashed #94a3b8; color: #cbd5e1; }
         .cell.answer-cell.active { border: 2px solid #f59e0b; background: #fef08a; color: #b45309; animation: pulse 1s infinite; }
         .cell.answer-cell.filled { border: 2px solid #16a34a; background: #dcfce7; color: #166534; }
@@ -96,26 +96,29 @@
             100% { transform: scale(1); }
         }
 
+        /* 💡 修正 iPhone 點擊盲區：加大高度、提高 z-index、確保點擊事件暢通 */
         #drop-game-container {
-            position: relative; width: 100%; height: 90px;
+            position: relative; width: 100%; height: 95px;
             background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 8px;
             overflow: hidden; touch-action: manipulation; flex-shrink: 0;
+            margin-bottom: env(safe-area-inset-bottom, 10px);
         }
 
         .falling-option {
-            position: absolute; width: 48px; height: 44px;
+            position: absolute; width: 56px; height: 48px;
             background: radial-gradient(circle, #fcd34d 60%, #f59e0b 100%);
             border: 2px solid #d97706; border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
             font-size: 16px; font-weight: bold; color: #78350f;
             cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            animation: fall linear forwards; z-index: 999;
+            animation: fall linear forwards; z-index: 10000;
+            user-select: none; -webkit-user-select: none;
         }
         .falling-option:active { transform: scale(0.9); }
 
         @keyframes fall {
-            0% { top: -45px; }
-            100% { top: 44px; }
+            0% { top: -50px; }
+            100% { top: 47px; }
         }
     </style>
 </head>
@@ -331,7 +334,7 @@
                 if (currentStep === 'ones') r = Math.floor(Math.random() * 15) + 1;
                 else if (currentStep === 'tens') r = (Math.floor(Math.random() * 10) + 1) * 10;
                 else if (currentStep === 'hundreds') r = (Math.floor(Math.random() * 10) + 8) * 100;
-                else if (currentStep === 'thousands') r = qThOptions(); // 確保千元選項正確
+                else if (currentStep === 'thousands') r = qThOptions(); 
                 else if (currentStep === 'total') r = window.totalVal + (Math.floor(Math.random() * 5) - 2) * 100;
 
                 if (!options.includes(r) && r > 0) options.push(r);
@@ -360,13 +363,16 @@
             el.className = 'falling-option';
             el.innerText = `${val}元`;
 
-            const randomX = Math.random() * (container.clientWidth - 48);
+            const randomX = Math.random() * (container.clientWidth - 56);
             el.style.left = randomX + 'px';
             el.style.animationDuration = "6s"; 
 
             let isHandled = false;
             const handleSelect = (e) => {
-                if (e) e.preventDefault();
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
                 if (isLocked || isHandled || isPaused) return;
 
                 if (currentStep === 'ones') {
@@ -498,7 +504,6 @@
                         document.getElementById('feedback').innerText = `🎉 千元算對了！ ${window.valTh} 元。準備加總！`;
                         confetti();
 
-                        // 修正：明確提問全部加起來總共有多少錢
                         speak(`千元算對了， ${window.valTh} 元。四層都填好了！最後，請算出全部加起來總共有多少元呢？`);
 
                         setTimeout(() => {
@@ -558,8 +563,11 @@
                 }
             };
 
+            // 💡 同時支援 click、touchstart 與 pointerdown，確保新 iPhone 觸控靈敏
             el.addEventListener('click', handleSelect);
             el.addEventListener('touchstart', handleSelect, { passive: false });
+            el.addEventListener('pointerdown', handleSelect);
+
             el.addEventListener('animationend', () => {
                 el.remove();
                 activeOptions = activeOptions.filter(item => item !== el);
