@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+<title>百元內乘法：特教溫馨版遊戲</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+  * { 
+    box-sizing: border-box; 
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  } 
+  
+  html, body {
+    margin: 0; padding: 0; height: 100%; width: 100%;
+    overflow: hidden; 
+    font-family: sans-serif; background-color: #f4f4f4;
+  }
+
+  #gameContainer {
+    display: flex; flex-direction: column; height: 100%; width: 100%;
+    max-width: 600px; margin: 0 auto; 
+    position: relative;
+  }
+
+  #startScreen {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: #e0f2fe; color: #1e293b; z-index: 9999;
+    display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
+    overflow-y: auto; padding: 25px 20px; text-align: left;
+  }
+  .start-content-box {
+    max-width: 500px; width: 100%; display: flex; flex-direction: column; align-items: center; margin: auto 0;
+  }
+  #startScreen h1 { font-size: 26px; color: #0284c7; margin: 0 0 15px 0; text-align: center; }
+  
+  .intro-card {
+    background: #ffffff; border: 2px solid #cbd5e1;
+    border-radius: 12px; padding: 12px 15px; margin-bottom: 12px; width: 100%;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  }
+  .intro-card h3 { margin: 0 0 6px 0; font-size: 15px; color: #0f172a; }
+  .intro-card ul { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.5; color: #334155; }
+  .intro-card li { margin-bottom: 4px; }
+
+  .start-btn { 
+    font-size: 24px; font-weight: bold; margin-top: 15px; padding: 15px 35px; 
+    background: #2563eb; color: #fff; border: none; border-radius: 15px; 
+    cursor: pointer; box-shadow: 0 4px 15px rgba(37,99,235,0.3);
+    transition: transform 0.1s; width: 100%; max-width: 300px; text-align: center;
+  }
+  .start-btn:active { transform: scale(0.95); }
+
+  /* 俄羅斯方塊答題彈窗 */
+  #quizScreen {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.9); color: #fff; z-index: 8888;
+    display: none; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; padding: 15px;
+  }
+  .quiz-box {
+    background: #ffffff; color: #1e293b; width: 100%; max-width: 480px;
+    border-radius: 16px; padding: 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  }
+  .quiz-box h2 { color: #2563eb; margin-top: 0; font-size: 20px; }
+  .quiz-box p { font-size: 17px; font-weight: bold; margin: 10px 0; }
+  
+  .tetris-drop-area {
+    width: 100%; height: 250px; background: #f8fafc; border: 3px dashed #94a3b8;
+    border-radius: 12px; position: relative; overflow: hidden; margin: 10px 0;
+  }
+  .falling-option {
+    position: absolute; width: 92%; max-width: 340px; height: 50px; background: #f59e0b; color: #fff;
+    font-size: 19px; font-weight: bold; display: flex; align-items: center; justify-content: center;
+    border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    left: 50%; transform: translateX(-50%);
+    animation: dropDown linear infinite;
+    padding: 10px;
+  }
+  .falling-option:active { transform: translateX(-50%) scale(0.95); }
+  @keyframes dropDown {
+    0% { top: -70px; }
+    100% { top: 260px; }
+  }
+
+  #overflowScreen {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(239, 68, 68, 0.85); color: #fff; z-index: 8889;
+    display: none; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; padding: 20px;
+  }
+  #overflowScreen h2 { font-size: 32px; margin-bottom: 10px; }
+  #overflowScreen p { font-size: 20px; margin-bottom: 20px; }
+  .refund-btn {
+    font-size: 24px; font-weight: bold; padding: 12px 30px;
+    background: #ffffff; color: #dc2626; border: none; border-radius: 15px;
+    cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  }
+
+  .header {
+    padding: 8px 10px; text-align: center; background: #fff;
+    flex: 0 0 auto; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .box-icon { font-size: 30px; line-height: 1; }
+  .target-display { font-size: 22px; font-weight: bold; color: #d32f2f; }
+  
+  .header-right { display: flex; align-items: center; gap: 10px; }
+  .score-display { font-size: 16px; font-weight: bold; color: #334155; background: #f1f5f9; padding: 6px 10px; border-radius: 8px; }
+
+  .pause-btn {
+    font-size: 16px; font-weight: bold; padding: 8px 16px;
+    background: #f59e0b; color: white; border: none; border-radius: 10px;
+    cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+
+  #warningMsg { font-size: 15px; font-weight: bold; color: #e65100; height: 20px; background: #fff; text-align: center; }
+
+  .drop-field {
+    flex: 1 1 auto; 
+    margin: 10px; padding: 10px;
+    border: 3px dashed #aaa; background: #eef; border-radius: 15px;
+    position: relative; overflow: hidden; touch-action: manipulation; 
+  }
+
+  .tray {
+    height: 95px; flex: 0 0 auto; 
+    margin: 0 10px 10px 10px; padding: 8px;
+    border: 2px solid #cbd5e1; background: #ffffff; border-radius: 12px;
+    display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px;
+    overflow-y: auto;
+  }
+
+  .wallet {
+    height: 65px; flex: 0 0 auto; 
+    display: flex; justify-content: center; align-items: center;
+    background: #cfd8dc; box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+    padding-bottom: env(safe-area-inset-bottom); 
+    font-size: 18px; font-weight: bold; color: #334155;
+  }
+
+  .money-item {
+    display: flex; justify-content: center; align-items: center; 
+    font-weight: bold; cursor: pointer; text-align: center;
+    box-shadow: 1px 3px 5px rgba(0,0,0,0.3); transition: transform 0.1s;
+    cursor: pointer;
+  }
+  .money-item:active { transform: scale(0.9); }
+  
+  .money-10 { background-color: #0ea5e9; color: #fff; border: 2px solid #0369a1; border-radius: 8px; }
+  .money-5  { background-color: #eab308; color: #78350f; border: 2px solid #ca8a04; border-radius: 50%; }
+
+  .drop-field .money-item {
+    position: absolute;
+    width: 80px; height: 60px; font-size: 20px; zIndex: 10;
+  }
+  .drop-field .money-5 {
+    width: 65px; height: 65px; border-radius: 50%; font-size: 20px;
+  }
+
+  @keyframes fall {
+    0% { top: -70px; }
+    100% { top: 290px; }
+  }
+
+  .tray .money-item { width: 45px; height: 38px; font-size: 12px; border-radius: 6px; }
+  .tray .money-5 { width: 38px; height: 38px; font-size: 12px; border-radius: 50%; }
+</style>
+</head>
+<body>
+
+  <div id="startScreen">
+    <div class="start-content-box">
+      <h1>🪙 特教溫馨乘法遊戲</h1>
+
+      <div class="intro-card">
+        <h3>📖 操作說明 (已支付金額與溫馨版)</h3>
+        <ul>
+          <li><strong>步驟一 (看目標)：</strong>觀察左上角要求的應付金額。</li>
+          <li><strong>步驟二 (支付硬幣)：</strong>點擊收集方塊來進行支付，湊滿後會停留讓孩子欣賞成果。</li>
+          <li><strong>步驟三 (選橫式算式)：</strong>點對正確算式時，方塊會變成綠色並定格，完美呈現乘法結果！</li>
+        </ul>
+      </div>
+
+      <button class="start-btn" onclick="startGame()">▶ 點擊開始遊戲</button>
+    </div>
+  </div>
+
+  <div id="quizScreen">
+    <div class="quiz-box">
+      <h2>🧩 俄羅斯方塊乘法挑戰</h2>
+      <p id="quizQuestionText">請選擇正確的乘法橫式：</p>
+      <div class="tetris-drop-area" id="tetrisDropArea"></div>
+      <div id="quizFeedback" style="font-size: 15px; font-weight: bold; color: #dc2626; height: 20px;"></div>
+    </div>
+  </div>
+
+  <div id="overflowScreen">
+    <h2>⚠️ 哎呀，金額超過囉！</h2>
+    <p>你支付的錢超過目標金額了～</p>
+    <button class="refund-btn" onclick="refundAndResume()">🔄 全部退回，重新開始</button>
+  </div>
+
+  <div id="gameContainer">
+    <div class="header">
+      <div class="header-left">
+        <div class="box-icon">🎁</div>
+        <div class="target-display">要付 <span id="displayTarget">?</span> 元</div>
+      </div>
+      <div class="header-right">
+        <div class="score-display">已完成: <span id="successCount">0</span> 關</div>
+        <button class="pause-btn" id="pauseBtn" onclick="togglePause()">⏸ 暫停</button>
+      </div>
+    </div>
+    <div id="warningMsg"></div>
+    
+    <div class="drop-field" id="dropField"></div>
+    <div class="tray" id="trayCoins"></div>
+
+    <div class="wallet" id="wallet">
+      已支付金額：<span id="currentAmount">0</span> 元
+    </div>
+  </div>
+
+<script>
+  let count10 = 0;  
+  let count5 = 0;   
+  let currentTarget = 0;
+  let successCount = 0; 
+  let audioUnlocked = false; 
+  let isAnswering = false;
+  let isPaused = false;
+  let dropInterval = null;
+  let activeCoins = [];
+  let currentCoinType = 10; 
+
+  const displayTarget = document.getElementById('displayTarget');
+  const successCountSpan = document.getElementById('successCount');
+  const trayCoins = document.getElementById('trayCoins');
+  const dropField = document.getElementById('dropField');
+  const startScreen = document.getElementById('startScreen');
+  const overflowScreen = document.getElementById('overflowScreen');
+  const quizScreen = document.getElementById('quizScreen');
+  const tetrisDropArea = document.getElementById('tetrisDropArea');
+  const quizQuestionText = document.getElementById('quizQuestionText');
+  const quizFeedback = document.getElementById('quizFeedback');
+  const currentAmountSpan = document.getElementById('currentAmount');
+  const warningMsg = document.getElementById('warningMsg');
+  const pauseBtn = document.getElementById('pauseBtn');
+  
+  let audioCtx;
+  function initAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function playTone(freq, type, duration, vol = 0.5) {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    osc.type = type; 
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  }
+
+  function playDropSound() { playTone(400, 'square', 0.1, 0.2); }
+  function playPickupSound() { playTone(800, 'sine', 0.1, 0.3); }
+  function playErrorSound() {
+    playTone(150, 'sawtooth', 0.2, 0.4);
+    setTimeout(() => playTone(100, 'sawtooth', 0.3, 0.4), 150);
+  }
+  function playCheerSound() {
+    playTone(523.25, 'sine', 0.2, 0.5); 
+    setTimeout(() => playTone(659.25, 'sine', 0.2, 0.5), 150); 
+    setTimeout(() => playTone(783.99, 'sine', 0.3, 0.5), 300); 
+    setTimeout(() => playTone(1046.50, 'square', 0.5, 0.4), 450); 
+  }
+
+  function speakText(text, speedRate) {
+    if (!audioUnlocked) return;
+    window.speechSynthesis.cancel(); 
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'zh-TW';
+    utterance.rate = speedRate; 
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function startGame() {
+    initAudio();
+    let unlockSpeech = new SpeechSynthesisUtterance('');
+    window.speechSynthesis.speak(unlockSpeech);
+
+    audioUnlocked = true;
+    startScreen.style.display = 'none';
+    successCount = 0; 
+    successCountSpan.innerText = successCount;
+    nextQuestion();
+  }
+
+  function nextQuestion() {
+    isAnswering = false;
+    isPaused = false;
+    quizScreen.style.display = 'none';
+    overflowScreen.style.display = 'none';
+    pauseBtn.innerText = "⏸ 暫停";
+    
+    if (Math.random() < 0.5) {
+      currentCoinType = 10;
+      let multiplier = Math.floor(Math.random() * 7) + 2; 
+      currentTarget = multiplier * 10;
+    } else {
+      currentCoinType = 5;
+      let multiplier = Math.floor(Math.random() * 8) + 2; 
+      currentTarget = multiplier * 5;
+    }
+
+    displayTarget.innerText = currentTarget;
+    
+    count10 = 0;
+    count5 = 0;
+    warningMsg.innerText = "";
+    renderTray(); 
+    
+    if (dropInterval) clearInterval(dropInterval);
+    activeCoins.forEach(c => c.remove());
+    activeCoins = [];
+
+    dropInterval = setInterval(() => {
+      if (!isAnswering && !isPaused) spawnFallingCoin();
+    }, 3500);
+
+    setTimeout(() => speakText(`要付，${currentTarget} 元`, 0.85), 300);
+  }
+
+  function togglePause() {
+    if (isAnswering) return;
+    isPaused = !isPaused;
+
+    if (isPaused) {
+      pauseBtn.innerText = "▶ 繼續";
+      pauseBtn.style.background = "#16a34a";
+      warningMsg.innerText = "⏸️ 遊戲已暫停，可以慢慢思考喔！";
+      activeCoins.forEach(c => c.style.animationPlayState = 'paused');
+    } else {
+      pauseBtn.innerText = "⏸ 暫停";
+      pauseBtn.style.background = "#f59e0b";
+      warningMsg.innerText = "";
+      activeCoins.forEach(c => c.style.animationPlayState = 'running');
+    }
+  }
+
+  function spawnFallingCoin() {
+    if (isPaused) return;
+    
+    let coinType = currentCoinType;
+    const coinEl = document.createElement('div');
+    if (coinType === 10) {
+      coinEl.className = 'money-item money-10';
+      coinEl.innerText = '$10';
+    } else {
+      coinEl.className = 'money-item money-5';
+      coinEl.innerText = '$5';
+    }
+
+    const randomX = Math.random() * (dropField.clientWidth - 90);
+    coinEl.style.left = randomX + 'px';
+    
+    const duration = 11.0 + Math.random() * 3.0;
+    coinEl.style.animationDuration = duration + 's';
+    coinEl.style.animationName = 'fall';
+    coinEl.style.animationTimingFunction = 'linear';
+    coinEl.style.animationFillMode = 'forwards';
+
+    const handleCoinTouch = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isAnswering || isPaused) return;
+
+      let totalAmount = (count10 * 10) + (count5 * 5);
+
+      if (totalAmount + coinType > currentTarget) {
+        playErrorSound();
+        triggerOverflowPause();
+      } else {
+        warningMsg.innerText = "";
+        if (coinType === 10) count10++;
+        else count5++;
+
+        playDropSound();
+        renderTray();
+      }
+      coinEl.remove();
+      activeCoins = activeCoins.filter(item => item !== coinEl);
+    };
+
+    coinEl.addEventListener('pointerdown', handleCoinTouch);
+
+    coinEl.addEventListener('animationend', () => {
+      coinEl.remove();
+      activeCoins = activeCoins.filter(item => item !== coinEl);
+    });
+
+    dropField.appendChild(coinEl);
+    activeCoins.push(coinEl);
+  }
+
+  function triggerOverflowPause() {
+    isPaused = true;
+    playErrorSound();
+    speakText("金額超過囉，請退回重新開始！", 1.0);
+
+    activeCoins.forEach(c => c.style.animationPlayState = 'paused');
+    overflowScreen.style.display = 'flex';
+  }
+
+  function refundAndResume() {
+    playPickupSound();
+    count10 = 0;
+    count5 = 0;
+    renderTray(); 
+    
+    activeCoins.forEach(c => c.remove());
+    activeCoins = [];
+
+    overflowScreen.style.display = 'none';
+    isPaused = false;
+    pauseBtn.innerText = "⏸ 暫停";
+    pauseBtn.style.background = "#f59e0b";
+  }
+
+  function removeCoin(val) {
+    if (isAnswering || isPaused) return;
+    if (val === 10 && count10 > 0) count10--;
+    else if (val === 5 && count5 > 0) count5--;
+    
+    warningMsg.innerText = "";
+    playPickupSound();
+    renderTray(); 
+  }
+
+  function renderTray() {
+    let totalAmount = (count10 * 10) + (count5 * 5);
+    trayCoins.innerHTML = ''; 
+    currentAmountSpan.innerText = totalAmount;
+
+    for(let i=0; i<count10; i++) {
+      let c = document.createElement('div');
+      c.className = 'money-item money-10';
+      c.innerText = '10';
+      let act = (e) => { if(e) e.preventDefault(); removeCoin(10); };
+      c.addEventListener('pointerdown', act);
+      trayCoins.appendChild(c);
+    }
+
+    for(let i=0; i<count5; i++) {
+      let c = document.createElement('div');
+      c.className = 'money-item money-5';
+      c.innerText = '5';
+      let act = (e) => { if(e) e.preventDefault(); removeCoin(5); };
+      c.addEventListener('pointerdown', act);
+      trayCoins.appendChild(c);
+    }
+
+    if (totalAmount === currentTarget && currentTarget > 0) {
+      isAnswering = true; 
+      if (dropInterval) clearInterval(dropInterval);
+      activeCoins.forEach(c => c.remove());
+      activeCoins = [];
+
+      playCheerSound();
+      speakText(`${totalAmount} 元，支付完成！`, 1.0);
+
+      setTimeout(() => {
+        triggerTetrisQuiz();
+      }, 4000);
+
+    } else if (totalAmount < currentTarget && totalAmount > 0) {
+      speakText(`${totalAmount} 元`, 1.3); 
+    }
+  }
+
+  function triggerTetrisQuiz() {
+    quizScreen.style.display = 'flex';
+    tetrisDropArea.innerHTML = '';
+    quizFeedback.innerText = '';
+
+    let correctMultiplier = currentTarget / currentCoinType;
+    let correctStr = `${currentCoinType} × ${correctMultiplier} = ${currentTarget}`;
+    
+    quizQuestionText.innerHTML = `總金額 ${currentTarget} 元，正確的乘法橫式是？<br><small style="color:#2563eb;">(請點選掉落的正確算式方塊)</small>`;
+    speakText(`總金額 ${currentTarget} 元，正確的乘法橫式是什麼呢？`, 1.0);
+
+    let options = [correctStr];
+    while(options.length < 4) {
+      let wrongMult = Math.floor(Math.random() * 8) + 1;
+      let wrongAns = currentCoinType * wrongMult;
+      let wrongStr = `${currentCoinType} × ${wrongMult} = ${wrongAns}`;
+      if (!options.includes(wrongStr) && wrongMult !== correctMultiplier) {
+        options.push(wrongStr);
+      }
+    }
+    options.sort(() => Math.random() - 0.5);
+
+    options.forEach((optStr, index) => {
+      let optionEl = document.createElement('div');
+      optionEl.className = 'falling-option';
+      optionEl.innerText = optStr;
+      
+      let startTop = -70 - (index * 75);
+      optionEl.style.top = startTop + 'px';
+      optionEl.style.animationDuration = '7.0s';
+      optionEl.style.animationDelay = (index * 1.5) + 's';
+      optionEl.style.animationIterationCount = 'infinite';
+
+      const selectOption = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (optStr === correctStr) {
+          let computedTop = window.getComputedStyle(optionEl).top;
+          optionEl.style.animation = 'none';
+          optionEl.style.top = computedTop;
+          optionEl.style.backgroundColor = '#16a34a'; 
+          optionEl.style.transform = 'translateX(-50%) scale(1.05)';
+          optionEl.style.zIndex = '99';
+
+          quizFeedback.style.color = '#16a34a';
+          quizFeedback.innerText = `🎉 答對了！ ${correctStr} 元！`;
+          playCheerSound();
+          speakText("答對了，好棒！", 1.0);
+
+          confetti({
+            particleCount: 120, spread: 70, origin: { y: 0.6 },
+            colors: ['#FFD700', '#ff0000', '#00ff00', '#0000ff']
+          });
+
+          successCount++;
+          successCountSpan.innerText = successCount;
+
+          setTimeout(() => {
+            quizScreen.style.display = 'none';
+            nextQuestion();
+          }, 6000);
+        } else {
+          playErrorSound();
+          quizFeedback.style.color = '#dc2626';
+          quizFeedback.innerText = `❌ ${optStr} 不對喔，再想想看！`;
+          speakText("再想一下喔", 1.0);
+          optionEl.style.display = 'none';
+        }
+      };
+
+      optionEl.addEventListener('pointerdown', selectOption);
+      tetrisDropArea.appendChild(optionEl);
+    });
+  }
+</script>
+</body>
+</html>
