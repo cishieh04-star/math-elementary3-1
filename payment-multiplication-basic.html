@@ -30,27 +30,27 @@
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: #e0f2fe; color: #1e293b; z-index: 9999;
     display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
-    overflow-y: auto; padding: 25px 20px; text-align: left;
+    overflow-y: auto; padding: 20px 15px; text-align: left;
   }
   .start-content-box {
     max-width: 500px; width: 100%; display: flex; flex-direction: column; align-items: center; margin: auto 0;
   }
-  #startScreen h1 { font-size: 26px; color: #0284c7; margin: 0 0 15px 0; text-align: center; }
+  #startScreen h1 { font-size: 24px; color: #0284c7; margin: 0 0 12px 0; text-align: center; }
   
   .intro-card {
     background: #ffffff; border: 2px solid #cbd5e1;
-    border-radius: 12px; padding: 12px 15px; margin-bottom: 12px; width: 100%;
+    border-radius: 12px; padding: 10px 14px; margin-bottom: 10px; width: 100%;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
   }
-  .intro-card h3 { margin: 0 0 6px 0; font-size: 15px; color: #0f172a; }
-  .intro-card ul { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.5; color: #334155; }
-  .intro-card li { margin-bottom: 4px; }
+  .intro-card h3 { margin: 0 0 4px 0; font-size: 14px; color: #0f172a; }
+  .intro-card ul { margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.4; color: #334155; }
+  .intro-card li { margin-bottom: 3px; }
 
   .start-btn { 
-    font-size: 24px; font-weight: bold; margin-top: 15px; padding: 15px 35px; 
+    font-size: 22px; font-weight: bold; margin-top: 10px; padding: 12px 30px; 
     background: #2563eb; color: #fff; border: none; border-radius: 15px; 
     cursor: pointer; box-shadow: 0 4px 15px rgba(37,99,235,0.3);
-    transition: transform 0.1s; width: 100%; max-width: 300px; text-align: center;
+    transition: transform 0.1s; width: 100%; max-width: 280px; text-align: center;
   }
   .start-btn:active { transform: scale(0.95); }
 
@@ -59,31 +59,34 @@
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(15, 23, 42, 0.9); color: #fff; z-index: 8888;
     display: none; flex-direction: column; justify-content: center; align-items: center;
-    text-align: center; padding: 15px;
+    text-align: center; padding: 10px;
+    overflow-y: auto;
   }
   .quiz-box {
     background: #ffffff; color: #1e293b; width: 100%; max-width: 480px;
-    border-radius: 16px; padding: 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    border-radius: 16px; padding: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    max-height: 95vh; display: flex; flex-direction: column;
   }
-  .quiz-box h2 { color: #2563eb; margin-top: 0; font-size: 20px; }
-  .quiz-box p { font-size: 17px; font-weight: bold; margin: 10px 0; }
+  .quiz-box h2 { color: #2563eb; margin: 0 0 5px 0; font-size: 18px; }
+  .quiz-box p { font-size: 15px; font-weight: bold; margin: 6px 0; }
   
   .tetris-drop-area {
-    width: 100%; height: 250px; background: #f8fafc; border: 3px dashed #94a3b8;
-    border-radius: 12px; position: relative; overflow: hidden; margin: 10px 0;
+    width: 100%; height: 220px; background: #f8fafc; border: 3px dashed #94a3b8;
+    border-radius: 12px; position: relative; overflow: hidden; margin: 8px 0;
+    flex-shrink: 0;
   }
   .falling-option {
-    position: absolute; width: 92%; max-width: 340px; height: 50px; background: #f59e0b; color: #fff;
-    font-size: 19px; font-weight: bold; display: flex; align-items: center; justify-content: center;
+    position: absolute; width: 90%; max-width: 320px; height: 44px; background: #f59e0b; color: #fff;
+    font-size: 17px; font-weight: bold; display: flex; align-items: center; justify-content: center;
     border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     left: 50%; transform: translateX(-50%);
     animation: dropDown linear infinite;
-    padding: 10px;
+    padding: 5px;
   }
   .falling-option:active { transform: translateX(-50%) scale(0.95); }
   @keyframes dropDown {
-    0% { top: -70px; }
-    100% { top: 260px; }
+    0% { top: -60px; }
+    100% { top: 230px; }
   }
 
   #overflowScreen {
@@ -92,63 +95,62 @@
     display: none; flex-direction: column; justify-content: center; align-items: center;
     text-align: center; padding: 20px;
   }
-  #overflowScreen h2 { font-size: 32px; margin-bottom: 10px; }
-  #overflowScreen p { font-size: 20px; margin-bottom: 20px; }
+  #overflowScreen h2 { font-size: 28px; margin-bottom: 10px; }
+  #overflowScreen p { font-size: 18px; margin-bottom: 20px; }
   .refund-btn {
-    font-size: 24px; font-weight: bold; padding: 12px 30px;
+    font-size: 20px; font-weight: bold; padding: 12px 25px;
     background: #ffffff; color: #dc2626; border: none; border-radius: 15px;
     cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   }
 
   .header {
-    padding: 8px 10px; text-align: center; background: #fff;
+    padding: 6px 10px; text-align: center; background: #fff;
     flex: 0 0 auto; 
     box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10;
     display: flex; justify-content: space-between; align-items: center;
   }
-  .header-left { display: flex; align-items: center; gap: 10px; }
-  .box-icon { font-size: 30px; line-height: 1; }
-  .target-display { font-size: 22px; font-weight: bold; color: #d32f2f; }
+  .header-left { display: flex; align-items: center; gap: 8px; }
+  .box-icon { font-size: 26px; line-height: 1; }
+  .target-display { font-size: 20px; font-weight: bold; color: #d32f2f; }
   
-  .header-right { display: flex; align-items: center; gap: 10px; }
-  .score-display { font-size: 16px; font-weight: bold; color: #334155; background: #f1f5f9; padding: 6px 10px; border-radius: 8px; }
+  .header-right { display: flex; align-items: center; gap: 8px; }
+  .score-display { font-size: 15px; font-weight: bold; color: #334155; background: #f1f5f9; padding: 5px 8px; border-radius: 8px; }
 
   .pause-btn {
-    font-size: 16px; font-weight: bold; padding: 8px 16px;
+    font-size: 15px; font-weight: bold; padding: 6px 12px;
     background: #f59e0b; color: white; border: none; border-radius: 10px;
     cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   }
 
-  #warningMsg { font-size: 15px; font-weight: bold; color: #e65100; height: 20px; background: #fff; text-align: center; }
+  #warningMsg { font-size: 14px; font-weight: bold; color: #e65100; height: 18px; background: #fff; text-align: center; flex-shrink: 0; }
 
   .drop-field {
     flex: 1 1 auto; 
-    margin: 10px; padding: 10px;
+    margin: 6px 10px; padding: 8px;
     border: 3px dashed #aaa; background: #eef; border-radius: 15px;
     position: relative; overflow: hidden; touch-action: manipulation; 
   }
 
   .tray {
-    height: 95px; flex: 0 0 auto; 
-    margin: 0 10px 10px 10px; padding: 8px;
+    height: 85px; flex: 0 0 auto; 
+    margin: 0 10px 6px 10px; padding: 6px;
     border: 2px solid #cbd5e1; background: #ffffff; border-radius: 12px;
-    display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px;
+    display: flex; flex-wrap: wrap; align-content: flex-start; gap: 5px;
     overflow-y: auto;
   }
 
   .wallet {
-    height: 65px; flex: 0 0 auto; 
+    height: 55px; flex: 0 0 auto; 
     display: flex; justify-content: center; align-items: center;
     background: #cfd8dc; box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
     padding-bottom: env(safe-area-inset-bottom); 
-    font-size: 18px; font-weight: bold; color: #334155;
+    font-size: 17px; font-weight: bold; color: #334155;
   }
 
   .money-item {
     display: flex; justify-content: center; align-items: center; 
     font-weight: bold; cursor: pointer; text-align: center;
     box-shadow: 1px 3px 5px rgba(0,0,0,0.3); transition: transform 0.1s;
-    cursor: pointer;
   }
   .money-item:active { transform: scale(0.9); }
   
@@ -157,33 +159,33 @@
 
   .drop-field .money-item {
     position: absolute;
-    width: 80px; height: 60px; font-size: 20px; zIndex: 10;
+    width: 75px; height: 55px; font-size: 18px; z-index: 10;
   }
   .drop-field .money-5 {
-    width: 65px; height: 65px; border-radius: 50%; font-size: 20px;
+    width: 60px; height: 60px; border-radius: 50%; font-size: 18px;
   }
 
   @keyframes fall {
-    0% { top: -70px; }
-    100% { top: 290px; }
+    0% { top: -60px; }
+    100% { top: 250px; }
   }
 
-  .tray .money-item { width: 45px; height: 38px; font-size: 12px; border-radius: 6px; }
-  .tray .money-5 { width: 38px; height: 38px; font-size: 12px; border-radius: 50%; }
+  .tray .money-item { width: 40px; height: 35px; font-size: 11px; border-radius: 6px; }
+  .tray .money-5 { width: 35px; height: 35px; font-size: 11px; border-radius: 50%; }
 </style>
 </head>
 <body>
 
   <div id="startScreen">
     <div class="start-content-box">
-      <h1>🪙 特教溫馨乘法遊戲</h1>
+      <h1>🪙 購物支付遊戲(乘法基礎觀念)</h1>
 
       <div class="intro-card">
         <h3>📖 操作說明 (已支付金額與溫馨版)</h3>
         <ul>
           <li><strong>步驟一 (看目標)：</strong>觀察左上角要求的應付金額。</li>
           <li><strong>步驟二 (支付硬幣)：</strong>點擊收集方塊來進行支付，湊滿後會停留讓孩子欣賞成果。</li>
-          <li><strong>步驟三 (選橫式算式)：</strong>點對正確算式時，方塊會變成綠色並定格，完美呈現乘法結果！</li>
+          <li><strong>步驟三 (選橫式算式)：</strong>點對正確算式時，方塊會變成綠色並定格，錯誤算式會消失，完美呈現乘法結果！</li>
         </ul>
       </div>
 
@@ -196,7 +198,7 @@
       <h2>🧩 俄羅斯方塊乘法挑戰</h2>
       <p id="quizQuestionText">請選擇正確的乘法橫式：</p>
       <div class="tetris-drop-area" id="tetrisDropArea"></div>
-      <div id="quizFeedback" style="font-size: 15px; font-weight: bold; color: #dc2626; height: 20px;"></div>
+      <div id="quizFeedback" style="font-size: 14px; font-weight: bold; color: #dc2626; height: 20px;"></div>
     </div>
   </div>
 
@@ -372,7 +374,7 @@
       coinEl.innerText = '$5';
     }
 
-    const randomX = Math.random() * (dropField.clientWidth - 90);
+    const randomX = Math.random() * (dropField.clientWidth - 80);
     coinEl.style.left = randomX + 'px';
     
     const duration = 11.0 + Math.random() * 3.0;
@@ -516,9 +518,9 @@
       optionEl.className = 'falling-option';
       optionEl.innerText = optStr;
       
-      let startTop = -70 - (index * 75);
+      let startTop = -60 - (index * 65);
       optionEl.style.top = startTop + 'px';
-      optionEl.style.animationDuration = '7.0s';
+      optionEl.style.animationDuration = '6.5s';
       optionEl.style.animationDelay = (index * 1.5) + 's';
       optionEl.style.animationIterationCount = 'infinite';
 
@@ -526,6 +528,11 @@
         e.preventDefault();
         e.stopPropagation();
         if (optStr === correctStr) {
+          // 答對了：讓所有其他選項消失，正確選項變綠色並定格
+          document.querySelectorAll('.falling-option').forEach(el => {
+            if (el !== optionEl) el.remove();
+          });
+
           let computedTop = window.getComputedStyle(optionEl).top;
           optionEl.style.animation = 'none';
           optionEl.style.top = computedTop;
@@ -549,13 +556,14 @@
           setTimeout(() => {
             quizScreen.style.display = 'none';
             nextQuestion();
-          }, 6000);
+          }, 5000);
         } else {
+          // 答錯了：讓點錯的選項直接消失
           playErrorSound();
           quizFeedback.style.color = '#dc2626';
-          quizFeedback.innerText = `❌ ${optStr} 不對喔，再想想看！`;
+          quizFeedback.innerText = `❌ ${optStr} 不對喔，它消失了！再找找看！`;
           speakText("再想一下喔", 1.0);
-          optionEl.style.display = 'none';
+          optionEl.remove();
         }
       };
 
