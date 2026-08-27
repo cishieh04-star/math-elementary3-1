@@ -230,11 +230,25 @@
                 const msg = new SpeechSynthesisUtterance(text);
                 msg.lang = 'zh-TW';
                 msg.rate = 0.85;
-                if (callback) {
-                    msg.onend = callback;
-                }
+                
+                let hasCalledBack = false;
+                const triggerCallback = () => {
+                    if (!hasCalledBack && callback) {
+                        hasCalledBack = true;
+                        callback();
+                    }
+                };
+
+                msg.onend = triggerCallback;
+                msg.onerror = triggerCallback;
+                
+                // 💡 雙保險計時器：避免部分 Android 手機不觸發 onend 導致卡住
+                setTimeout(triggerCallback, 3500);
+
                 window.speechSynthesis.speak(msg);
-            } catch(e) {}
+            } catch(e) {
+                if (callback) callback();
+            }
         }
 
         const startBtnEl = document.getElementById('startBtn');
@@ -358,9 +372,10 @@
                 setTimeout(() => {
                     if (isPaused) return;
                     document.getElementById('stepBanner').innerText = `步驟一：先算個位數，${u1} 個一元加上 ${u2} 個一元等於多少呢？`;
-                    speak(`先算個位數，${u1} 個一元加上 ${u2} 個一元等於多少呢？方塊掉下來囉！`);
-                    setupFalling();
-                }, 800);
+                    speak(`先算個位數，${u1} 個一元加上 ${u2} 個一元等於多少呢？方塊掉下來囉！`, () => {
+                        setupFalling();
+                    });
+                }, 500);
             });
         }
 
@@ -426,9 +441,10 @@
                                 isLocked = false;
                                 currentStep = 'tens';
                                 document.getElementById('stepBanner').innerText = `步驟二：算十位數，${t1} 個十元加上 ${t2} 個十元等於多少呢？`;
-                                speak(`接下來，請算出，${t1} 個十元加上 ${t2} 個十元等於多少呢？`);
-                                setupFalling();
-                            }, 2000);
+                                speak(`接下來，請算出，${t1} 個十元加上 ${t2} 個十元等於多少呢？`, () => {
+                                    setupFalling();
+                                });
+                            }, 1000);
                         });
 
                     } else {
@@ -457,9 +473,10 @@
                                 isLocked = false;
                                 currentStep = 'hundreds';
                                 document.getElementById('stepBanner').innerText = `步驟三：算百位數，${h1} 個百元加上 ${h2} 個百元等於多少呢？`;
-                                speak(`接下來，請算出，${h1} 個百元加上 ${h2} 個百元等於多少呢？`);
-                                setupFalling();
-                            }, 2000);
+                                speak(`接下來，請算出，${h1} 個百元加上 ${h2} 個百元等於多少呢？`, () => {
+                                    setupFalling();
+                                });
+                            }, 1000);
                         });
 
                     } else {
@@ -488,9 +505,10 @@
                                 isLocked = false;
                                 currentStep = 'thousands';
                                 document.getElementById('stepBanner').innerText = `步驟四：算千位數，${th1} 個千元加上 ${th2} 個千元等於多少呢？`;
-                                speak(`最後，請算出，${th1} 個千元加上 ${th2} 個千元等於多少呢？`);
-                                setupFalling();
-                            }, 2000);
+                                speak(`最後，請算出，${th1} 個千元加上 ${th2} 個千元等於多少呢？`, () => {
+                                    setupFalling();
+                                });
+                            }, 1000);
                         });
 
                     } else {
