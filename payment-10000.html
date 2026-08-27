@@ -11,88 +11,95 @@
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
+    -webkit-tap-highlight-color: transparent;
   } 
   
   html, body {
-    margin: 0; padding: 0; height: 100%; width: 100%;
+    margin: 0; padding: 0; 
+    height: 100vh; height: 100dvh; 
+    width: 100vw;
     overflow: hidden; 
-    font-family: sans-serif; background-color: #f4f4f4;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    background-color: #f4f4f4;
   }
 
   #gameContainer {
-    display: flex; flex-direction: column; height: 100%; width: 100%;
+    display: flex; flex-direction: column; 
+    height: 100vh; height: 100dvh; 
+    width: 100%;
     max-width: 600px; margin: 0 auto; 
     position: relative;
+    overflow: hidden;
   }
 
   #startScreen {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: #e0f2fe; color: #1e293b; z-index: 9999;
-    display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
-    overflow-y: auto; padding: 25px 20px; text-align: left;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px 15px; text-align: left;
   }
   .start-content-box {
-    max-width: 500px; width: 100%; display: flex; flex-direction: column; align-items: center; margin: auto 0;
+    max-width: 500px; width: 100%; display: flex; flex-direction: column; align-items: center; margin: auto;
   }
-  #startScreen h1 { font-size: 26px; color: #0284c7; margin: 0 0 15px 0; text-align: center; }
+  #startScreen h1 { font-size: 24px; color: #0284c7; margin: 0 0 12px 0; text-align: center; }
   
   .intro-card {
     background: #ffffff; border: 2px solid #cbd5e1;
-    border-radius: 12px; padding: 12px 15px; margin-bottom: 12px; width: 100%;
+    border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; width: 100%;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
   }
-  .intro-card h3 { margin: 0 0 6px 0; font-size: 15px; color: #0f172a; }
-  .intro-card ul { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.5; color: #334155; }
-  .intro-card li { margin-bottom: 4px; }
+  .intro-card h3 { margin: 0 0 4px 0; font-size: 14px; color: #0f172a; }
+  .intro-card ul { margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.4; color: #334155; }
+  .intro-card li { margin-bottom: 3px; }
 
   .start-btn { 
-    font-size: 24px; font-weight: bold; margin-top: 15px; padding: 15px 35px; 
+    font-size: 22px; font-weight: bold; margin-top: 10px; padding: 14px 30px; 
     background: #2563eb; color: #fff; border: none; border-radius: 15px; 
     cursor: pointer; box-shadow: 0 4px 15px rgba(37,99,235,0.3);
-    transition: transform 0.1s; width: 100%; max-width: 300px; text-align: center;
+    width: 100%; max-width: 280px; text-align: center;
   }
   .start-btn:active { transform: scale(0.95); }
 
   #overflowScreen {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(239, 68, 68, 0.85); color: #fff; z-index: 8888;
+    background: rgba(239, 68, 68, 0.9); color: #fff; z-index: 8888;
     display: none; flex-direction: column; justify-content: center; align-items: center;
     text-align: center; padding: 20px;
   }
-  #overflowScreen h2 { font-size: 36px; margin-bottom: 10px; }
-  #overflowScreen p { font-size: 22px; margin-bottom: 25px; }
+  #overflowScreen h2 { font-size: 30px; margin-bottom: 10px; }
+  #overflowScreen p { font-size: 18px; margin-bottom: 20px; }
   .refund-btn {
-    font-size: 26px; font-weight: bold; padding: 15px 35px;
+    font-size: 22px; font-weight: bold; padding: 14px 30px;
     background: #ffffff; color: #dc2626; border: none; border-radius: 15px;
     cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   }
   .refund-btn:active { transform: scale(0.95); }
 
   .header {
-    padding: 8px 10px; text-align: center; background: #fff;
+    padding: 8px 12px; text-align: center; background: #fff;
     flex: 0 0 auto; 
     box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10;
     display: flex; justify-content: space-between; align-items: center;
   }
-  .header-left { display: flex; align-items: center; gap: 10px; }
-  .box-icon { font-size: 30px; line-height: 1; }
-  .target-display { font-size: 24px; font-weight: bold; color: #d32f2f; }
+  .header-left { display: flex; align-items: center; gap: 8px; }
+  .box-icon { font-size: 26px; line-height: 1; }
+  .target-display { font-size: 20px; font-weight: bold; color: #d32f2f; }
   
-  .header-right { display: flex; align-items: center; gap: 10px; }
-  .score-display { font-size: 16px; font-weight: bold; color: #334155; background: #f1f5f9; padding: 6px 10px; border-radius: 8px; }
+  .header-right { display: flex; align-items: center; gap: 8px; }
+  .score-display { font-size: 15px; font-weight: bold; color: #334155; background: #f1f5f9; padding: 5px 8px; border-radius: 8px; }
 
   .pause-btn {
-    font-size: 16px; font-weight: bold; padding: 8px 16px;
+    font-size: 15px; font-weight: bold; padding: 6px 12px;
     background: #f59e0b; color: white; border: none; border-radius: 10px;
     cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   }
   .pause-btn:active { transform: scale(0.95); }
 
-  #warningMsg { font-size: 15px; font-weight: bold; color: #e65100; height: 20px; background: #fff; text-align: center; }
+  #warningMsg { font-size: 14px; font-weight: bold; color: #e65100; height: 18px; background: #fff; text-align: center; flex-shrink: 0; }
 
   .drop-field {
     flex: 1 1 auto; 
-    margin: 10px; padding: 10px;
+    margin: 6px 10px; padding: 8px;
     border: 3px dashed #aaa; background: #eef; border-radius: 15px;
     position: relative;
     overflow: hidden;
@@ -100,23 +107,22 @@
   }
 
   .tray {
-    height: 105px;
+    height: 95px;
     flex: 0 0 auto; 
-    margin: 0 10px 10px 10px; padding: 10px;
+    margin: 0 10px 6px 10px; padding: 8px;
     border: 2px solid #cbd5e1; background: #ffffff; border-radius: 12px;
     display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px;
-    overflow-y: auto;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
   }
 
   .wallet {
-    height: 70px; flex: 0 0 auto; 
+    flex: 0 0 auto; 
     display: flex; justify-content: center; align-items: center;
     background: #cfd8dc; box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-    padding-bottom: env(safe-area-inset-bottom); 
-    font-size: 18px; font-weight: bold; color: #334155;
+    padding: 10px 10px calc(10px + env(safe-area-inset-bottom)) 10px; 
+    font-size: 17px; font-weight: bold; color: #334155;
   }
 
-  /* 調整鈔票與硬幣樣式 ($50, $100, $500, $1000) */
   .money-item {
     display: flex; justify-content: center; align-items: center; 
     font-weight: bold; cursor: pointer; text-align: center;
@@ -131,22 +137,21 @@
 
   .drop-field .money-item {
     position: absolute;
-    width: 85px; height: 60px; font-size: 20px;
+    width: 80px; height: 55px; font-size: 18px;
     animation: fall linear forwards;
-    zIndex: 10;
+    z-index: 10;
   }
-  /* 50元維持圓形硬幣 */
   .drop-field .money-50 {
-    width: 68px; height: 68px; border-radius: 50%; font-size: 22px;
+    width: 60px; height: 60px; border-radius: 50%; font-size: 18px;
   }
 
   @keyframes fall {
-    0% { top: -75px; }
-    100% { top: 290px; }
+    0% { top: -65px; }
+    100% { top: 240px; }
   }
 
-  .tray .money-item { width: 50px; height: 42px; font-size: 13px; border-radius: 6px; }
-  .tray .money-50 { width: 42px; height: 42px; font-size: 13px; border-radius: 50%; }
+  .tray .money-item { width: 46px; height: 38px; font-size: 12px; border-radius: 6px; }
+  .tray .money-50 { width: 38px; height: 38px; font-size: 12px; border-radius: 50%; }
 </style>
 </head>
 <body>
@@ -166,7 +171,7 @@
         </ul>
       </div>
 
-      <button class="start-btn" onclick="startGame()">▶ 點擊開始遊戲</button>
+      <button class="start-btn" id="startBtn">▶ 點擊開始遊戲</button>
     </div>
   </div>
 
@@ -219,25 +224,37 @@
   const currentAmountSpan = document.getElementById('currentAmount');
   const warningMsg = document.getElementById('warningMsg');
   const pauseBtn = document.getElementById('pauseBtn');
+  const startBtnEl = document.getElementById('startBtn');
   
-  let audioCtx;
+  let audioCtx = null;
   function initAudio() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass && !audioCtx) {
+        audioCtx = new AudioContextClass();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    } catch (e) {
+      console.log('AudioContext error', e);
+    }
   }
 
   function playTone(freq, type, duration, vol = 0.5) {
     if (!audioCtx) return;
-    const osc = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
-    osc.type = type; 
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-    osc.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
+    try {
+      const osc = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      osc.type = type; 
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+      osc.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    } catch(e) {}
   }
 
   function playDropSound() { playTone(400, 'square', 0.1, 0.2); }
@@ -254,20 +271,33 @@
   }
 
   function speakText(text, speedRate) {
-    if (!audioUnlocked) return;
-    window.speechSynthesis.cancel(); 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'zh-TW';
-    utterance.rate = speedRate; 
-    window.speechSynthesis.speak(utterance);
+    if (!audioUnlocked || !('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.cancel(); 
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'zh-TW';
+      utterance.rate = speedRate; 
+      window.speechSynthesis.speak(utterance);
+    } catch(e) {}
   }
+
+  // 綁定開始按鈕，確保手機點擊時能順利解鎖音訊與語音
+  startBtnEl.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    startGame();
+  });
 
   function startGame() {
     initAudio();
-    let unlockSpeech = new SpeechSynthesisUtterance('');
-    window.speechSynthesis.speak(unlockSpeech);
-
     audioUnlocked = true;
+
+    if ('speechSynthesis' in window) {
+      try {
+        let unlockSpeech = new SpeechSynthesisUtterance('');
+        window.speechSynthesis.speak(unlockSpeech);
+      } catch(e) {}
+    }
+
     startScreen.style.display = 'none';
     successCount = 0; 
     successCountSpan.innerText = successCount;
@@ -280,7 +310,6 @@
     pauseBtn.innerText = "⏸ 暫停";
     overflowScreen.style.display = 'none';
     
-    // 禮物金額在 1 萬元以內（例如 500 到 9500 元之間，以 50 元為單位倍數最剛好）
     currentTarget = Math.floor(Math.random() * 180 + 10) * 50; 
     displayTarget.innerText = currentTarget;
     
@@ -326,7 +355,6 @@
   function spawnFallingCoin() {
     if (isPaused) return;
     
-    // 隨機掉落 50, 100, 500, 1000
     let types = [50, 100, 100, 500, 1000];
     let coinType = types[Math.floor(Math.random() * types.length)];
 
@@ -345,7 +373,7 @@
       coinEl.innerText = '$50';
     }
 
-    const randomX = Math.random() * (dropField.clientWidth - 90);
+    const randomX = Math.random() * (dropField.clientWidth - 80);
     coinEl.style.left = randomX + 'px';
     
     const duration = 7.0 + Math.random() * 3.0;
@@ -375,8 +403,7 @@
       activeCoins = activeCoins.filter(item => item !== coinEl);
     };
 
-    coinEl.addEventListener('touchstart', handleCoinTouch, { passive: false });
-    coinEl.addEventListener('click', handleCoinTouch);
+    coinEl.addEventListener('pointerdown', handleCoinTouch);
 
     coinEl.addEventListener('animationend', () => {
       coinEl.remove();
@@ -438,8 +465,7 @@
       c.className = 'money-item money-1000';
       c.innerText = '1000';
       let act = (e) => { if(e) e.preventDefault(); removeCoin(1000); };
-      c.addEventListener('touchstart', act, { passive: false });
-      c.onclick = act;
+      c.addEventListener('pointerdown', act);
       trayCoins.appendChild(c);
     }
 
@@ -448,8 +474,7 @@
       c.className = 'money-item money-500';
       c.innerText = '500';
       let act = (e) => { if(e) e.preventDefault(); removeCoin(500); };
-      c.addEventListener('touchstart', act, { passive: false });
-      c.onclick = act;
+      c.addEventListener('pointerdown', act);
       trayCoins.appendChild(c);
     }
 
@@ -458,8 +483,7 @@
       c.className = 'money-item money-100';
       c.innerText = '100';
       let act = (e) => { if(e) e.preventDefault(); removeCoin(100); };
-      c.addEventListener('touchstart', act, { passive: false });
-      c.onclick = act;
+      c.addEventListener('pointerdown', act);
       trayCoins.appendChild(c);
     }
 
@@ -468,8 +492,7 @@
       c.className = 'money-item money-50';
       c.innerText = '50';
       let act = (e) => { if(e) e.preventDefault(); removeCoin(50); };
-      c.addEventListener('touchstart', act, { passive: false });
-      c.onclick = act;
+      c.addEventListener('pointerdown', act);
       trayCoins.appendChild(c);
     }
 
