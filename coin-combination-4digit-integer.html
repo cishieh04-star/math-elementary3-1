@@ -1,564 +1,580 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>錢幣的直式加法遊戲</title>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <style>
-        * { 
-            box-sizing: border-box; 
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        } 
-        
-        html, body {
-            margin: 0; padding: 0;
-            width: 100vw; height: 100vh; height: 100dvh;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #fef3c7;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            overflow: hidden; touch-action: manipulation;
-        }
-        h1 { color: #b45309; font-size: 16px; margin: 2px 0; }
-        
-        #gameScreen { 
-            width: 100%; max-width: 500px; height: 100%; max-height: 100dvh;
-            display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
-            background: #fff; border-radius: 0; border: none; padding: 6px 10px; 
-            box-shadow: none; margin: 0 auto;
-            position: relative;
-        }
-        @media (min-width: 520px) {
-            #gameScreen {
-                border-radius: 16px; border: 3px solid #f59e0b; max-height: 97vh; height: auto;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: auto;
-            }
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>購物支付遊戲(乘法基礎觀念)</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+  * { 
+    box-sizing: border-box; 
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  } 
+  
+  html, body {
+    margin: 0; padding: 0; 
+    height: 100vh; height: 100dvh; 
+    width: 100vw;
+    overflow: hidden; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    background-color: #f4f4f4;
+  }
 
-        #startOverlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.98); border-radius: 13px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 9999; padding: 20px 15px; overflow-y: auto; -webkit-overflow-scrolling: touch; text-align: left;
-        }
-        .start-content-box {
-            max-width: 450px; width: 100%; display: flex; flex-direction: column; align-items: center; margin: auto;
-        }
-        #startOverlay h2 { color: #b45309; font-size: 20px; margin-bottom: 10px; text-align: center; }
-        
-        .intro-card {
-            background: #fffbeb; border: 2px solid #fde68a;
-            border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; width: 100%;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-        .intro-card h3 { margin: 0 0 4px 0; font-size: 14px; color: #b45309; }
-        .intro-card ul { margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.5; color: #78350f; }
-        .intro-card li { margin-bottom: 4px; }
+  #gameContainer {
+    display: flex; flex-direction: column; 
+    height: 100vh; height: 100dvh; 
+    width: 100%;
+    max-width: 600px; margin: 0 auto; 
+    position: relative;
+    overflow: hidden;
+  }
 
-        .start-btn {
-            background-color: #16a34a; color: white; border: none; border-radius: 14px;
-            padding: 14px 35px; font-size: 20px; font-weight: bold; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.1s;
-            width: 100%; max-width: 280px; text-align: center;
-        }
-        .start-btn:active { transform: scale(0.95); background-color: #15803d; }
-        
-        .status-bar { 
-            display: flex; justify-content: space-between; align-items: center; 
-            width: 100%; font-size: 14px; font-weight: bold; color: #b45309; 
-            border-bottom: 2px solid #fef3c7; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; 
-            flex-shrink: 0;
-        }
+  #startScreen {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: #e0f2fe; color: #1e293b; z-index: 9999;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px 15px; text-align: left;
+  }
+  .start-content-box {
+    max-width: 500px; width: 100%; display: flex; flex-direction: column; align-items: center; margin: auto;
+  }
+  #startScreen h1 { font-size: 22px; color: #0284c7; margin: 0 0 10px 0; text-align: center; }
+  
+  .intro-card {
+    background: #ffffff; border: 2px solid #cbd5e1;
+    border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; width: 100%;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  }
+  .intro-card h3 { margin: 0 0 4px 0; font-size: 14px; color: #0f172a; }
+  .intro-card ul { margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.4; color: #334155; }
+  .intro-card li { margin-bottom: 3px; }
 
-        .control-btn {
-            background-color: #f59e0b; color: white; border: none; border-radius: 8px;
-            padding: 4px 10px; font-size: 13px; font-weight: bold; cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-        }
-        .control-btn:active { transform: scale(0.95); background-color: #d97706; }
+  .start-btn { 
+    font-size: 20px; font-weight: bold; margin-top: 5px; padding: 12px 30px; 
+    background: #2563eb; color: #fff; border: none; border-radius: 15px; 
+    cursor: pointer; box-shadow: 0 4px 15px rgba(37,99,235,0.3);
+    width: 100%; max-width: 280px; text-align: center;
+  }
+  .start-btn:active { transform: scale(0.95); }
 
-        .step-banner { 
-            background: #fef3c7; color: #92400e; padding: 5px 10px; border-radius: 8px; 
-            font-size: 13px; font-weight: bold; width: 100%; line-height: 1.3; text-align: center;
-            flex-shrink: 0;
-        }
+  /* 俄羅斯方塊答題彈窗 */
+  #quizScreen {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.9); color: #fff; z-index: 8888;
+    display: none; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; padding: 10px;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .quiz-box {
+    background: #ffffff; color: #1e293b; width: 100%; max-width: 480px;
+    border-radius: 16px; padding: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    max-height: 95vh; display: flex; flex-direction: column;
+  }
+  .quiz-box h2 { color: #2563eb; margin: 0 0 5px 0; font-size: 18px; }
+  .quiz-box p { font-size: 15px; font-weight: bold; margin: 6px 0; }
+  
+  .tetris-drop-area {
+    width: 100%; height: 200px; background: #f8fafc; border: 3px dashed #94a3b8;
+    border-radius: 12px; position: relative; overflow: hidden; margin: 8px 0;
+    flex-shrink: 0;
+  }
+  .falling-option {
+    position: absolute; width: 90%; max-width: 320px; height: 42px; background: #f59e0b; color: #fff;
+    font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center;
+    border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    left: 50%; transform: translateX(-50%);
+    animation: dropDown linear infinite;
+    padding: 5px;
+  }
+  .falling-option:active { transform: translateX(-50%) scale(0.95); }
+  @keyframes dropDown {
+    0% { top: -50px; }
+    100% { top: 200px; }
+  }
 
-        .legend-box {
-            display: flex; justify-content: space-around; width: 100%; background: #f8fafc; padding: 4px; border-radius: 8px; font-size: 11px; color: #475569; border: 1px solid #e2e8f0;
-            flex-shrink: 0;
-        }
-        .legend-item { display: flex; align-items: center; gap: 3px; }
+  #overflowScreen {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(239, 68, 68, 0.9); color: #fff; z-index: 8889;
+    display: none; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; padding: 20px;
+  }
+  #overflowScreen h2 { font-size: 26px; margin-bottom: 10px; }
+  #overflowScreen p { font-size: 17px; margin-bottom: 20px; }
+  .refund-btn {
+    font-size: 18px; font-weight: bold; padding: 12px 25px;
+    background: #ffffff; color: #dc2626; border: none; border-radius: 15px;
+    cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  }
 
-        .place-header {
-            display: flex; gap: 6px; width: 100%; justify-content: center; font-weight: bold; font-size: 11px; color: #64748b; margin-bottom: -2px;
-        }
-        .place-col { width: 38px; text-align: center; }
+  .header {
+    padding: 8px 12px; text-align: center; background: #fff;
+    flex: 0 0 auto; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .header-left { display: flex; align-items: center; gap: 8px; }
+  .box-icon { font-size: 24px; line-height: 1; }
+  .target-display { font-size: 18px; font-weight: bold; color: #d32f2f; }
+  
+  .header-right { display: flex; align-items: center; gap: 8px; }
+  .score-display { font-size: 14px; font-weight: bold; color: #334155; background: #f1f5f9; padding: 4px 8px; border-radius: 8px; }
 
-        .vertical-math {
-            display: inline-flex; flex-direction: column; align-items: center;
-            font-size: 22px; font-weight: bold; font-family: monospace;
-            background: #f8fafc; padding: 4px 8px; border-radius: 12px; border: 2px solid #cbd5e1;
-            position: relative; width: 100%; max-width: 320px;
-            flex-shrink: 0;
-        }
-        .math-row { display: flex; gap: 6px; width: 100%; justify-content: center; align-items: center; margin: 2px 0; }
-        .math-line { width: 90%; height: 2px; background: #333; margin: 2px auto; }
-        .cell { width: 38px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 40px; }
-        
-        .operator { position: absolute; left: 8px; top: 58px; font-size: 20px; color: #333; }
+  .pause-btn {
+    font-size: 14px; font-weight: bold; padding: 6px 10px;
+    background: #f59e0b; color: white; border: none; border-radius: 8px;
+    cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
 
-        .coin-hint {
-            display: flex; flex-wrap: wrap; gap: 1px; justify-content: center; max-width: 35px; margin-top: 1px;
-        }
-        .coin-1000 {
-            width: 10px; height: 10px; background: #7c3aed; border-radius: 50%; border: 1px solid #5b21b6; font-size: 6px; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold;
-        }
-        .coin-100 {
-            width: 10px; height: 10px; background: #dc2626; border-radius: 50%; border: 1px solid #991b1b; font-size: 6px; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold;
-        }
-        .coin-10 {
-            width: 10px; height: 10px; background: #eab308; border-radius: 50%; border: 1px solid #ca8a04; font-size: 6px; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold;
-        }
-        .coin-1 {
-            width: 8px; height: 8px; background: #94a3b8; border-radius: 50%; border: 1px solid #64748b;
-        }
+  #warningMsg { font-size: 13px; font-weight: bold; color: #e65100; height: 18px; background: #fff; text-align: center; flex-shrink: 0; }
 
-        /* 💡 修正掉落區域高度與動畫範圍，確保方塊在畫面正中央完美掉落 */
-        #drop-game-container {
-            position: relative; width: 100%; height: 95px;
-            background: #e2e8f0; border: 2px solid #cbd5e1; border-radius: 10px;
-            overflow: hidden; touch-action: manipulation;
-            flex-shrink: 0;
-        }
+  .drop-field {
+    flex: 1 1 auto; 
+    margin: 4px 10px; padding: 8px;
+    border: 3px dashed #aaa; background: #eef; border-radius: 15px;
+    position: relative; overflow: hidden; touch-action: manipulation; 
+  }
 
-        .falling-tetris {
-            position: absolute; width: 48px; height: 44px;
-            background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
-            border: 3px solid #facc15; border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 20px; font-weight: bold; color: #fff;
-            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            animation: fall linear forwards; z-index: 999;
-        }
-        .falling-tetris:active { transform: scale(0.9); }
+  .tray {
+    height: 75px; flex: 0 0 auto; 
+    margin: 0 10px 4px 10px; padding: 6px;
+    border: 2px solid #cbd5e1; background: #ffffff; border-radius: 12px;
+    display: flex; flex-wrap: wrap; align-content: flex-start; gap: 5px;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
 
-        @keyframes fall {
-            0% { top: -45px; }
-            100% { top: 50px; }
-        }
-    </style>
+  .wallet {
+    flex: 0 0 auto; 
+    display: flex; justify-content: center; align-items: center;
+    background: #cfd8dc; box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+    padding: 10px 10px calc(10px + env(safe-area-inset-bottom)) 10px; 
+    font-size: 16px; font-weight: bold; color: #334155;
+  }
+
+  .money-item {
+    display: flex; justify-content: center; align-items: center; 
+    font-weight: bold; cursor: pointer; text-align: center;
+    box-shadow: 1px 3px 5px rgba(0,0,0,0.3); transition: transform 0.1s;
+  }
+  .money-item:active { transform: scale(0.9); }
+  
+  .money-10 { background-color: #0ea5e9; color: #fff; border: 2px solid #0369a1; border-radius: 8px; }
+  .money-5  { background-color: #eab308; color: #78350f; border: 2px solid #ca8a04; border-radius: 50%; }
+
+  .drop-field .money-item {
+    position: absolute;
+    width: 70px; height: 50px; font-size: 17px; z-index: 10;
+  }
+  .drop-field .money-5 {
+    width: 55px; height: 55px; border-radius: 50%; font-size: 17px;
+  }
+
+  @keyframes fall {
+    0% { top: -60px; }
+    100% { top: 220px; }
+  }
+
+  .tray .money-item { width: 38px; height: 32px; font-size: 11px; border-radius: 6px; }
+  .tray .money-5 { width: 32px; height: 32px; font-size: 11px; border-radius: 50%; }
+</style>
 </head>
 <body>
 
-    <div id="gameScreen">
-        <div id="startOverlay">
-            <div class="start-content-box">
-                <h2>🪙 錢幣加法俄羅斯方塊樂 🪙</h2>
-                <div class="intro-card">
-                    <h3>📖 遊戲設計說明</h3>
-                    <ul>
-                        <li><strong>多元整數題型：</strong>包含各種位數組合（如 $200+20$、$2000+200$、$10+10$ 等），除了最左邊非零外其餘皆為 0。</li>
-                        <li><strong>不重複隨機抽題：</strong>每次過關都會隨機換新題目，絕不連續重複！</li>
-                        <li><strong>分階段引導：</strong>依序計算個位、十位、百位、千位的數字，答對時朗讀總金額！</li>
-                    </ul>
-                </div>
-                <button class="start-btn" id="startBtn">🎮 開始遊戲</button>
-            </div>
-        </div>
+  <div id="startScreen">
+    <div class="start-content-box">
+      <h1>🪙 購物支付遊戲(乘法基礎觀念)</h1>
 
-        <h1>🪙 錢幣加法俄羅斯方塊樂</h1>
-        <div class="status-bar">
-            <div id="score">已完成: 0 關</div>
-            <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
-        </div>
-        
-        <div class="step-banner" id="stepBanner">準備開始！</div>
+      <div class="intro-card">
+        <h3>📖 操作說明</h3>
+        <ul>
+          <li><strong>步驟一 (看目標)：</strong>觀察左上角要求的應付金額。</li>
+          <li><strong>步驟二 (支付硬幣)：</strong>點擊收集方塊來進行支付，湊滿後會停留欣賞成果。</li>
+          <li><strong>步驟三 (選橫式算式)：</strong>點對正確算式時，方塊會變成綠色並定格，完美呈現乘法結果！</li>
+        </ul>
+      </div>
 
-        <div class="legend-box">
-            <div class="legend-item"><div class="coin-1000" style="width:11px;height:11px;"></div>千元</div>
-            <div class="legend-item"><div class="coin-100" style="width:11px;height:11px;"></div>百元</div>
-            <div class="legend-item"><div class="coin-10" style="width:11px;height:11px;"></div>十元</div>
-            <div class="legend-item"><div class="coin-1" style="width:9px;height:9px;"></div>一元</div>
-        </div>
-
-        <div class="vertical-math" id="mathBox">
-            <div class="operator">+</div>
-            
-            <div class="place-header">
-                <div class="place-col">千位</div>
-                <div class="place-col">百位</div>
-                <div class="place-col">十位</div>
-                <div class="place-col">個位</div>
-            </div>
-
-            <div class="math-row">
-                <div class="cell"><span id="thUp">0</span><div class="coin-hint" id="thUpCoins"></div></div>
-                <div class="cell"><span id="hUp">0</span><div class="coin-hint" id="hUpCoins"></div></div>
-                <div class="cell"><span id="tUp">2</span><div class="coin-hint" id="tUpCoins"></div></div>
-                <div class="cell"><span id="uUp">0</span><div class="coin-hint" id="uUpCoins"></div></div>
-            </div>
-            
-            <div class="math-row">
-                <div class="cell"><span id="thDown">0</span><div class="coin-hint" id="thDownCoins"></div></div>
-                <div class="cell"><span id="hDown">0</span><div class="coin-hint" id="hDownCoins"></div></div>
-                <div class="cell"><span id="tDown">2</span><div class="coin-hint" id="tDownCoins"></div></div>
-                <div class="cell"><span id="uDown">0</span><div class="coin-hint" id="uDownCoins"></div></div>
-            </div>
-            
-            <div class="math-line"></div>
-            
-            <div class="math-row">
-                <div class="cell" id="ansTh">?</div>
-                <div class="cell" id="ansH">?</div>
-                <div class="cell" id="ansT">?</div>
-                <div class="cell" id="ansU">?</div>
-            </div>
-        </div>
-
-        <div id="feedback" style="font-size: 13px; color: #d97706; font-weight: bold; min-height: 18px; flex-shrink: 0;"></div>
-        
-        <div id="drop-game-container"></div>
+      <button class="start-btn" onclick="startGame()">▶ 點擊開始遊戲</button>
     </div>
+  </div>
 
-    <script>
-        let score = 0;
-        let th1 = 0, h1 = 0, t1 = 2, u1 = 0;
-        let th2 = 0, h2 = 0, t2 = 2, u2 = 0;
-        let targetU = 0, targetT = 4, targetH = 0, targetTh = 0; 
-        let total1 = 0, total2 = 0;
-        let currentStep = 'unit'; 
-        let gameInterval = null;
-        let activeOptions = [];
-        let isLocked = false;
-        let isPaused = false;
-        let nextQuestionTimeout = null;
-        let lastQuestionIndex = -1;
+  <div id="quizScreen">
+    <div class="quiz-box">
+      <h2>🧩 俄羅斯方塊乘法挑戰</h2>
+      <p id="quizQuestionText">請選擇正確的乘法橫式：</p>
+      <div class="tetris-drop-area" id="tetrisDropArea"></div>
+      <div id="quizFeedback" style="font-size: 14px; font-weight: bold; color: #dc2626; height: 20px;"></div>
+    </div>
+  </div>
 
-        function speak(text) {
-            if (isPaused || !('speechSynthesis' in window)) return;
-            try {
-                window.speechSynthesis.cancel();
-                const msg = new SpeechSynthesisUtterance(text);
-                msg.lang = 'zh-TW';
-                msg.rate = 0.85;
-                window.speechSynthesis.speak(msg);
-            } catch(e) {}
+  <div id="overflowScreen">
+    <h2>⚠️ 哎呀，金額超過囉！</h2>
+    <p>你支付的錢超過目標金額了～</p>
+    <button class="refund-btn" onclick="refundAndResume()">🔄 全部退回，重新開始</button>
+  </div>
+
+  <div id="gameContainer">
+    <div class="header">
+      <div class="header-left">
+        <div class="box-icon">🎁</div>
+        <div class="target-display">要付 <span id="displayTarget">?</span> 元</div>
+      </div>
+      <div class="header-right">
+        <div class="score-display">已完成: <span id="successCount">0</span> 關</div>
+        <button class="pause-btn" id="pauseBtn" onclick="togglePause()">⏸ 暫停</button>
+      </div>
+    </div>
+    <div id="warningMsg"></div>
+    
+    <div class="drop-field" id="dropField"></div>
+    <div class="tray" id="trayCoins"></div>
+
+    <div class="wallet" id="wallet">
+      已支付金額：<span id="currentAmount">0</span> 元
+    </div>
+  </div>
+
+<script>
+  let count10 = 0;  
+  let count5 = 0;   
+  let currentTarget = 0;
+  let successCount = 0; 
+  let audioUnlocked = false; 
+  let isAnswering = false;
+  let isPaused = false;
+  let dropInterval = null;
+  let activeCoins = [];
+  let currentCoinType = 10; 
+
+  const displayTarget = document.getElementById('displayTarget');
+  const successCountSpan = document.getElementById('successCount');
+  const trayCoins = document.getElementById('trayCoins');
+  const dropField = document.getElementById('dropField');
+  const startScreen = document.getElementById('startScreen');
+  const overflowScreen = document.getElementById('overflowScreen');
+  const quizScreen = document.getElementById('quizScreen');
+  const tetrisDropArea = document.getElementById('tetrisDropArea');
+  const quizQuestionText = document.getElementById('quizQuestionText');
+  const quizFeedback = document.getElementById('quizFeedback');
+  const currentAmountSpan = document.getElementById('currentAmount');
+  const warningMsg = document.getElementById('warningMsg');
+  const pauseBtn = document.getElementById('pauseBtn');
+  
+  let audioCtx;
+  function initAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function playTone(freq, type, duration, vol = 0.5) {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    osc.type = type; 
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  }
+
+  function playDropSound() { playTone(400, 'square', 0.1, 0.2); }
+  function playPickupSound() { playTone(800, 'sine', 0.1, 0.3); }
+  function playErrorSound() {
+    playTone(150, 'sawtooth', 0.2, 0.4);
+    setTimeout(() => playTone(100, 'sawtooth', 0.3, 0.4), 150);
+  }
+  function playCheerSound() {
+    playTone(523.25, 'sine', 0.2, 0.5); 
+    setTimeout(() => playTone(659.25, 'sine', 0.2, 0.5), 150); 
+    setTimeout(() => playTone(783.99, 'sine', 0.3, 0.5), 300); 
+    setTimeout(() => playTone(1046.50, 'square', 0.5, 0.4), 450); 
+  }
+
+  function speakText(text, speedRate) {
+    if (!audioUnlocked) return;
+    window.speechSynthesis.cancel(); 
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'zh-TW';
+    utterance.rate = speedRate; 
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function startGame() {
+    initAudio();
+    let unlockSpeech = new SpeechSynthesisUtterance('');
+    window.speechSynthesis.speak(unlockSpeech);
+
+    audioUnlocked = true;
+    startScreen.style.display = 'none';
+    successCount = 0; 
+    successCountSpan.innerText = successCount;
+    nextQuestion();
+  }
+
+  function nextQuestion() {
+    isAnswering = false;
+    isPaused = false;
+    quizScreen.style.display = 'none';
+    overflowScreen.style.display = 'none';
+    pauseBtn.innerText = "⏸ 暫停";
+    
+    if (Math.random() < 0.5) {
+      currentCoinType = 10;
+      let multiplier = Math.floor(Math.random() * 7) + 2; 
+      currentTarget = multiplier * 10;
+    } else {
+      currentCoinType = 5;
+      let multiplier = Math.floor(Math.random() * 8) + 2; 
+      currentTarget = multiplier * 5;
+    }
+
+    displayTarget.innerText = currentTarget;
+    
+    count10 = 0;
+    count5 = 0;
+    warningMsg.innerText = "";
+    renderTray(); 
+    
+    if (dropInterval) clearInterval(dropInterval);
+    activeCoins.forEach(c => c.remove());
+    activeCoins = [];
+
+    dropInterval = setInterval(() => {
+      if (!isAnswering && !isPaused) spawnFallingCoin();
+    }, 3500);
+
+    setTimeout(() => speakText(`要付，${currentTarget} 元`, 0.85), 300);
+  }
+
+  function togglePause() {
+    if (isAnswering) return;
+    isPaused = !isPaused;
+
+    if (isPaused) {
+      pauseBtn.innerText = "▶ 繼續";
+      pauseBtn.style.background = "#16a34a";
+      warningMsg.innerText = "⏸️ 遊戲已暫停，可以慢慢思考喔！";
+      activeCoins.forEach(c => c.style.animationPlayState = 'paused');
+    } else {
+      pauseBtn.innerText = "⏸ 暫停";
+      pauseBtn.style.background = "#f59e0b";
+      warningMsg.innerText = "";
+      activeCoins.forEach(c => c.style.animationPlayState = 'running');
+    }
+  }
+
+  function spawnFallingCoin() {
+    if (isPaused) return;
+    
+    let coinType = currentCoinType;
+    const coinEl = document.createElement('div');
+    if (coinType === 10) {
+      coinEl.className = 'money-item money-10';
+      coinEl.innerText = '$10';
+    } else {
+      coinEl.className = 'money-item money-5';
+      coinEl.innerText = '$5';
+    }
+
+    const randomX = Math.random() * (dropField.clientWidth - 80);
+    coinEl.style.left = randomX + 'px';
+    
+    const duration = 11.0 + Math.random() * 3.0;
+    coinEl.style.animationDuration = duration + 's';
+    coinEl.style.animationName = 'fall';
+    coinEl.style.animationTimingFunction = 'linear';
+    coinEl.style.animationFillMode = 'forwards';
+
+    const handleCoinTouch = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isAnswering || isPaused) return;
+
+      let totalAmount = (count10 * 10) + (count5 * 5);
+
+      if (totalAmount + coinType > currentTarget) {
+        playErrorSound();
+        triggerOverflowPause();
+      } else {
+        warningMsg.innerText = "";
+        if (coinType === 10) count10++;
+        else count5++;
+
+        playDropSound();
+        renderTray();
+      }
+      coinEl.remove();
+      activeCoins = activeCoins.filter(item => item !== coinEl);
+    };
+
+    coinEl.addEventListener('pointerdown', handleCoinTouch);
+
+    coinEl.addEventListener('animationend', () => {
+      coinEl.remove();
+      activeCoins = activeCoins.filter(item => item !== coinEl);
+    });
+
+    dropField.appendChild(coinEl);
+    activeCoins.push(coinEl);
+  }
+
+  function triggerOverflowPause() {
+    isPaused = true;
+    playErrorSound();
+    speakText("金額超過囉，請退回重新開始！", 1.0);
+
+    activeCoins.forEach(c => c.style.animationPlayState = 'paused');
+    overflowScreen.style.display = 'flex';
+  }
+
+  function refundAndResume() {
+    playPickupSound();
+    count10 = 0;
+    count5 = 0;
+    renderTray(); 
+    
+    activeCoins.forEach(c => c.remove());
+    activeCoins = [];
+
+    overflowScreen.style.display = 'none';
+    isPaused = false;
+    pauseBtn.innerText = "⏸ 暫停";
+    pauseBtn.style.background = "#f59e0b";
+  }
+
+  function removeCoin(val) {
+    if (isAnswering || isPaused) return;
+    if (val === 10 && count10 > 0) count10--;
+    else if (val === 5 && count5 > 0) count5--;
+    
+    warningMsg.innerText = "";
+    playPickupSound();
+    renderTray(); 
+  }
+
+  function renderTray() {
+    let totalAmount = (count10 * 10) + (count5 * 5);
+    trayCoins.innerHTML = ''; 
+    currentAmountSpan.innerText = totalAmount;
+
+    for(let i=0; i<count10; i++) {
+      let c = document.createElement('div');
+      c.className = 'money-item money-10';
+      c.innerText = '10';
+      let act = (e) => { if(e) e.preventDefault(); removeCoin(10); };
+      c.addEventListener('pointerdown', act);
+      trayCoins.appendChild(c);
+    }
+
+    for(let i=0; i<count5; i++) {
+      let c = document.createElement('div');
+      c.className = 'money-item money-5';
+      c.innerText = '5';
+      let act = (e) => { if(e) e.preventDefault(); removeCoin(5); };
+      c.addEventListener('pointerdown', act);
+      trayCoins.appendChild(c);
+    }
+
+    if (totalAmount === currentTarget && currentTarget > 0) {
+      isAnswering = true; 
+      if (dropInterval) clearInterval(dropInterval);
+      activeCoins.forEach(c => c.remove());
+      activeCoins = [];
+
+      playCheerSound();
+      speakText(`${totalAmount} 元，支付完成！`, 1.0);
+
+      setTimeout(() => {
+        triggerTetrisQuiz();
+      }, 4000);
+
+    } else if (totalAmount < currentTarget && totalAmount > 0) {
+      speakText(`${totalAmount} 元`, 1.3); 
+    }
+  }
+
+  function triggerTetrisQuiz() {
+    quizScreen.style.display = 'flex';
+    tetrisDropArea.innerHTML = '';
+    quizFeedback.innerText = '';
+
+    let correctMultiplier = currentTarget / currentCoinType;
+    let correctStr = `${currentCoinType} × ${correctMultiplier} = ${currentTarget}`;
+    
+    quizQuestionText.innerHTML = `總金額 ${currentTarget} 元，正確的乘法橫式是？<br><small style="color:#2563eb;">(請點選掉落的正確算式方塊)</small>`;
+    speakText(`總金額 ${currentTarget} 元，正確的乘法橫式是什麼呢？`, 1.0);
+
+    let options = [correctStr];
+    while(options.length < 4) {
+      let wrongMult = Math.floor(Math.random() * 8) + 1;
+      let wrongAns = currentCoinType * wrongMult;
+      let wrongStr = `${currentCoinType} × ${wrongMult} = ${wrongAns}`;
+      if (!options.includes(wrongStr) && wrongMult !== correctMultiplier) {
+        options.push(wrongStr);
+      }
+    }
+    options.sort(() => Math.random() - 0.5);
+
+    options.forEach((optStr, index) => {
+      let optionEl = document.createElement('div');
+      optionEl.className = 'falling-option';
+      optionEl.innerText = optStr;
+      
+      let startTop = -50 - (index * 55);
+      optionEl.style.top = startTop + 'px';
+      optionEl.style.animationDuration = '6.0s';
+      optionEl.style.animationDelay = (index * 1.5) + 's';
+      optionEl.style.animationIterationCount = 'infinite';
+
+      const selectOption = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (optStr === correctStr) {
+          document.querySelectorAll('.falling-option').forEach(el => {
+            if (el !== optionEl) el.remove();
+          });
+
+          let computedTop = window.getComputedStyle(optionEl).top;
+          optionEl.style.animation = 'none';
+          optionEl.style.top = computedTop;
+          optionEl.style.backgroundColor = '#16a34a'; 
+          optionEl.style.transform = 'translateX(-50%) scale(1.05)';
+          optionEl.style.zIndex = '99';
+
+          quizFeedback.style.color = '#16a34a';
+          quizFeedback.innerText = `🎉 答對了！ ${correctStr} 元！`;
+          playCheerSound();
+          speakText("答對了，好棒！", 1.0);
+
+          confetti({
+            particleCount: 120, spread: 70, origin: { y: 0.6 },
+            colors: ['#FFD700', '#ff0000', '#00ff00', '#0000ff']
+          });
+
+          successCount++;
+          successCountSpan.innerText = successCount;
+
+          setTimeout(() => {
+            quizScreen.style.display = 'none';
+            nextQuestion();
+          }, 5000);
+        } else {
+          playErrorSound();
+          quizFeedback.style.color = '#dc2626';
+          quizFeedback.innerText = `❌ ${optStr} 不對喔，它消失了！再找找看！`;
+          speakText("再想一下喔", 1.0);
+          optionEl.remove();
         }
+      };
 
-        const startBtnEl = document.getElementById('startBtn');
-        startBtnEl.addEventListener('pointerdown', (e) => {
-            e.preventDefault();
-            startGame();
-        });
-
-        function startGame() {
-            if ('speechSynthesis' in window) {
-                try {
-                    window.speechSynthesis.cancel();
-                    const dummy = new SpeechSynthesisUtterance('');
-                    window.speechSynthesis.speak(dummy);
-                } catch(e) {}
-            }
-            document.getElementById('startOverlay').style.display = 'none';
-            initQuestion();
-        }
-
-        function togglePause() {
-            isPaused = !isPaused;
-            const pauseBtn = document.getElementById('pauseBtn');
-            const options = document.querySelectorAll('.falling-tetris');
-
-            if (isPaused) {
-                pauseBtn.innerText = "繼續";
-                pauseBtn.style.backgroundColor = "#16a34a";
-                if (gameInterval) clearInterval(gameInterval);
-                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-                options.forEach(el => el.style.animationPlayState = 'paused');
-                document.getElementById('feedback').innerText = "⏸️ 遊戲已暫停";
-            } else {
-                pauseBtn.innerText = "暫停";
-                pauseBtn.style.backgroundColor = "#f59e0b";
-                options.forEach(el => el.style.animationPlayState = 'running');
-                document.getElementById('feedback').innerText = "";
-                if (!isLocked && currentStep === 'unit') {
-                    setupFalling();
-                }
-            }
-        }
-
-        function renderCoins(elementId, count, type) {
-            const container = document.getElementById(elementId);
-            container.innerHTML = '';
-            for (let i = 0; i < count; i++) {
-                const coin = document.createElement('div');
-                if (type === '1000') {
-                    coin.className = 'coin-1000';
-                    coin.innerText = '千';
-                } else if (type === '100') {
-                    coin.className = 'coin-100';
-                    coin.innerText = '百';
-                } else if (type === '10') {
-                    coin.className = 'coin-10';
-                    coin.innerText = '十';
-                } else {
-                    coin.className = 'coin-1';
-                }
-                container.appendChild(coin);
-            }
-        }
-
-        function initQuestion() {
-            if (isPaused) return;
-            isLocked = false;
-            currentStep = 'unit';
-            document.getElementById('ansU').innerText = "?";
-            document.getElementById('ansT').innerText = "?";
-            document.getElementById('ansH').innerText = "?";
-            document.getElementById('ansTh').innerText = "?";
-
-            const questions = [
-                {th1: 0, h1: 0, t1: 2, u1: 0, th2: 0, h2: 0, t2: 2, u2: 0}, 
-                {th1: 0, h1: 0, t1: 1, u1: 0, th2: 0, h2: 0, t2: 1, u2: 0}, 
-                {th1: 0, h1: 2, t1: 0, u1: 0, th2: 0, h2: 2, t2: 0, u2: 0}, 
-                {th1: 2, h1: 0, t1: 0, u1: 0, th2: 2, h2: 0, t2: 0, u2: 0}, 
-                {th1: 0, h1: 2, t1: 2, u1: 0, th2: 0, h2: 0, t2: 2, u2: 0}, 
-                {th1: 1, h1: 2, t1: 0, u1: 0, th2: 0, h2: 2, t2: 0, u2: 0}, 
-                {th1: 0, h1: 0, t1: 3, u1: 0, th2: 0, h2: 0, t2: 5, u2: 0}, 
-                {th1: 0, h1: 3, t1: 0, u1: 0, th2: 0, h2: 4, t2: 0, u2: 0}  
-            ];
-
-            let qIndex;
-            do {
-                qIndex = Math.floor(Math.random() * questions.length);
-            } while (qIndex === lastQuestionIndex && questions.length > 1);
-            lastQuestionIndex = qIndex;
-
-            let q = questions[qIndex];
-            th1 = q.th1; h1 = q.h1; t1 = q.t1; u1 = q.u1; 
-            th2 = q.th2; h2 = q.h2; t2 = q.t2; u2 = q.u2;
-            
-            targetU = u1 + u2;
-            targetT = t1 + t2;
-            targetH = h1 + h2;
-            targetTh = th1 + th2;
-
-            total1 = th1 * 1000 + h1 * 100 + t1 * 10 + u1;
-            total2 = th2 * 1000 + h2 * 100 + t2 * 10 + u2;
-
-            document.getElementById('thUp').innerText = th1;
-            document.getElementById('hUp').innerText = h1;
-            document.getElementById('tUp').innerText = t1;
-            document.getElementById('uUp').innerText = u1;
-            document.getElementById('thDown').innerText = th2;
-            document.getElementById('hDown').innerText = h2;
-            document.getElementById('tDown').innerText = t2;
-            document.getElementById('uDown').innerText = u2;
-
-            renderCoins('thUpCoins', th1, '1000');
-            renderCoins('hUpCoins', h1, '100');
-            renderCoins('tUpCoins', t1, '10');
-            renderCoins('uUpCoins', u1, '1');
-            renderCoins('thDownCoins', th2, '1000');
-            renderCoins('hDownCoins', h2, '100');
-            renderCoins('tDownCoins', t2, '10');
-            renderCoins('uDownCoins', u2, '1');
-
-            document.getElementById('stepBanner').innerText = `題目：${total1} 元加 ${total2} 元等於多少呢？`;
-            
-            speak(`我們來算算看，${total1}元加${total2}元等於多少呢？`);
-            
-            // 💡 獨立計時器確保語音結束後方塊穩定掉落，不依賴 onend 事件
-            setTimeout(() => {
-                if (!isPaused) {
-                    document.getElementById('stepBanner').innerText = `步驟一：先算個位數，${u1} 加上 ${u2} 是多少？`;
-                    speak(`先算個位數，${u1}加${u2}。方塊掉下來囉！`);
-                    setupFalling();
-                }
-            }, 1000);
-        }
-
-        function setupFalling() {
-            if (isPaused) return;
-            activeOptions.forEach(el => el.remove());
-            activeOptions = [];
-            if (gameInterval) clearInterval(gameInterval);
-
-            let currentTarget;
-            if (currentStep === 'unit') currentTarget = targetU;
-            else if (currentStep === 'tens') currentTarget = targetT;
-            else if (currentStep === 'hundreds') currentTarget = targetH;
-            else currentTarget = targetTh;
-
-            let options = [currentTarget];
-            while (options.length < 4) {
-                let r = Math.floor(Math.random() * 10);
-                if (!options.includes(r)) options.push(r);
-            }
-            options.sort(() => Math.random() - 0.5);
-
-            let index = 0;
-            gameInterval = setInterval(() => {
-                if (isLocked || isPaused) return;
-                if (index >= options.length) index = 0;
-                spawnFallingTetris(options[index]);
-                index++;
-            }, 2000);
-        }
-
-        function spawnFallingTetris(val) {
-            if (isLocked || isPaused) return;
-            const container = document.getElementById('drop-game-container');
-            const el = document.createElement('div');
-            el.className = 'falling-tetris';
-            el.innerText = val;
-
-            const randomX = Math.random() * (container.clientWidth - 48);
-            el.style.left = randomX + 'px';
-            el.style.animationDuration = "5.5s"; 
-
-            let isHandled = false;
-            const handleSelect = (e) => {
-                if (e) { e.preventDefault(); e.stopPropagation(); }
-                if (isLocked || isHandled || isPaused) return;
-
-                if (currentStep === 'unit') {
-                    if (val === targetU) {
-                        isHandled = true;
-                        isLocked = true;
-                        if (gameInterval) clearInterval(gameInterval);
-                        activeOptions.forEach(opt => opt.remove());
-
-                        document.getElementById('ansU').innerText = targetU;
-                        document.getElementById('feedback').innerText = `🎉 個位數算對了！`;
-                        confetti();
-
-                        speak(`個位數算對了。`);
-
-                        setTimeout(() => {
-                            if (isPaused) return;
-                            document.getElementById('feedback').innerText = `接下來算十位數！`;
-                            isLocked = false;
-                            currentStep = 'tens';
-                            document.getElementById('stepBanner').innerText = `步驟二：算十位數，${t1} 加上 ${t2} 是多少？`;
-                            speak(`接下來，請算十位數，${t1}加${t2}等於多少呢？`);
-                            setupFalling();
-                        }, 2500);
-
-                    } else {
-                        isHandled = true;
-                        speak(`再想一想，${u1}加${u2}是多少呢？`);
-                        document.getElementById('feedback').innerText = "❌ 不對喔，再試一次！";
-                        el.style.opacity = "0";
-                        setTimeout(() => el.remove(), 300);
-                    }
-
-                } else if (currentStep === 'tens') {
-                    if (val === targetT) {
-                        isHandled = true;
-                        isLocked = true;
-                        if (gameInterval) clearInterval(gameInterval);
-                        activeOptions.forEach(opt => opt.remove());
-
-                        document.getElementById('ansT').innerText = targetT;
-                        document.getElementById('feedback').innerText = `🎉 十位數算對了！接下來算百位數！`;
-                        confetti();
-
-                        speak(`十位數算對了。接下來，請算百位數，${h1} 加上 ${h2} 是多少呢？`);
-
-                        setTimeout(() => {
-                            if (isPaused) return;
-                            document.getElementById('feedback').innerText = `接下來算百位數！`;
-                            isLocked = false;
-                            currentStep = 'hundreds';
-                            document.getElementById('stepBanner').innerText = `步驟三：算百位數，${h1} 加上 ${h2} 是多少？`;
-                            speak(`接下來，請算百位數，${h1}加${h2}等於多少呢？`);
-                            setupFalling();
-                        }, 2500);
-
-                    } else {
-                        isHandled = true;
-                        speak(`再想一想，${t1}加${t2}是多少呢？`);
-                        document.getElementById('feedback').innerText = "❌ 不對喔，再試一次！";
-                        el.style.opacity = "0";
-                        setTimeout(() => el.remove(), 300);
-                    }
-
-                } else if (currentStep === 'hundreds') {
-                    if (val === targetH) {
-                        isHandled = true;
-                        isLocked = true;
-                        if (gameInterval) clearInterval(gameInterval);
-                        activeOptions.forEach(opt => opt.remove());
-
-                        document.getElementById('ansH').innerText = targetH;
-                        document.getElementById('feedback').innerText = `🎉 百位數算對了！最後算千位數！`;
-                        confetti();
-
-                        speak(`百位數算對了。最後，請算千位數，${th1} 加上 ${th2} 是多少呢？`);
-
-                        setTimeout(() => {
-                            if (isPaused) return;
-                            document.getElementById('feedback').innerText = `最後算千位數！`;
-                            isLocked = false;
-                            currentStep = 'thousands';
-                            document.getElementById('stepBanner').innerText = `步驟四：算千位數，${th1} 加上 ${th2} 是多少？`;
-                            speak(`最後，請算千位數，${th1}加${th2}等於多少呢？`);
-                            setupFalling();
-                        }, 2500);
-
-                    } else {
-                        isHandled = true;
-                        speak(`再想一想，${h1}加${h2}是多少呢？`);
-                        document.getElementById('feedback').innerText = "❌ 不對喔，再試一次！";
-                        el.style.opacity = "0";
-                        setTimeout(() => el.remove(), 300);
-                    }
-
-                } else {
-                    if (val === targetTh) {
-                        isHandled = true;
-                        isLocked = true;
-                        if (gameInterval) clearInterval(gameInterval);
-                        activeOptions.forEach(opt => opt.remove());
-
-                        document.getElementById('ansTh').innerText = targetTh;
-
-                        let grandTotal = targetTh * 1000 + targetH * 100 + targetT * 10 + targetU;
-
-                        score++;
-                        document.getElementById('score').innerText = `已完成: ${score} 關`;
-                        document.getElementById('feedback').innerText = `🌟 太棒了！總金額是 ${grandTotal} 元，恭喜過關！`;
-                        confetti();
-
-                        speak(`太棒了，總金額是 ${grandTotal} 元，恭喜過關！`);
-
-                        if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
-                        nextQuestionTimeout = setTimeout(() => {
-                            if (!isPaused) initQuestion();
-                        }, 3500);
-
-                    } else {
-                        isHandled = true;
-                        speak(`再想一想，${th1}加${th2}是多少呢？`);
-                        document.getElementById('feedback').innerText = "❌ 不對喔，再試一次！";
-                        el.style.opacity = "0";
-                        setTimeout(() => el.remove(), 300);
-                    }
-                }
-            };
-
-            el.addEventListener('pointerdown', handleSelect);
-            el.addEventListener('animationend', () => {
-                el.remove();
-                activeOptions = activeOptions.filter(item => item !== el);
-            });
-
-            container.appendChild(el);
-            activeOptions.push(el);
-        }
-    </script>
+      optionEl.addEventListener('pointerdown', selectOption);
+      tetrisDropArea.appendChild(optionEl);
+    });
+  }
+</script>
 </body>
 </html>
