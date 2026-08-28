@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
-<title>購物付錢遊戲($50、$100、$500、$1000)</title>
+<title>購物付錢遊戲($50、$100、$500、＄1000)</title>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
   * { 
@@ -158,16 +158,14 @@
 
   <div id="startScreen">
     <div class="start-content-box">
-      <h1>🪙 大額互動付錢遊戲</h1>
+      <h1>🪙 購物付錢遊戲($50、$100、$500、＄1000)</h1>
 
       <div class="intro-card">
         <h3>📖 操作使用說明</h3>
         <ul>
-          <li><strong>步驟一 (看目標)：</strong>觀察畫面左上角禮物盒提示的「要付金額」（1萬元以內）。</li>
-          <li><strong>步驟二 (點擊鈔票/硬幣)：</strong>當畫面上掉落 50元、100元、500元或1000元時，點擊收集牠們。</li>
-          <li><strong>步驟三 (集滿過關)：</strong>收集到剛好的金額即可自動通關！</li>
-          <li><strong>步驟四 (超額處理)：</strong>如果不小心點太多超過目標，系統會暫停並可一鍵退回重新開始。</li>
-          <li><strong>貼心按鈕：</strong>遊戲過程中隨時可點擊右上角「⏸ 暫停」按鈕休息。</li>
+          <li><strong>步驟一 (看目標)：</strong>觀察左上角提示的「要付金額」，每次只掉落**兩種**錢幣。</li>
+          <li><strong>步驟二 (點擊收集)：</strong>方塊掉落速度已調慢，方便從容思考與點擊！</li>
+          <li><strong>步驟三 (循序漸進)：</strong>遊戲從簡單的小數字開始，逐漸挑戰大金額！</li>
         </ul>
       </div>
 
@@ -206,7 +204,7 @@
   let count1000 = 0; 
   let count500 = 0;  
   let count100 = 0;  
-  let count50 = 0;  
+  let count50 = 0;   
   let currentTarget = 0;
   let successCount = 0; 
   let audioUnlocked = false; 
@@ -214,6 +212,7 @@
   let isPaused = false;
   let dropInterval = null;
   let activeCoins = [];
+  let currentAllowedTypes = [50, 100]; 
 
   const displayTarget = document.getElementById('displayTarget');
   const successCountSpan = document.getElementById('successCount');
@@ -236,9 +235,7 @@
       if (audioCtx && audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
-    } catch (e) {
-      console.log('AudioContext error', e);
-    }
+    } catch (e) {}
   }
 
   function playTone(freq, type, duration, vol = 0.5) {
@@ -281,7 +278,6 @@
     } catch(e) {}
   }
 
-  // 綁定開始按鈕，確保手機點擊時能順利解鎖音訊與語音
   startBtnEl.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     startGame();
@@ -310,7 +306,29 @@
     pauseBtn.innerText = "⏸ 暫停";
     overflowScreen.style.display = 'none';
     
-    currentTarget = Math.floor(Math.random() * 180 + 10) * 50; 
+    const pairs = [
+      [50, 100],   
+      [50, 100],   
+      [100, 500],  
+      [100, 500],  
+      [500, 1000], 
+      [100, 1000]  
+    ];
+    let pairIndex = Math.floor(successCount / 2) % pairs.length;
+    currentAllowedTypes = pairs[pairIndex];
+
+    let t1 = currentAllowedTypes[0];
+    let t2 = currentAllowedTypes[1];
+
+    let c1 = Math.floor(Math.random() * 3) + 1; 
+    let c2 = Math.floor(Math.random() * 3) + 1; 
+    
+    if(successCount > 4) {
+      c1 = Math.floor(Math.random() * 4) + 1;
+      c2 = Math.floor(Math.random() * 4) + 1;
+    }
+
+    currentTarget = (c1 * t1) + (c2 * t2);
     displayTarget.innerText = currentTarget;
     
     count1000 = 0;
@@ -324,9 +342,10 @@
     activeCoins.forEach(c => c.remove());
     activeCoins = [];
 
+    // 掉落頻率拉長到每 3.5 秒掉落一個，避免畫面太擁擠
     dropInterval = setInterval(() => {
       if (!isWinning && !isPaused) spawnFallingCoin();
-    }, 2000);
+    }, 3500);
 
     setTimeout(() => speakText(`要付，${currentTarget} 元`, 0.85), 300);
   }
@@ -355,8 +374,7 @@
   function spawnFallingCoin() {
     if (isPaused) return;
     
-    let types = [50, 100, 100, 500, 1000];
-    let coinType = types[Math.floor(Math.random() * types.length)];
+    let coinType = currentAllowedTypes[Math.floor(Math.random() * currentAllowedTypes.length)];
 
     const coinEl = document.createElement('div');
     if (coinType === 1000) {
@@ -376,7 +394,8 @@
     const randomX = Math.random() * (dropField.clientWidth - 80);
     coinEl.style.left = randomX + 'px';
     
-    const duration = 7.0 + Math.random() * 3.0;
+    // 【速度調整】將掉落時間大幅拉長到 12.0 ~ 18.0 秒，讓方塊非常緩慢地落下
+    const duration = 12.0 + Math.random() * 6.0;
     coinEl.style.animationDuration = duration + 's';
 
     const handleCoinTouch = (e) => {
