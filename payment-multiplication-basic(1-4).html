@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>購物支付遊戲(乘法基礎觀念 - 完整版)</title>
+<title>基礎乘法遊戲(1-4)</title>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
   * { 
@@ -219,7 +219,7 @@
 
   <div id="startScreen">
     <div class="start-content-box">
-      <h1>🪙 購物支付遊戲(乘法基礎觀念)</h1>
+      <h1>🪙 基礎乘法遊戲(1-4)</h1>
 
       <div class="intro-card">
         <h3>📖 操作說明</h3>
@@ -390,7 +390,10 @@
     setTimeout(() => hammer.remove(), 400);
   }
 
+  // 跨裝置事件綁定 (同時支援 pointerdown 與 click 以確保所有品牌手機皆可點擊)
   startBtnEl.addEventListener('pointerdown', (e) => { e.preventDefault(); startGame(); });
+  startBtnEl.addEventListener('click', (e) => { startGame(); });
+
   pauseBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); togglePause(); });
   refundBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); refundAndResume(); });
 
@@ -419,7 +422,8 @@
     overflowScreen.style.display = 'none';
     pauseBtn.innerText = "⏸ 暫停";
     
-    const possibleValues = [2, 3, 4, 5];
+    // 將數值範圍改回 1 至 4
+    const possibleValues = [1, 2, 3, 4];
     currentCoinValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
     requiredCount = Math.floor(Math.random() * 4) + 2; 
     currentTarget = currentCoinValue * requiredCount;
@@ -499,6 +503,7 @@
     };
 
     coinEl.addEventListener('pointerdown', handleCoinTouch);
+    coinEl.addEventListener('click', handleCoinTouch);
 
     coinEl.addEventListener('animationend', () => {
       coinEl.remove();
@@ -552,6 +557,7 @@
       c.innerText = `${currentCoinValue}`;
       let act = (e) => { if(e) e.preventDefault(); removeCoin(); };
       c.addEventListener('pointerdown', act);
+      c.addEventListener('click', act);
       trayCoins.appendChild(c);
     }
 
@@ -583,8 +589,8 @@
 
     let options = [correctStr];
     while(options.length < 4) {
-      let rndVal1 = Math.floor(Math.random() * 5) + 2;
-      let rndVal2 = Math.floor(Math.random() * 5) + 2;
+      let rndVal1 = Math.floor(Math.random() * 4) + 1;
+      let rndVal2 = Math.floor(Math.random() * 4) + 2;
       let wrongAns = rndVal1 * rndVal2;
       let wrongStr = `${rndVal1} × ${rndVal2} = ${wrongAns}`;
       if (!options.includes(wrongStr) && wrongAns !== currentTarget) {
@@ -650,11 +656,12 @@
       };
 
       optionEl.addEventListener('pointerdown', selectOption);
+      optionEl.addEventListener('click', selectOption);
       tetrisDropArea.appendChild(optionEl);
     });
   }
 
-  // 第三畫面：小燈籠掉落（純數字，不帶「元」，避免漏掉數字 1 或 3 等狀況）
+  // 第三畫面：小燈籠掉落
   function triggerQuizScreen3(equationWithoutAns) {
     quizScreen3.style.display = 'flex';
     tetrisDropArea3.innerHTML = '';
@@ -662,17 +669,14 @@
 
     quizQuestionText3.innerHTML = `${equationWithoutAns} ?`;
     
-    // 語音朗讀時不加上「元」
     let cleanEquationSpeech = equationWithoutAns.replace('×', '乘以');
     speakText(`請看算式，${cleanEquationSpeech} 等於多少呢？請接住掉落的小燈籠！`, 1.0);
 
-    // 確保正確答案與干擾選項範圍正確，不會隨機漏掉數字
     let correctAnsVal = currentTarget;
     let options = [correctAnsVal];
     
     while(options.length < 4) {
-      // 隨機產生鄰近的干擾數值
-      let offset = (Math.floor(Math.random() * 6) - 3) * currentCoinValue;
+      let offset = (Math.floor(Math.random() * 4) - 2) * currentCoinValue;
       if (offset === 0) offset = 1;
       let wrongVal = correctAnsVal + offset;
       if (wrongVal <= 0) wrongVal = correctAnsVal + 2;
@@ -687,7 +691,6 @@
     options.forEach((val, index) => {
       let optionEl = document.createElement('div');
       optionEl.className = 'lantern-option'; 
-      // 掉落的純數字小燈籠
       optionEl.innerText = val;
       
       optionEl.style.left = leftPositions[index] + '%';
@@ -729,7 +732,6 @@
           quizFeedback3.innerText = `🎉 答對了！ ${equationWithoutAns} ${currentTarget}！`;
           playCheerSound();
           
-          // 語音朗讀結果時不加上「元」
           speakText(`太棒了！${cleanEquationSpeech} ${currentTarget}！恭喜完成所有挑戰！`, 0.9);
 
           confetti({
@@ -754,6 +756,7 @@
       };
 
       optionEl.addEventListener('pointerdown', selectOption3);
+      optionEl.addEventListener('click', selectOption3);
       tetrisDropArea3.appendChild(optionEl);
     });
   }
