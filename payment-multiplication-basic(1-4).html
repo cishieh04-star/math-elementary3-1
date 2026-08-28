@@ -390,7 +390,6 @@
     setTimeout(() => hammer.remove(), 400);
   }
 
-  // 跨裝置事件綁定 (同時支援 pointerdown 與 click 以確保所有品牌手機皆可點擊)
   startBtnEl.addEventListener('pointerdown', (e) => { e.preventDefault(); startGame(); });
   startBtnEl.addEventListener('click', (e) => { startGame(); });
 
@@ -422,7 +421,6 @@
     overflowScreen.style.display = 'none';
     pauseBtn.innerText = "⏸ 暫停";
     
-    // 將數值範圍改回 1 至 4
     const possibleValues = [1, 2, 3, 4];
     currentCoinValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
     requiredCount = Math.floor(Math.random() * 4) + 2; 
@@ -640,12 +638,19 @@
           quizFeedback.innerText = `🎉 答對了！ ${correctStr}！準備進入第三個畫面！`;
           playCheerSound();
           
-          speakText(`算式答對了！接下來進入第三個畫面，計算總金額！`, 1.0);
+          // 完整朗讀鼓勵與敘述
+          speakText(`答對了！${currentCoinValue} 乘以 ${collectedCount} 等於 ${currentTarget}！接下來進入第三個畫面！`, 0.9);
 
+          confetti({
+            particleCount: 120, spread: 70, origin: { y: 0.6 },
+            colors: ['#FFD700', '#ff0000', '#00ff00', '#0000ff']
+          });
+
+          // 將切換到第三頁的時間從 3 秒延長至 6 秒，讓語音完整念完
           setTimeout(() => {
             quizScreen.style.display = 'none';
             triggerQuizScreen3(`${currentCoinValue} × ${collectedCount} = `);
-          }, 3000);
+          }, 6000);
         } else {
           playErrorSound();
           quizFeedback.style.color = '#dc2626';
