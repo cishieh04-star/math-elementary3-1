@@ -566,11 +566,12 @@
       activeCoins = [];
 
       playCheerSound();
+      // 延長第一頁完成到第二頁彈出的語音和等待時間 (改為 4 秒，確保唸完)
       speakText(`${totalAmount} 元，支付完成！請進入第二個畫面選算式`, 1.0);
 
       setTimeout(() => {
         triggerTetrisQuiz();
-      }, 2000);
+      }, 4000);
 
     } else if (totalAmount < currentTarget && totalAmount > 0) {
       speakText(`${totalAmount} 元`, 1.3); 
@@ -646,11 +647,11 @@
             colors: ['#FFD700', '#ff0000', '#00ff00', '#0000ff']
           });
 
-          // 將切換到第三頁的時間從 3 秒延長至 6 秒，讓語音完整念完
+          // 將切換到第三頁的時間延長至 7 秒，確保語音完整念完絕不中斷
           setTimeout(() => {
             quizScreen.style.display = 'none';
             triggerQuizScreen3(`${currentCoinValue} × ${collectedCount} = `);
-          }, 6000);
+          }, 7000);
         } else {
           playErrorSound();
           quizFeedback.style.color = '#dc2626';
