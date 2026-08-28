@@ -566,12 +566,13 @@
       activeCoins = [];
 
       playCheerSound();
-      // 延長第一頁完成到第二頁彈出的語音和等待時間 (改為 4 秒，確保唸完)
-      speakText(`${totalAmount} 元，支付完成！請進入第二個畫面選算式`, 1.0);
+      // 第一頁完成後的語音提示
+      speakText(`${totalAmount} 元，支付完成！請進入第二個畫面選算式`, 0.85);
 
+      // 延長至 8 秒，確保第一頁到第二頁的語音唸完
       setTimeout(() => {
         triggerTetrisQuiz();
-      }, 4000);
+      }, 8000);
 
     } else if (totalAmount < currentTarget && totalAmount > 0) {
       speakText(`${totalAmount} 元`, 1.3); 
@@ -599,7 +600,7 @@
     options.sort(() => Math.random() - 0.5);
 
     quizQuestionText.innerHTML = `總金額 ${currentTarget} 元（${collectedCount} 個 ${currentCoinValue} 元），哪一個是正確的乘法橫式？`;
-    speakText(`總金額 ${currentTarget} 元，請選擇正確的乘法算式！`, 1.0);
+    speakText(`總金額 ${currentTarget} 元，請選擇正確的乘法算式！`, 0.85);
 
     options.forEach((optStr, index) => {
       let optionEl = document.createElement('div');
@@ -640,18 +641,18 @@
           playCheerSound();
           
           // 完整朗讀鼓勵與敘述
-          speakText(`答對了！${currentCoinValue} 乘以 ${collectedCount} 等於 ${currentTarget}！接下來進入第三個畫面！`, 0.9);
+          speakText(`答對了！${currentCoinValue} 乘以 ${collectedCount} 等於 ${currentTarget}！接下來進入第三個畫面！`, 0.85);
 
           confetti({
             particleCount: 120, spread: 70, origin: { y: 0.6 },
             colors: ['#FFD700', '#ff0000', '#00ff00', '#0000ff']
           });
 
-          // 將切換到第三頁的時間延長至 7 秒，確保語音完整念完絕不中斷
+          // 延長至 9 秒，確保第二頁到第三頁的語音完整唸完絕不中斷
           setTimeout(() => {
             quizScreen.style.display = 'none';
             triggerQuizScreen3(`${currentCoinValue} × ${collectedCount} = `);
-          }, 7000);
+          }, 9000);
         } else {
           playErrorSound();
           quizFeedback.style.color = '#dc2626';
@@ -676,7 +677,7 @@
     quizQuestionText3.innerHTML = `${equationWithoutAns} ?`;
     
     let cleanEquationSpeech = equationWithoutAns.replace('×', '乘以');
-    speakText(`請看算式，${cleanEquationSpeech} 等於多少呢？請接住掉落的小燈籠！`, 1.0);
+    speakText(`請看算式，${cleanEquationSpeech} 等於多少呢？請接住掉落的小燈籠！`, 0.85);
 
     let correctAnsVal = currentTarget;
     let options = [correctAnsVal];
@@ -738,7 +739,7 @@
           quizFeedback3.innerText = `🎉 答對了！ ${equationWithoutAns} ${currentTarget}！`;
           playCheerSound();
           
-          speakText(`太棒了！${cleanEquationSpeech} ${currentTarget}！恭喜完成所有挑戰！`, 0.9);
+          speakText(`太棒了！${cleanEquationSpeech} ${currentTarget}！恭喜完成所有挑戰！`, 0.85);
 
           confetti({
             particleCount: 150, spread: 80, origin: { y: 0.6 },
@@ -751,7 +752,7 @@
           setTimeout(() => {
             quizScreen3.style.display = 'none';
             nextQuestion();
-          }, 7000);
+          }, 9000);
         } else {
           playErrorSound();
           quizFeedback3.style.color = '#dc2626';
