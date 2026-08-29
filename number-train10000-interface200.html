@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>數學冒險：10000以內火車過山洞篇（間隔200）</title>
-    <!-- 引入灑花特效庫 -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         body { 
@@ -64,6 +63,7 @@
         #status-bar { 
             display: flex; 
             justify-content: space-around; 
+            align-items: center;
             width: 100%; 
             font-size: 20px; 
             font-weight: bold; 
@@ -71,6 +71,26 @@
             border-bottom: 2px solid #e2e8f0; 
             padding-bottom: 8px; 
             margin-bottom: 8px;
+        }
+
+        /* 聽題目按鈕樣式 */
+        .speak-btn {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .speak-btn:active {
+            background: #0284c7;
+            transform: scale(0.95);
         }
         
         /* 視覺提示區：逼真的火車車廂軌道區 */
@@ -236,7 +256,6 @@
 <body>
 
 <div class="main-wrapper">
-    <!-- 首頁畫面 -->
     <div id="home-screen">
         <h1 style="font-size: 26px; color: #1e293b; margin: 5px 0;">🚂 10000以內：火車過山洞（間隔200）</h1>
         <p style="color: #0284c7; font-size: 14px; font-weight: bold; margin: 0 0 10px 0;">🌟 遊戲特色：10000以內每次增加200 × 趣味掉落球 × 語音互動學習！</p>
@@ -247,6 +266,7 @@
                 <li><strong>觀察車廂規律：</strong>注意上方火車車廂的數字，掌握每次增加 200 的排列順序。</li>
                 <li><strong>找出空格答案：</strong>思考被問號 <code style="background:#e2e8f0; padding:1px 4px; border-radius:4px;">?</code> 遮住的車廂應該填入什麼數字。</li>
                 <li><strong>點擊數字球通關：</strong>當畫面上方掉落數字球時，點擊正確的數字即可完成闖關！</li>
+                <li><strong>隨時聽題目：</strong>點擊右上角「🔊 聽題目」按鈕，可以再次聆聽目前車廂的提示。</li>
                 <li><strong>貼心暫停功能：</strong>遊戲過程中如果需要休息，可隨時點擊「暫停遊戲」按鈕。</li>
             </ul>
         </div>
@@ -254,22 +274,19 @@
         <button id="start-btn" onclick="initGame()" style="margin-bottom: 10px;">開始玩遊戲</button>
     </div>
 
-    <!-- 遊戲中畫面 -->
     <div id="game-ui" style="display:none;">
         <div id="status-bar">
             <div id="timer">時間: 00:00</div>
             <div id="score">闖關: 0</div>
+            <button class="speak-btn" onclick="repeatQuestion()">🔊 聽題目</button>
         </div>
         
-        <!-- 火車車廂視覺區 -->
         <div id="visual-area"></div>
         <div id="question">火車空格是多少呢？</div>
         <div id="feedback">注意看！數字掉下來囉！</div>
         
-        <!-- 掉落答案區域 -->
         <div id="drop-game-container"></div>
 
-        <!-- 暫停按鈕區 -->
         <div class="btn-group">
             <button id="pause-btn" class="control-btn" onclick="togglePause()">暫停遊戲</button>
         </div>
@@ -304,6 +321,11 @@
 
         if (window.speechSynthesis) {
             window.speechSynthesis.onvoiceschanged = () => {};
+        }
+
+        // 點擊右上角按鈕時重新播放目前題目語音
+        function repeatQuestion() {
+            speak("看看火車車廂，空格的數字是多少呢？每次增加兩百喔！");
         }
 
         function playSuccessSound() {
