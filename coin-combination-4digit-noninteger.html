@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>四位數直式加法遊戲(錢幣引導版)</title>
+    <title>四位數錢幣加法遊戲(進位版)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * { 
@@ -73,12 +73,23 @@
             flex-shrink: 0;
         }
 
+        .status-right {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
         .control-btn {
             background-color: #f59e0b; color: white; border: none; border-radius: 8px;
             padding: 4px 10px; font-size: 13px; font-weight: bold; cursor: pointer;
             box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
         .control-btn:active { transform: scale(0.95); background-color: #d97706; }
+
+        .speak-btn {
+            background-color: #0ea5e9;
+        }
+        .speak-btn:active { background-color: #0284c7; }
 
         .step-banner { 
             background: #fef3c7; color: #92400e; padding: 5px 10px; border-radius: 8px; 
@@ -155,7 +166,7 @@
                     <ul>
                         <li><strong>四位數挑戰：</strong>挑戰包含千位、百位、十位與個位的加法！</li>
                         <li><strong>步驟四階段：</strong>先算個位（一元） ➔ 再算十位（十元） ➔ 再算百位（百元） ➔ 最後算千位（千元）。</li>
-                        <li>答對時會朗讀出正確的四位數總金額，並讓孩子看清楚答案！</li>
+                        <li><strong>語音複習：</strong>點擊右上角「🔊 聽題目」隨時重新聽提示，最適合特教學生學習！</li>
                     </ul>
                 </div>
                 <button class="start-btn" id="startBtn">🎮 開始挑戰</button>
@@ -165,7 +176,10 @@
         <h1>🪙 四位數錢幣加法直式引導</h1>
         <div class="status-bar">
             <div id="score">已完成: 0 關</div>
-            <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
+            <div class="status-right">
+                <button class="control-btn speak-btn" id="speakBtn" onclick="repeatCurrentPrompt()">🔊 聽題目</button>
+                <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
+            </div>
         </div>
         
         <div class="step-banner" id="stepBanner">準備開始！</div>
@@ -222,9 +236,11 @@
         let isPaused = false;
         let nextQuestionTimeout = null;
         let lastQuestionIndex = -1;
+        let lastSpokenText = "準備開始！";
 
         function speak(text, callback) {
             if (isPaused || !('speechSynthesis' in window)) return;
+            lastSpokenText = text;
             try {
                 window.speechSynthesis.cancel();
                 const msg = new SpeechSynthesisUtterance(text);
@@ -248,6 +264,18 @@
                 window.speechSynthesis.speak(msg);
             } catch(e) {
                 if (callback) callback();
+            }
+        }
+
+        function repeatCurrentPrompt() {
+            if ('speechSynthesis' in window) {
+                try {
+                    window.speechSynthesis.cancel();
+                    const msg = new SpeechSynthesisUtterance(lastSpokenText);
+                    msg.lang = 'zh-TW';
+                    msg.rate = 0.85;
+                    window.speechSynthesis.speak(msg);
+                } catch(e) {}
             }
         }
 
