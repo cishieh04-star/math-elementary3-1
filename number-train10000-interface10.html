@@ -302,19 +302,22 @@
         let audioCtx = null;
         let optionsArr = [];
         let trainSequence = [];
+        let currentUtterance = null; // 全域常駐語音變數，防止 iPhone 記憶體回收
 
         function speak(text) {
             if (!('speechSynthesis' in window)) return;
             try {
                 window.speechSynthesis.cancel();
-                const msg = new SpeechSynthesisUtterance(text);
-                msg.lang = 'zh-TW';
+                currentUtterance = new SpeechSynthesisUtterance(text);
+                currentUtterance.lang = 'zh-TW';
+                currentUtterance.rate = 0.85;
+                currentUtterance.volume = 1.0;
                 
                 const voices = window.speechSynthesis.getVoices();
                 const femaleVoice = voices.find(v => v.lang.includes('zh-TW') && (v.name.includes('Mei-Jia') || v.name.toLowerCase().includes('female')));
-                if (femaleVoice) msg.voice = femaleVoice;
+                if (femaleVoice) currentUtterance.voice = femaleVoice;
                 
-                window.speechSynthesis.speak(msg);
+                window.speechSynthesis.speak(currentUtterance);
             } catch(e) {}
         }
 
@@ -367,10 +370,12 @@
                 }
             } catch(e) {}
 
+            // 【iPhone 專用強制解鎖語音通道】
             if ('speechSynthesis' in window) {
                 try {
                     window.speechSynthesis.cancel();
-                    let unlockSpeech = new SpeechSynthesisUtterance('');
+                    let unlockSpeech = new SpeechSynthesisUtterance("遊戲開始");
+                    unlockSpeech.volume = 0.01;
                     window.speechSynthesis.speak(unlockSpeech);
                 } catch(e) {}
             }
