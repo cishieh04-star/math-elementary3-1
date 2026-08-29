@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>數學冒險：10000以內火車過山洞篇（間隔100）</title>
-    <!-- 引入灑花特效庫 -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * { 
@@ -79,7 +78,8 @@
         
         #status-bar { 
             display: flex; 
-            justify-content: space-around; 
+            justify-content: space-between; 
+            align-items: center;
             width: 100%; 
             font-size: 18px; 
             font-weight: bold; 
@@ -87,6 +87,31 @@
             border-bottom: 2px solid #e2e8f0; 
             padding-bottom: 4px; 
             flex-shrink: 0;
+        }
+
+        .status-left {
+            display: flex;
+            gap: 15px;
+        }
+
+        /* 聽題目按鈕樣式 */
+        #repeat-audio-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(59,130,246,0.3);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        #repeat-audio-btn:active {
+            background: #2563eb;
+            transform: scale(0.95);
         }
         
         /* 視覺提示區：逼真的火車車廂軌道區 */
@@ -250,7 +275,6 @@
 <body>
 
 <div class="main-wrapper">
-    <!-- 首頁畫面 -->
     <div id="home-screen">
         <h1 style="font-size: 22px; color: #1e293b; margin: 5px 0;">🚂 10000以內：火車過山洞（間隔100）</h1>
         <p style="color: #0284c7; font-size: 13px; font-weight: bold; margin: 0 0 10px 0;">🌟 遊戲特色：10000以內每次增加100 × 趣味掉落球 × 語音互動學習！</p>
@@ -262,28 +286,28 @@
                 <li><strong>找出空格答案：</strong>思考被問號 <code style="background:#e2e8f0; padding:1px 4px; border-radius:4px;">?</code> 遮住的車廂應該填入什麼數字。</li>
                 <li><strong>點擊數字球通關：</strong>當畫面上方掉落數字球時，點擊正確的數字即可完成闖關！</li>
                 <li><strong>貼心暫停功能：</strong>遊戲過程中如果需要休息，可隨時點擊「暫停遊戲」按鈕。</li>
+                <li><strong>隨時聽題目：</strong>右上角常駐「🔊 聽題目」按鈕，點擊即可重新朗讀題目！</li>
             </ul>
         </div>
 
         <button id="start-btn">開始玩遊戲</button>
     </div>
 
-    <!-- 遊戲中畫面 -->
     <div id="game-ui">
         <div id="status-bar">
-            <div id="timer">時間: 00:00</div>
-            <div id="score">闖關: 0</div>
+            <div class="status-left">
+                <div id="timer">時間: 00:00</div>
+                <div id="score">闖關: 0</div>
+            </div>
+            <button id="repeat-audio-btn" onclick="repeatCurrentQuestion()">🔊 聽題目</button>
         </div>
         
-        <!-- 火車車廂視覺區 -->
         <div id="visual-area"></div>
         <div id="question">火車空格是多少呢？</div>
         <div id="feedback">注意看！數字掉下來囉！</div>
         
-        <!-- 掉落答案區域 -->
         <div id="drop-game-container"></div>
 
-        <!-- 暫停按鈕區 -->
         <div class="btn-group">
             <button id="pause-btn" class="control-btn" onclick="togglePause()">暫停遊戲</button>
         </div>
@@ -302,6 +326,7 @@
         let audioCtx = null;
         let optionsArr = [];
         let trainSequence = [];
+        let currentQuestionText = "看看火車車廂，空格的數字是多少呢？";
 
         function speak(text) {
             if (!('speechSynthesis' in window)) return;
@@ -316,6 +341,16 @@
                 
                 window.speechSynthesis.speak(msg);
             } catch(e) {}
+        }
+
+        function repeatCurrentQuestion() {
+            try {
+                if ('speechSynthesis' in window && window.speechSynthesis.paused) {
+                    window.speechSynthesis.resume();
+                    return;
+                }
+            } catch(e) {}
+            speak(currentQuestionText);
         }
 
         function playSuccessSound() {
@@ -446,7 +481,9 @@
             currentAns = trainSequence[blankIndex];
 
             renderTrain(trainSequence, blankIndex);
-            speak(`看看火車車廂，空格的數字是多少呢？`);
+            
+            currentQuestionText = `看看火車車廂，空格的數字是多少呢？`;
+            speak(currentQuestionText);
 
             let options = new Set([currentAns]);
             while(options.size < 4) {
@@ -551,7 +588,8 @@
                     }
 
                     document.getElementById('feedback').innerText = "🎉 太棒了！火車順利開走了！";
-                    speak(`答對了，就是${currentAns}！`);
+                    currentQuestionText = `答對了，就是${currentAns}！`;
+                    speak(currentQuestionText);
 
                     clearInterval(gameInterval);
                     activeOptions.forEach(opt => opt.remove());
@@ -562,7 +600,8 @@
                     }, 3000);
                 } else {
                     playErrorSound();
-                    speak("再算算看喔！");
+                    currentQuestionText = "再算算看喔！";
+                    speak(currentQuestionText);
                     document.getElementById('feedback').innerText = "❌ 數字不對喔，再試一次！";
                     el.style.opacity = "0";
                     setTimeout(() => el.remove(), 300);
