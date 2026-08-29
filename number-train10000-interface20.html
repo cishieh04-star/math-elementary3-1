@@ -80,8 +80,9 @@
         #status-bar { 
             display: flex; 
             justify-content: space-around; 
+            align-items: center;
             width: 100%; 
-            font-size: 18px; 
+            font-size: 16px; 
             font-weight: bold; 
             color: #2c3e50; 
             border-bottom: 2px solid #e2e8f0; 
@@ -228,12 +229,12 @@
         }
 
         button#start-btn, .control-btn { 
-            padding: 12px 35px; 
-            font-size: 18px; 
+            padding: 10px 20px; 
+            font-size: 16px; 
             background: #3b82f6; 
             color: white; 
             border: none; 
-            border-radius: 12px; 
+            border-radius: 10px; 
             cursor: pointer; 
             box-shadow: 0 4px 10px rgba(59,130,246,0.3);
             font-weight: bold;
@@ -242,6 +243,13 @@
         }
         button#start-btn:active, .control-btn:active { background: #2563eb; transform: scale(0.95); }
         
+        .speak-bar-btn {
+            background: #0ea5e9;
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+        .speak-bar-btn:active { background: #0284c7; }
+
         #pause-btn {
             background: #d97706;
         }
@@ -260,12 +268,12 @@
             <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #64748b; line-height: 1.4;">
                 <li><strong>觀察車廂規律：</strong>注意上方火車車廂的數字，掌握每次增加 20 的排列順序。</li>
                 <li><strong>找出空格答案：</strong>思考被問號 <code style="background:#e2e8f0; padding:1px 4px; border-radius:4px;">?</code> 遮住的車廂應該填入什麼數字。</li>
+                <li><strong>🔊 聽題目按鈕：</strong>若手機聽不到聲音，隨時點擊右上角「🔊 聽題目」按鈕即可重新朗讀！</li>
                 <li><strong>點擊數字球通關：</strong>當畫面上方掉落數字球時，點擊正確的數字即可完成闖關！</li>
-                <li><strong>貼心暫停功能：</strong>遊戲過程中如果需要休息，可隨時點擊「暫停遊戲」按鈕。</li>
             </ul>
         </div>
 
-        <button id="start-btn">開始玩遊戲</button>
+        <button id="start-btn" style="padding: 12px 35px; font-size: 18px;">開始玩遊戲</button>
     </div>
 
     <!-- 遊戲中畫面 -->
@@ -273,6 +281,7 @@
         <div id="status-bar">
             <div id="timer">時間: 00:00</div>
             <div id="score">闖關: 0</div>
+            <button class="control-btn speak-bar-btn" onclick="manualSpeak()">🔊 聽題目</button>
         </div>
         
         <!-- 火車車廂視覺區 -->
@@ -302,20 +311,33 @@
         let audioCtx = null;
         let optionsArr = [];
         let trainSequence = [];
+        let currentUtterance = null; // 全域常駐語音變數，防止 iPhone 記憶體回收
+        let lastSpokenText = "";
 
         function speak(text) {
+            lastSpokenText = text;
             if (!('speechSynthesis' in window)) return;
             try {
                 window.speechSynthesis.cancel();
-                const msg = new SpeechSynthesisUtterance(text);
-                msg.lang = 'zh-TW';
+                currentUtterance = new SpeechSynthesisUtterance(text);
+                currentUtterance.lang = 'zh-TW';
+                currentUtterance.rate = 0.85;
+                currentUtterance.volume = 1.0;
                 
                 const voices = window.speechSynthesis.getVoices();
                 const femaleVoice = voices.find(v => v.lang.includes('zh-TW') && (v.name.includes('Mei-Jia') || v.name.toLowerCase().includes('female')));
-                if (femaleVoice) msg.voice = femaleVoice;
+                if (femaleVoice) currentUtterance.voice = femaleVoice;
                 
-                window.speechSynthesis.speak(msg);
+                window.speechSynthesis.speak(currentUtterance);
             } catch(e) {}
+        }
+
+        function manualSpeak() {
+            if (lastSpokenText) {
+                speak(lastSpokenText);
+            } else {
+                speak("看看火車車廂，空格的數字是多少呢？");
+            }
         }
 
         function playSuccessSound() {
@@ -367,10 +389,12 @@
                 }
             } catch(e) {}
 
+            // 【iPhone 專用強制解鎖語音通道】
             if ('speechSynthesis' in window) {
                 try {
                     window.speechSynthesis.cancel();
-                    let unlockSpeech = new SpeechSynthesisUtterance('');
+                    let unlockSpeech = new SpeechSynthesisUtterance("遊戲開始");
+                    unlockSpeech.volume = 0.01;
                     window.speechSynthesis.speak(unlockSpeech);
                 } catch(e) {}
             }
@@ -564,6 +588,7 @@
                     playErrorSound();
                     speak("再算算看喔！");
                     document.getElementById('feedback').innerText = "❌ 數字不對喔，再試一次！";
+                    el.style.transition = "opacity 0.3s";
                     el.style.opacity = "0";
                     setTimeout(() => el.remove(), 300);
                 }
