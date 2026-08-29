@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>基礎乘法遊戲(iPhone語音修復版)</title>
+<title>基礎乘法遊戲(1-4)</title>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
   * { 
@@ -185,6 +185,12 @@
 
   .speed-label { font-size: 10px; font-weight: bold; color: #6d28d9; width: 30px; text-align: center; }
 
+  .btn-container { display: flex; gap: 4px; }
+  .speak-btn {
+    font-size: 12px; font-weight: bold; padding: 4px 8px;
+    color: white; background: #0ea5e9; border: none; border-radius: 6px;
+    cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
   .pause-btn {
     font-size: 12px; font-weight: bold; padding: 4px 6px;
     color: white; background: #f59e0b; border: none; border-radius: 6px;
@@ -274,8 +280,8 @@
           <li><strong>第一頁 (付錢)：</strong>點擊掉落的數字方塊來湊出金額！</li>
           <li><strong>第二頁 (選算式)：</strong>點擊選出正確的乘法算式！</li>
           <li><strong>第三頁 (接小燈籠)：</strong>看著算式，點選掉落的正確答案數字！</li>
-          <li><strong>🎚️ 調整速度拉霸：</strong>右上角提供「調整速度拉霸」，可隨時自由左右滑動來控制方塊掉落的快慢！</li>
-          <li><strong>➡️ 自由跳關：</strong>每關答對時會出現「進入下一關」按鈕，小朋友可以選擇直接點擊跳過！</li>
+          <li><strong>🔊 聽題目按鈕：</strong>若手機聽不到聲音，隨時點擊畫面上的「🔊 聽題目」按鈕即可朗讀！</li>
+          <li><strong>🎚️ 調整速度拉霸：</strong>右上角可自由左右滑動來控制方塊掉落快慢！</li>
         </ul>
       </div>
 
@@ -330,7 +336,10 @@
           <div class="control-row">
             <input type="range" id="speedSlider" class="speed-slider" min="1" max="10" value="5" step="1">
             <span id="speedLabel" class="speed-label">速度5</span>
-            <button class="pause-btn" id="pauseBtn">⏸ 暫停</button>
+            <div class="btn-container">
+              <button class="speak-btn" id="speakBtn" onclick="manualSpeak()">🔊 聽題目</button>
+              <button class="pause-btn" id="pauseBtn">⏸ 暫停</button>
+            </div>
           </div>
         </div>
       </div>
@@ -338,7 +347,7 @@
     
     <div class="hammer-tool-bar" style="margin: 3px 10px 0 10px; justify-content: center; padding: 3px;">
       <span class="hammer-icon" style="font-size: 14px;">🔨</span>
-      <span style="font-size: 11px; font-weight: bold; color: #b45309;">第一頁：點擊掉落方塊來付錢！</span>
+      <span style="font-size: 11px; font-weight: bold; color: #b45309;">第一頁 : 點擊掉落方塊來付錢！</span>
     </div>
     <div id="warningMsg"></div>
     
@@ -369,6 +378,7 @@
   let isTransitioning = false;
   let transitionCallback = null;
   let currentSpeechTimeout = null;
+  let lastSpokenText = "";
 
   const displayTarget = document.getElementById('displayTarget');
   const successCountSpan = document.getElementById('successCount');
@@ -437,8 +447,9 @@
     setTimeout(() => playTone(1046.50, 'square', 0.5, 0.4), 450); 
   }
 
-  // 強化版語音朗讀：特別针对 iOS Safari (iPhone) 進行音訊解鎖與強制喚醒
+  // 跨裝置強化版語音朗讀：針對 iPhone 進行雙重語音解鎖與通道喚醒
   function speakText(text, speedRate, onFinished = null) {
+    lastSpokenText = text;
     if (!('speechSynthesis' in window)) {
       if (onFinished) onFinished();
       return;
@@ -467,10 +478,17 @@
       let fallbackTime = Math.max(1500, text.length * 280 / speedRate);
       currentSpeechTimeout = setTimeout(triggerEnd, fallbackTime);
 
-      // iPhone 需要確保在使用者互動後立即呼叫 speak
       window.speechSynthesis.speak(utterance);
     } catch(e) {
       if (onFinished) onFinished();
+    }
+  }
+
+  function manualSpeak() {
+    if (lastSpokenText) {
+      speakText(lastSpokenText, 0.85);
+    } else {
+      speakText(`要付，${currentTarget} 元`, 0.85);
     }
   }
 
@@ -534,12 +552,12 @@
     initAudio();
     audioUnlocked = true;
 
-    // 【iPhone 專用解鎖】在使用者點擊開始的瞬間，強制解鎖並喚醒語音合成引擎
+    // 【強制喚醒 iPhone 語音通道】
     if ('speechSynthesis' in window) {
       try {
         window.speechSynthesis.cancel();
         let unlockUtterance = new SpeechSynthesisUtterance("遊戲開始");
-        unlockUtterance.volume = 0.01; // 幾近無聲但能強制啟動 iOS 語音通道
+        unlockUtterance.volume = 0.01;
         window.speechSynthesis.speak(unlockUtterance);
       } catch(e) {}
     }
