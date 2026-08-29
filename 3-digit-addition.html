@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>三位數直式加法進位遊戲(進階版)</title>
+    <title>三位數直式加法進位遊戲(語音完美修復版)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * { 
@@ -73,12 +73,15 @@
             flex-shrink: 0;
         }
 
+        .btn-group { display: flex; gap: 6px; align-items: center; }
         .control-btn {
             background-color: #f59e0b; color: white; border: none; border-radius: 8px;
             padding: 4px 10px; font-size: 13px; font-weight: bold; cursor: pointer;
             box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
         .control-btn:active { transform: scale(0.95); background-color: #d97706; }
+        .speak-btn { background-color: #0ea5e9; }
+        .speak-btn:active { background-color: #0284c7; }
 
         .step-banner { 
             background: #fef3c7; color: #92400e; padding: 6px 10px; border-radius: 8px; 
@@ -156,7 +159,7 @@
                         <li><strong>第一步：計算個位數：</strong>由右到左，先將個位數相加，點擊正確的掉落方塊，若超過10會自動向十位進位。</li>
                         <li><strong>第二步：計算十位數：</strong>接著計算十位數相加（別忘了加上進位 1），選對後若超過10會向百位進位。</li>
                         <li><strong>第三步：計算百位數：</strong>最後計算百位數相加（含進位 1），點擊正確答案即可完成整題闖關。</li>
-                        <li><strong>貼心按鈕：</strong>遊戲過程中如果需要休息，可隨時點擊右上角的「暫停」按鈕。</li>
+                        <li><strong>🔊 貼心按鈕：</strong>若想再聽一次題目，可隨時點擊「🔊 聽題目」按鈕；需要休息可點「暫停」。</li>
                     </ul>
                 </div>
 
@@ -167,7 +170,10 @@
         <h1>🔄 三位數直式加法進位遊戲</h1>
         <div class="status-bar">
             <div id="score">已完成: 0 關</div>
-            <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
+            <div class="btn-group">
+                <button class="control-btn speak-btn" onclick="manualSpeak()">🔊 聽題目</button>
+                <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
+            </div>
         </div>
         
         <div class="step-banner" id="stepBanner">請先算個位數相加！</div>
@@ -218,16 +224,28 @@
         let isLocked = false;
         let isPaused = false;
         let nextQuestionTimeout = null;
+        let lastSpokenText = "";
+        let currentUtterance = null; // 全域常駐變數，保護語音不被回收
 
         function speak(text) {
+            lastSpokenText = text;
             if (isPaused || !('speechSynthesis' in window)) return;
             try {
                 window.speechSynthesis.cancel();
-                const msg = new SpeechSynthesisUtterance(text);
-                msg.lang = 'zh-TW';
-                msg.rate = 0.85;
-                window.speechSynthesis.speak(msg);
+                currentUtterance = new SpeechSynthesisUtterance(text);
+                currentUtterance.lang = 'zh-TW';
+                currentUtterance.rate = 0.85;
+                currentUtterance.volume = 1.0;
+                window.speechSynthesis.speak(currentUtterance);
             } catch(e) {}
+        }
+
+        function manualSpeak() {
+            if (lastSpokenText) {
+                speak(lastSpokenText);
+            } else {
+                speak("請依照步驟計算加法方塊。");
+            }
         }
 
         const startBtnEl = document.getElementById('startBtn');
@@ -240,8 +258,9 @@
             if ('speechSynthesis' in window) {
                 try {
                     window.speechSynthesis.cancel();
-                    const dummy = new SpeechSynthesisUtterance('');
-                    window.speechSynthesis.speak(dummy);
+                    let unlock = new SpeechSynthesisUtterance("遊戲開始");
+                    unlock.volume = 0.01;
+                    window.speechSynthesis.speak(unlock);
                 } catch(e) {}
             }
             document.getElementById('startOverlay').style.display = 'none';
@@ -377,6 +396,7 @@
                             isLocked = false;
                             currentStep = 'tens';
                             document.getElementById('stepBanner').innerText = `步驟二：算十位數 ${t1} ＋ ${t2} ＋ 進位 1，等於多少呢？`;
+                            speak(`步驟二，算十位數，${t1}加${t2}，加上進位1。等於多少呢？`);
                             setupFalling();
                         }, 3000);
 
@@ -407,6 +427,7 @@
                             isLocked = false;
                             currentStep = 'hundreds';
                             document.getElementById('stepBanner').innerText = `步驟三：算百位數 ${h1} ＋ ${h2} ＋ 進位 1，等於多少呢？`;
+                            speak(`步驟三，算百位數，${h1}加${h2}，加上進位1。等於多少呢？`);
                             setupFalling();
                         }, 3000);
 
