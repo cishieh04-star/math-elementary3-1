@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>整數三位數錢幣加法遊戲(特教引導版)</title>
+    <title>整數三位數錢幣加法遊戲(無進位)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * { 
@@ -73,12 +73,23 @@
             flex-shrink: 0;
         }
 
+        .status-right {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
         .control-btn {
             background-color: #f59e0b; color: white; border: none; border-radius: 8px;
             padding: 4px 10px; font-size: 13px; font-weight: bold; cursor: pointer;
             box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
         .control-btn:active { transform: scale(0.95); background-color: #d97706; }
+
+        .speak-btn {
+            background-color: #0ea5e9;
+        }
+        .speak-btn:active { background-color: #0284c7; }
 
         .step-banner { 
             background: #fef3c7; color: #92400e; padding: 5px 10px; border-radius: 8px; 
@@ -117,7 +128,6 @@
             width: 8px; height: 8px; background: #94a3b8; border-radius: 50%; border: 1px solid #64748b;
         }
 
-        /* 💡 修正掉落區域高度與動畫範圍，確保方塊在畫面正中央完美掉落 */
         #drop-game-container {
             position: relative; width: 100%; height: 95px;
             background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 10px;
@@ -154,7 +164,7 @@
                     <ul>
                         <li><strong>數字規律：</strong>除了最左邊不是 0 之外，其餘都是 0（例如 200 + 200、300 + 200 等）。</li>
                         <li><strong>不重複隨機抽題：</strong>每次過關自動換新題目，學習不單調！</li>
-                        <li><strong>步驟三階段：</strong>依序算個位、十位、百位，答對時朗讀總金額！</li>
+                        <li><strong>步驟三階段：</strong>依序算個位、十位、百位，並可隨時點擊右上角「🔊 聽題目」覆習語音！</li>
                     </ul>
                 </div>
                 <button class="start-btn" id="startBtn">🎮 開始挑戰</button>
@@ -164,7 +174,10 @@
         <h1>🪙 整數三位數錢幣加法遊戲</h1>
         <div class="status-bar">
             <div id="score">已完成: 0 關</div>
-            <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
+            <div class="status-right">
+                <button class="control-btn speak-btn" id="speakBtn" onclick="repeatCurrentPrompt()">🔊 聽題目</button>
+                <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
+            </div>
         </div>
         
         <div class="step-banner" id="stepBanner">準備開始！</div>
@@ -216,9 +229,11 @@
         let isPaused = false;
         let nextQuestionTimeout = null;
         let lastQuestionIndex = -1;
+        let lastSpokenText = "準備開始！";
 
         function speak(text) {
             if (isPaused || !('speechSynthesis' in window)) return;
+            lastSpokenText = text;
             try {
                 window.speechSynthesis.cancel();
                 const msg = new SpeechSynthesisUtterance(text);
@@ -226,6 +241,18 @@
                 msg.rate = 0.85;
                 window.speechSynthesis.speak(msg);
             } catch(e) {}
+        }
+
+        function repeatCurrentPrompt() {
+            if ('speechSynthesis' in window) {
+                try {
+                    window.speechSynthesis.cancel();
+                    const msg = new SpeechSynthesisUtterance(lastSpokenText);
+                    msg.lang = 'zh-TW';
+                    msg.rate = 0.85;
+                    window.speechSynthesis.speak(msg);
+                } catch(e) {}
+            }
         }
 
         const startBtnEl = document.getElementById('startBtn');
@@ -339,7 +366,6 @@
             
             speak(`我們來算算看，${total1}元加${total2}元等於多少呢？`);
             
-            // 💡 獨立計時器確保語音結束後方塊穩定掉落，不依賴 onend 事件
             setTimeout(() => {
                 if (!isPaused) {
                     document.getElementById('stepBanner').innerText = `步驟一：先算個位數，${u1} 加上 ${u2} 是多少？`;
@@ -383,7 +409,7 @@
             el.className = 'falling-option';
             el.innerText = val;
 
-            const randomX = Math.random() * (container.clientWidth - 45);
+            const randomX = Math.random() * (container.clientWidth - 50);
             el.style.left = randomX + 'px';
             el.style.animationDuration = "5.0s"; 
 
@@ -449,7 +475,7 @@
                     } else {
                         isHandled = true;
                         speak(`再想一想，${t1}加${t2}是多少呢？`);
-                        document.getElementById('feedback').innerText = "❌ 不對喔，再試一次！";
+                        document.getElementById('feedback').innerText = "❌ 十位數不對喔，再數一次！";
                         el.style.opacity = "0";
                         setTimeout(() => el.remove(), 300);
                     }
