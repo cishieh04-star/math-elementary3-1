@@ -73,12 +73,23 @@
             flex-shrink: 0;
         }
 
+        .status-right {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
         .control-btn {
             background-color: #f59e0b; color: white; border: none; border-radius: 8px;
             padding: 4px 10px; font-size: 13px; font-weight: bold; cursor: pointer;
             box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
         .control-btn:active { transform: scale(0.95); background-color: #d97706; }
+
+        .speak-btn {
+            background-color: #0ea5e9;
+        }
+        .speak-btn:active { background-color: #0284c7; }
 
         .step-banner { 
             background: #fef3c7; color: #92400e; padding: 5px 10px; border-radius: 8px; 
@@ -114,7 +125,6 @@
             width: 8px; height: 8px; background: #94a3b8; border-radius: 50%; border: 1px solid #64748b;
         }
 
-        /* 💡 修正掉落區域高度與動畫範圍，確保方塊在畫面正中央完美掉落 */
         #drop-game-container {
             position: relative; width: 100%; height: 95px;
             background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 10px;
@@ -151,7 +161,7 @@
                     <ul>
                         <li><strong>多變題庫：</strong>每次都有不同大小的金額讓孩子挑戰！</li>
                         <li><strong>步驟引導：</strong>先算個位數（一元），再算十位數（十元）。</li>
-                        <li>答對時會明確朗讀出不同的總金額，並停留讓孩子看清楚！</li>
+                        <li><strong>語音複習：</strong>點擊右上角「🔊 聽題目」隨時重新聽提示，最適合特教學生學習！</li>
                     </ul>
                 </div>
                 <button class="start-btn" id="startBtn">🎮 開始挑戰</button>
@@ -161,7 +171,10 @@
         <h1>🪙 錢幣加法直式引導</h1>
         <div class="status-bar">
             <div id="score">已完成: 0 關</div>
-            <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
+            <div class="status-right">
+                <button class="control-btn speak-btn" id="speakBtn" onclick="repeatCurrentPrompt()">🔊 聽題目</button>
+                <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
+            </div>
         </div>
         
         <div class="step-banner" id="stepBanner">準備開始！</div>
@@ -209,9 +222,11 @@
         let isPaused = false;
         let nextQuestionTimeout = null;
         let lastQuestionIndex = -1;
+        let lastSpokenText = "準備開始！";
 
         function speak(text) {
             if (isPaused || !('speechSynthesis' in window)) return;
+            lastSpokenText = text;
             try {
                 window.speechSynthesis.cancel();
                 const msg = new SpeechSynthesisUtterance(text);
@@ -219,6 +234,18 @@
                 msg.rate = 0.85;
                 window.speechSynthesis.speak(msg);
             } catch(e) {}
+        }
+
+        function repeatCurrentPrompt() {
+            if ('speechSynthesis' in window) {
+                try {
+                    window.speechSynthesis.cancel();
+                    const msg = new SpeechSynthesisUtterance(lastSpokenText);
+                    msg.lang = 'zh-TW';
+                    msg.rate = 0.85;
+                    window.speechSynthesis.speak(msg);
+                } catch(e) {}
+            }
         }
 
         const startBtnEl = document.getElementById('startBtn');
@@ -325,7 +352,6 @@
             
             speak(`我們來算算看，${total1}元加${total2}元等於多少呢？`);
             
-            // 💡 確保語音播報與方塊掉落順利啟動，不受瀏覽器事件卡住
             setTimeout(() => {
                 if (!isPaused) {
                     document.getElementById('stepBanner').innerText = `步驟一：先算個位數，${u1} 個一元加上 ${u2} 個一元等於多少呢？`;
