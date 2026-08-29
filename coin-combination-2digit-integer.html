@@ -72,6 +72,10 @@
             border-bottom: 2px solid #fef3c7; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; 
             flex-shrink: 0;
         }
+        
+        .status-right {
+            display: flex; gap: 6px; align-items: center;
+        }
 
         .control-btn {
             background-color: #f59e0b; color: white; border: none; border-radius: 8px;
@@ -79,6 +83,13 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
         .control-btn:active { transform: scale(0.95); background-color: #d97706; }
+
+        .audio-btn {
+            background-color: #0ea5e9; color: white; border: none; border-radius: 8px;
+            padding: 4px 10px; font-size: 13px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+        .audio-btn:active { transform: scale(0.95); background-color: #0284c7; }
 
         .step-banner { 
             background: #fef3c7; color: #92400e; padding: 5px 10px; border-radius: 8px; 
@@ -114,7 +125,6 @@
             width: 8px; height: 8px; background: #94a3b8; border-radius: 50%; border: 1px solid #64748b;
         }
 
-        /* 💡 修正掉落區域高度與方塊掉落範圍，確保方塊剛好在畫面中央完整掉落 */
         #drop-game-container {
             position: relative; width: 100%; height: 95px;
             background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 10px;
@@ -142,7 +152,6 @@
 <body>
 
     <div id="gameScreen">
-        <!-- 開始畫面遮罩 -->
         <div id="startOverlay">
             <div class="start-content-box">
                 <h2>🪙 整數錢幣加法遊戲 🪙</h2>
@@ -161,12 +170,14 @@
         <h1>🪙 整數錢幣加法遊戲</h1>
         <div class="status-bar">
             <div id="score">已完成: 0 關</div>
-            <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
+            <div class="status-right">
+                <button class="audio-btn" id="repeatAudioBtn" onclick="repeatCurrentPrompt()">🔊 聽題目</button>
+                <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
+            </div>
         </div>
         
         <div class="step-banner" id="stepBanner">請先算個位數相加！</div>
 
-        <!-- 兩位數直式與錢幣呈現區 -->
         <div class="vertical-math" id="mathBox">
             <div class="operator">+</div>
             
@@ -210,9 +221,11 @@
         let isPaused = false;
         let nextQuestionTimeout = null;
         let lastQuestionIndex = -1;
+        let lastSpokenText = "請先點擊開始挑戰！";
 
         function speak(text) {
             if (isPaused || !('speechSynthesis' in window)) return;
+            lastSpokenText = text;
             try {
                 window.speechSynthesis.cancel();
                 const msg = new SpeechSynthesisUtterance(text);
@@ -220,6 +233,19 @@
                 msg.rate = 0.85;
                 window.speechSynthesis.speak(msg);
             } catch(e) {}
+        }
+
+        function repeatCurrentPrompt() {
+            if (isPaused) return;
+            if ('speechSynthesis' in window) {
+                try {
+                    window.speechSynthesis.cancel();
+                    const msg = new SpeechSynthesisUtterance(lastSpokenText);
+                    msg.lang = 'zh-TW';
+                    msg.rate = 0.85;
+                    window.speechSynthesis.speak(msg);
+                } catch(e) {}
+            }
         }
 
         const startBtnEl = document.getElementById('startBtn');
@@ -323,7 +349,6 @@
             
             speak(`我們來算算看，${total1}元加${total2}元等於多少呢？`);
             
-            // 💡 確保語音播報與方塊掉落順利啟動，不受瀏覽器事件卡住
             setTimeout(() => {
                 if (!isPaused) {
                     document.getElementById('stepBanner').innerText = `步驟一：先算個位數，${u1} 加上 ${u2} 等於多少呢？`;
