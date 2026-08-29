@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>基礎乘法遊戲(1-4)</title>
+<title>基礎乘法遊戲(5-9 拉霸按鈕優化版)</title>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
   * { 
@@ -158,7 +158,34 @@
   }
   .control-row { display: flex; align-items: center; gap: 4px; margin-top: 1px; }
   .control-tip { font-size: 10px; font-weight: bold; color: #6d28d9; line-height: 1.1; }
-  .speed-slider { width: 60px; accent-color: #8b5cf6; cursor: pointer; }
+  
+  /* 針對滑桿按鈕進行顏色與視覺強化（支援 Chrome/Safari/Edge） */
+  .speed-slider { 
+    width: 60px; 
+    accent-color: #7c3aed; /* 支援現代瀏覽器的滑桿主色 */
+    cursor: pointer; 
+  }
+  /* Webkit (Safari, Chrome) 滑桿按鈕自訂樣式，加上深紫色與邊框陰影，極易辨識 */
+  .speed-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #7c3aed;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+  /* Firefox 滑桿按鈕自訂樣式 */
+  .speed-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #7c3aed;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+
   .speed-label { font-size: 10px; font-weight: bold; color: #6d28d9; width: 30px; text-align: center; }
 
   .pause-btn {
@@ -242,7 +269,7 @@
 
   <div id="startScreen">
     <div class="start-content-box">
-      <h1>🪙 基礎乘法遊戲(1-4)</h1>
+      <h1>🪙 基礎乘法遊戲(5-9)</h1>
 
       <div class="intro-card">
         <h3>📖 操作說明</h3>
@@ -531,7 +558,7 @@
     overflowScreen.style.display = 'none';
     pauseBtn.innerText = "⏸ 暫停";
     
-    const possibleValues = [1, 2, 3, 4];
+    const possibleValues = [5, 6, 7, 8, 9];
     currentCoinValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
     requiredCount = Math.floor(Math.random() * 4) + 2; 
     currentTarget = currentCoinValue * requiredCount;
@@ -692,7 +719,7 @@
     }
   }
 
-  // 第二畫面：選算式（防方塊黏在一起：使用嚴格錯開的延遲與單一排程）
+  // 第二畫面：選算式
   function triggerTetrisQuiz() {
     isTransitioning = false;
     skipBtnContainer.style.display = 'none';
@@ -705,7 +732,7 @@
 
     let options = [correctStr];
     while(options.length < 4) {
-      let rndVal1 = Math.floor(Math.random() * 4) + 1;
+      let rndVal1 = Math.floor(Math.random() * 5) + 5;
       let rndVal2 = Math.floor(Math.random() * 4) + 2;
       let wrongAns = rndVal1 * rndVal2;
       let wrongStr = `${rndVal1} × ${rndVal2} = ${wrongAns}`;
@@ -721,16 +748,15 @@
     let cfg = getSpeedConfig();
     let quizDuration = cfg.fallDuration + 3.0;
 
-    // 確保每個方塊逐一依序掉落，絕不黏在一起
     options.forEach((optStr, index) => {
       let optionEl = document.createElement('div');
       optionEl.className = 'falling-option';
       optionEl.innerText = optStr;
       
-      let startTop = -50 - (index * 70); // 增加初始高度間距
+      let startTop = -50 - (index * 70);
       optionEl.style.top = startTop + 'px';
       optionEl.style.animationDuration = quizDuration + 's';
-      optionEl.style.animationDelay = (index * 3.5) + 's'; // 嚴格錯開每一顆方塊的掉落時間
+      optionEl.style.animationDelay = (index * 3.5) + 's';
       optionEl.style.animationIterationCount = 'infinite';
 
       const selectOption = (e) => {
@@ -809,9 +835,9 @@
     
     while(options.length < 4) {
       let offset = (Math.floor(Math.random() * 4) - 2) * currentCoinValue;
-      if (offset === 0) offset = 1;
+      if (offset === 0) offset = currentCoinValue;
       let wrongVal = correctAnsVal + offset;
-      if (wrongVal <= 0) wrongVal = correctAnsVal + 2;
+      if (wrongVal <= 0) wrongVal = correctAnsVal + 5;
       if (!options.includes(wrongVal)) {
         options.push(wrongVal);
       }
