@@ -103,8 +103,9 @@
         
         .operator { position: absolute; left: 8px; top: 44px; font-size: 24px; color: #333; }
 
+        /* 💡 修正：將高度從 100px 擴大至 140px，讓方塊有足夠的上下移動空間 */
         #drop-game-container {
-            position: relative; width: 100%; height: 100px;
+            position: relative; width: 100%; height: 140px;
             background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 10px;
             overflow: hidden; touch-action: manipulation;
             flex-shrink: 0;
@@ -121,9 +122,10 @@
         }
         .falling-option:active { transform: scale(0.9); }
 
+        /* 💡 修正：配合容器高度，讓方塊從頂端 (-60px) 完整落到底部 (90px) */
         @keyframes fall {
-            0% { top: -50px; }
-            100% { top: 50px; }
+            0% { top: -60px; }
+            100% { top: 90px; }
         }
     </style>
 </head>
