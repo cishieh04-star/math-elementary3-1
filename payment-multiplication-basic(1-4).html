@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>基礎乘法遊戲(5-9 拉霸按鈕優化版)</title>
+<title>基礎乘法遊戲(iPhone語音修復版)</title>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
   * { 
@@ -159,13 +159,11 @@
   .control-row { display: flex; align-items: center; gap: 4px; margin-top: 1px; }
   .control-tip { font-size: 10px; font-weight: bold; color: #6d28d9; line-height: 1.1; }
   
-  /* 針對滑桿按鈕進行顏色與視覺強化（支援 Chrome/Safari/Edge） */
   .speed-slider { 
     width: 60px; 
-    accent-color: #7c3aed; /* 支援現代瀏覽器的滑桿主色 */
+    accent-color: #7c3aed; 
     cursor: pointer; 
   }
-  /* Webkit (Safari, Chrome) 滑桿按鈕自訂樣式，加上深紫色與邊框陰影，極易辨識 */
   .speed-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
@@ -176,7 +174,6 @@
     border: 2px solid #ffffff;
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
   }
-  /* Firefox 滑桿按鈕自訂樣式 */
   .speed-slider::-moz-range-thumb {
     width: 18px;
     height: 18px;
@@ -440,8 +437,9 @@
     setTimeout(() => playTone(1046.50, 'square', 0.5, 0.4), 450); 
   }
 
+  // 強化版語音朗讀：特別针对 iOS Safari (iPhone) 進行音訊解鎖與強制喚醒
   function speakText(text, speedRate, onFinished = null) {
-    if (!audioUnlocked || !('speechSynthesis' in window)) {
+    if (!('speechSynthesis' in window)) {
       if (onFinished) onFinished();
       return;
     }
@@ -452,6 +450,7 @@
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'zh-TW';
       utterance.rate = speedRate; 
+      utterance.volume = 1.0;
 
       let finishedCalled = false;
       const triggerEnd = () => {
@@ -468,6 +467,7 @@
       let fallbackTime = Math.max(1500, text.length * 280 / speedRate);
       currentSpeechTimeout = setTimeout(triggerEnd, fallbackTime);
 
+      // iPhone 需要確保在使用者互動後立即呼叫 speak
       window.speechSynthesis.speak(utterance);
     } catch(e) {
       if (onFinished) onFinished();
@@ -534,9 +534,13 @@
     initAudio();
     audioUnlocked = true;
 
+    // 【iPhone 專用解鎖】在使用者點擊開始的瞬間，強制解鎖並喚醒語音合成引擎
     if ('speechSynthesis' in window) {
       try {
         window.speechSynthesis.cancel();
+        let unlockUtterance = new SpeechSynthesisUtterance("遊戲開始");
+        unlockUtterance.volume = 0.01; // 幾近無聲但能強制啟動 iOS 語音通道
+        window.speechSynthesis.speak(unlockUtterance);
       } catch(e) {}
     }
 
