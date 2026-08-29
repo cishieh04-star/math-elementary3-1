@@ -71,11 +71,22 @@
             flex-shrink: 0;
         }
 
+        .status-right {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
         .control-btn {
             background-color: #f59e0b; color: white; border: none; border-radius: 6px;
             padding: 4px 10px; font-size: 12px; font-weight: bold; cursor: pointer;
         }
         .control-btn:active { transform: scale(0.95); background-color: #d97706; }
+
+        .speak-btn {
+            background-color: #0ea5e9;
+        }
+        .speak-btn:active { background-color: #0284c7; }
 
         .step-banner { 
             background: #fef3c7; color: #92400e; padding: 5px 8px; border-radius: 6px; 
@@ -150,6 +161,7 @@
                         <li><strong>兩層直式結構：</strong>第一層為 10元 金額，第二層為 1元 金額。</li>
                         <li><strong>由下往上問答：</strong>先算 1元 ➔ 再算 10元 ➔ 最後加總！</li>
                         <li><strong>點擊掉落方塊：</strong>點擊下方掉落的正確數字方塊即可完成闖關。</li>
+                        <li><strong>語音複習：</strong>點擊右上角「🔊 聽題目」隨時重新聽提示！</li>
                     </ul>
                 </div>
 
@@ -160,7 +172,10 @@
         <h1>👛 錢包兩層直式加法 (1元與10元)</h1>
         <div class="status-bar">
             <div id="score">已完成: 0 關</div>
-            <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
+            <div class="status-right">
+                <button class="control-btn speak-btn" id="speakBtn" onclick="repeatCurrentPrompt()">🔊 聽題目</button>
+                <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
+            </div>
         </div>
         
         <div class="step-banner" id="stepBanner">準備開始！</div>
@@ -206,9 +221,11 @@
         let isPaused = false;
         let nextQuestionTimeout = null;
         let lastQuestionIndex = -1;
+        let lastSpokenText = "準備開始！";
 
         function speak(text) {
             if (isPaused || !('speechSynthesis' in window)) return;
+            lastSpokenText = text;
             try {
                 window.speechSynthesis.cancel();
                 const msg = new SpeechSynthesisUtterance(text);
@@ -216,6 +233,18 @@
                 msg.rate = 0.85;
                 window.speechSynthesis.speak(msg);
             } catch(e) {}
+        }
+
+        function repeatCurrentPrompt() {
+            if ('speechSynthesis' in window) {
+                try {
+                    window.speechSynthesis.cancel();
+                    const msg = new SpeechSynthesisUtterance(lastSpokenText);
+                    msg.lang = 'zh-TW';
+                    msg.rate = 0.85;
+                    window.speechSynthesis.speak(msg);
+                } catch(e) {}
+            }
         }
 
         const startBtnEl = document.getElementById('startBtn');
@@ -302,8 +331,9 @@
 
             for (let c = 1; c <= 2; c++) document.getElementById(`l2_${c}`).classList.add('active');
 
+            let promptText = `錢包裡有 ${q.t} 個十元和 ${q.u} 個一元。首先，請算 ${q.u} 個 1元 是多少元呢？`;
             document.getElementById('stepBanner').innerText = `【步驟一】錢包裡有 ${q.u} 個 1元，請問是幾元呢？`;
-            speak(`錢包裡有 ${q.t} 個十元和 ${q.u} 個一元。首先，請算 ${q.u} 個 1元 是多少元呢？`);
+            speak(promptText);
 
             setupFalling();
         }
@@ -373,7 +403,8 @@
                         document.getElementById('feedback').innerText = `🎉 1元算對了！ ${window.valU} 元填入第二層。`;
                         confetti();
 
-                        speak(`1元算對了， ${window.valU} 元。接下來，請算 ${currentData.t} 個 10元 是多少元呢？`);
+                        let nextPrompt = `1元算對了， ${window.valU} 元。接下來，請算 ${currentData.t} 個 10元 是多少元呢？`;
+                        speak(nextPrompt);
 
                         setTimeout(() => {
                             if (isPaused) return;
@@ -410,7 +441,8 @@
                         document.getElementById('feedback').innerText = `🎉 10元算對了！ ${window.valT} 元填入第一層。準備加總！`;
                         confetti();
 
-                        speak(`10元算對了， ${window.valT} 元。兩層都填好了！最後，請算出全部加起來總共有多少元呢？`);
+                        let nextPrompt = `10元算對了， ${window.valT} 元。兩層都填好了！最後，請算出全部加起來總共有多少元呢？`;
+                        speak(nextPrompt);
 
                         setTimeout(() => {
                             if (isPaused) return;
