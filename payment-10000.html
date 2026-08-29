@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
-<title>購物付錢遊戲($50、$100、$500、$1000 速度拉霸版)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>購物付錢遊戲($50、$100、$500、$1000)</title>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
   * { 
@@ -88,7 +88,6 @@
   .header-right { display: flex; align-items: center; gap: 8px; }
   .score-display { font-size: 15px; font-weight: bold; color: #334155; background: #f1f5f9; padding: 5px 8px; border-radius: 8px; }
 
-  /* 調整速度拉霸與暫停按鈕的控制群組樣式 */
   .control-group { 
     display: flex; flex-direction: column; align-items: center; 
     background: #f8fafc; padding: 3px 6px; border-radius: 8px; border: 1px solid #cbd5e1; 
@@ -120,12 +119,18 @@
   }
   .speed-label { font-size: 10px; font-weight: bold; color: #6d28d9; width: 30px; text-align: center; }
 
+  .btn-container { display: flex; gap: 4px; }
+  .speak-btn {
+    font-size: 13px; font-weight: bold; padding: 5px 8px;
+    color: white; background: #0ea5e9; border: none; border-radius: 8px;
+    cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
   .pause-btn {
-    font-size: 14px; font-weight: bold; padding: 5px 10px;
+    font-size: 13px; font-weight: bold; padding: 5px 8px;
     background: #f59e0b; color: white; border: none; border-radius: 8px;
     cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   }
-  .pause-btn:active { transform: scale(0.95); }
+  .pause-btn:active, .speak-btn:active { transform: scale(0.95); }
 
   #warningMsg { font-size: 14px; font-weight: bold; color: #e65100; height: 18px; background: #fff; text-align: center; flex-shrink: 0; }
 
@@ -198,7 +203,8 @@
           <li><strong>步驟一 (看目標)：</strong>觀察左上角提示的「要付金額」，每次只掉落**兩種**錢幣。</li>
           <li><strong>步驟二 (點擊收集)：</strong>點擊掉落的正確錢幣來湊出金額。</li>
           <li><strong>步驟三 (循序漸進)：</strong>遊戲從簡單的小數字開始，逐漸挑戰大金額！</li>
-          <li><strong>🎚️ 調整速度拉霸：</strong>右上角提供「調整速度拉霸」，可隨時自由左右滑動來控制錢幣掉落的快慢！</li>
+          <li><strong>🔊 聽題目按鈕：</strong>若手機聽不到聲音，隨時點擊畫面上的「🔊 聽題目」按鈕即可朗讀！</li>
+          <li><strong>🎚️ 調整速度拉霸：</strong>右上角可自由左右滑動來控制錢幣掉落的快慢！</li>
         </ul>
       </div>
 
@@ -220,13 +226,15 @@
       </div>
       <div class="header-right">
         <div class="score-display">已完成: <span id="successCount">0</span> 關</div>
-        <!-- 整合調整速度拉霸與暫停按鈕 -->
         <div class="control-group">
           <div class="control-tip">調整速度拉霸</div>
           <div class="control-row">
             <input type="range" id="speedSlider" class="speed-slider" min="1" max="10" value="5" step="1">
             <span id="speedLabel" class="speed-label">速度5</span>
-            <button class="pause-btn" id="pauseBtn" onclick="togglePause()">⏸ 暫停</button>
+            <div class="btn-container">
+              <button class="speak-btn" id="speakBtn" onclick="manualSpeak()">🔊 聽題目</button>
+              <button class="pause-btn" id="pauseBtn" onclick="togglePause()">⏸ 暫停</button>
+            </div>
           </div>
         </div>
       </div>
@@ -254,6 +262,7 @@
   let dropInterval = null;
   let activeCoins = [];
   let currentAllowedTypes = [50, 100]; 
+  let lastSpokenText = "";
 
   const displayTarget = document.getElementById('displayTarget');
   const successCountSpan = document.getElementById('successCount');
@@ -310,23 +319,31 @@
     setTimeout(() => playTone(1046.50, 'square', 0.5, 0.4), 450); 
   }
 
+  // 跨裝置強化版語音：支援 iPhone 直接觸發播放與手動點擊朗讀
   function speakText(text, speedRate) {
+    lastSpokenText = text;
     if (!audioUnlocked || !('speechSynthesis' in window)) return;
     try {
       window.speechSynthesis.cancel(); 
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'zh-TW';
       utterance.rate = speedRate; 
+      utterance.volume = 1.0;
       window.speechSynthesis.speak(utterance);
     } catch(e) {}
   }
 
-  // 根據拉霸數值 (1~10) 即時計算動態掉落速度與頻率
+  function manualSpeak() {
+    if (lastSpokenText) {
+      speakText(lastSpokenText, 0.85);
+    } else {
+      speakText(`要付，${currentTarget} 元`, 0.85);
+    }
+  }
+
   function getSpeedConfig() {
     let val = parseInt(speedSlider.value);
     speedLabel.innerText = "速度" + val;
-    // 數值 1 (最慢): 掉落時間 24秒，間隔 6秒
-    // 數值 10 (最快): 掉落時間 4秒，間隔 1.5秒
     let fallDuration = 26.0 - (val * 2.2); 
     let interval = 6500 - (val * 500);
     return { fallDuration, interval };
@@ -351,10 +368,13 @@
     initAudio();
     audioUnlocked = true;
 
+    // 【iPhone 專用強制喚醒語音通道】
     if ('speechSynthesis' in window) {
       try {
-        let unlockSpeech = new SpeechSynthesisUtterance('');
-        window.speechSynthesis.speak(unlockSpeech);
+        window.speechSynthesis.cancel();
+        let unlockUtterance = new SpeechSynthesisUtterance("遊戲開始");
+        unlockUtterance.volume = 0.01;
+        window.speechSynthesis.speak(unlockUtterance);
       } catch(e) {}
     }
 
@@ -411,7 +431,8 @@
       if (!isWinning && !isPaused) spawnFallingCoin();
     }, cfg.interval);
 
-    setTimeout(() => speakText(`要付，${currentTarget} 元`, 0.85), 300);
+    // 立即朗讀，不再使用 setTimeout，確保 iPhone 能順利發聲
+    speakText(`要付，${currentTarget} 元`, 0.85);
   }
 
   function togglePause() {
