@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>購物支付遊戲(乘法基礎觀念)</title>
+<title>購物支付遊戲(無進位)</title>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
   * { 
@@ -122,11 +122,18 @@
   .header-right { display: flex; align-items: center; gap: 8px; }
   .score-display { font-size: 14px; font-weight: bold; color: #334155; background: #f1f5f9; padding: 4px 8px; border-radius: 8px; }
 
+  .control-btn-group { display: flex; gap: 6px; align-items: center; }
   .pause-btn {
     font-size: 14px; font-weight: bold; padding: 6px 10px;
     background: #f59e0b; color: white; border: none; border-radius: 8px;
     cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   }
+  .speak-btn {
+    font-size: 14px; font-weight: bold; padding: 6px 10px;
+    background: #0ea5e9; color: white; border: none; border-radius: 8px;
+    cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  .speak-btn:active { background: #0284c7; }
 
   #warningMsg { font-size: 13px; font-weight: bold; color: #e65100; height: 18px; background: #fff; text-align: center; flex-shrink: 0; }
 
@@ -192,6 +199,7 @@
           <li><strong>步驟一 (看目標)：</strong>觀察左上角要求的應付金額。</li>
           <li><strong>步驟二 (支付硬幣)：</strong>點擊收集方塊來進行支付，湊滿後會停留欣賞成果。</li>
           <li><strong>步驟三 (選橫式算式)：</strong>點對正確算式時，方塊會變成綠色並定格，完美呈現乘法結果！</li>
+          <li><strong>🔊 聽題目按鈕：</strong>若想再聽一次題目，可隨時點擊右上角的「🔊 聽題目」按鈕。</li>
         </ul>
       </div>
 
@@ -222,7 +230,10 @@
       </div>
       <div class="header-right">
         <div class="score-display">已完成: <span id="successCount">0</span> 關</div>
-        <button class="pause-btn" id="pauseBtn" onclick="togglePause()">⏸ 暫停</button>
+        <div class="control-btn-group">
+          <button class="speak-btn" id="speakBtn" onclick="repeatCurrentPrompt()">🔊 聽題目</button>
+          <button class="pause-btn" id="pauseBtn" onclick="togglePause()">⏸ 暫停</button>
+        </div>
       </div>
     </div>
     <div id="warningMsg"></div>
@@ -246,6 +257,7 @@
   let dropInterval = null;
   let activeCoins = [];
   let currentCoinType = 10; 
+  let lastSpokenText = "準備開始";
 
   const displayTarget = document.getElementById('displayTarget');
   const successCountSpan = document.getElementById('successCount');
@@ -296,10 +308,20 @@
 
   function speakText(text, speedRate) {
     if (!audioUnlocked) return;
+    lastSpokenText = text;
     window.speechSynthesis.cancel(); 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'zh-TW';
     utterance.rate = speedRate; 
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function repeatCurrentPrompt() {
+    if (!audioUnlocked || isPaused) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(lastSpokenText);
+    utterance.lang = 'zh-TW';
+    utterance.rate = 0.85;
     window.speechSynthesis.speak(utterance);
   }
 
