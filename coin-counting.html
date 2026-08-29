@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>錢包位值拆解遊戲</title>
+    <title>錢包認識位數遊戲</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * { 
@@ -73,12 +73,23 @@
             flex-shrink: 0;
         }
 
+        .status-right {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
         .control-btn {
             background-color: #f59e0b; color: white; border: none; border-radius: 8px;
             padding: 4px 10px; font-size: 13px; font-weight: bold; cursor: pointer;
             box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
         .control-btn:active { transform: scale(0.95); background-color: #d97706; }
+
+        .speak-btn {
+            background-color: #0ea5e9;
+        }
+        .speak-btn:active { background-color: #0284c7; }
 
         .step-banner { 
             background: #fef3c7; color: #92400e; padding: 5px 10px; border-radius: 8px; 
@@ -154,6 +165,7 @@
                         <li><strong>由右到左引導：</strong>先問「個位數」➔ 再問「十位數」➔ 再問「百位數」➔ 最後問「千位數」。</li>
                         <li><strong>數字對應填入：</strong>選對正確的數字方塊後，會自動填入直式的對應格子中。</li>
                         <li><strong>點擊掉落方塊：</strong>點擊下方掉落的正確數字方塊即可完成闖關。</li>
+                        <li><strong>🔊 聽題目按鈕：</strong>若需要重新聽提示，隨時點擊右上角的「🔊 聽題目」按鈕。</li>
                     </ul>
                 </div>
 
@@ -164,7 +176,10 @@
         <h1>👛 錢包位值拆解遊戲</h1>
         <div class="status-bar">
             <div id="score">已完成: 0 關</div>
-            <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
+            <div class="status-right">
+                <button class="control-btn speak-btn" id="speakBtn" onclick="repeatCurrentPrompt()">🔊 聽題目</button>
+                <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
+            </div>
         </div>
         
         <div class="step-banner" id="stepBanner">準備開始！</div>
@@ -207,9 +222,11 @@
         let isPaused = false;
         let nextQuestionTimeout = null;
         let lastQuestionIndex = -1;
+        let lastSpokenText = "準備開始！";
 
         function speak(text) {
             if (isPaused || !('speechSynthesis' in window)) return;
+            lastSpokenText = text;
             try {
                 window.speechSynthesis.cancel();
                 const msg = new SpeechSynthesisUtterance(text);
@@ -217,6 +234,18 @@
                 msg.rate = 0.85;
                 window.speechSynthesis.speak(msg);
             } catch(e) {}
+        }
+
+        function repeatCurrentPrompt() {
+            if ('speechSynthesis' in window) {
+                try {
+                    window.speechSynthesis.cancel();
+                    const msg = new SpeechSynthesisUtterance(lastSpokenText);
+                    msg.lang = 'zh-TW';
+                    msg.rate = 0.85;
+                    window.speechSynthesis.speak(msg);
+                } catch(e) {}
+            }
         }
 
         const startBtnEl = document.getElementById('startBtn');
