@@ -28,6 +28,7 @@
     touch-action: manipulation;
   }
 
+  /* 💡 確保所有裝置皆能看到完整畫面，不超出螢幕範圍 */
   #gameContainer {
     display: flex; flex-direction: column; 
     height: 100vh; height: 100dvh; 
@@ -99,7 +100,7 @@
   /* 🏀 第二畫面籃球樣式 */
   .falling-option {
     position: absolute; 
-    width: 86px; height: 86px; 
+    width: 85px; height: 85px; 
     background: radial-gradient(circle at 30% 30%, #fdba74 0%, #f97316 60%, #c2410c 100%); 
     color: #fff;
     font-size: 14px; font-weight: bold; 
@@ -154,22 +155,6 @@
   @keyframes dropDownBall3 {
     0% { top: -80px; }
     100% { top: 120px; }
-  }
-
-  /* 🏀 第一頁掉落的付錢物件改為籃球造型 */
-  .drop-field .money-item {
-    position: absolute;
-    width: 75px; height: 75px; 
-    background: radial-gradient(circle at 30% 30%, #fdba74 0%, #f97316 60%, #c2410c 100%);
-    color: #fff; border: 3px solid #7c2d12; border-radius: 50%;
-    font-size: 19px; font-weight: bold; z-index: 10;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-  }
-  .drop-field .money-item::before {
-    content: '🏀';
-    position: absolute; top: -14px; font-size: 14px;
   }
 
   #overflowScreen {
@@ -244,17 +229,37 @@
     cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   }
 
-  #warningMsg { font-size: 12px; font-weight: bold; color: #e65100; height: 16px; background: #fff; text-align: center; flex-shrink: 0; }
+  #warningMsg { font-size: 11px; font-weight: bold; color: #e65100; height: 14px; background: #fff; text-align: center; flex-shrink: 0; }
 
+  /* 💡 確保第一頁掉落區有足夠的最小高度 (160px)，在小米等手機上絕不被壓扁卡住 */
   .drop-field {
     flex: 1 1 auto; 
+    min-height: 160px;
     margin: 4px 10px; padding: 6px;
     border: 3px dashed #aaa; background: #eef; border-radius: 15px;
     position: relative; overflow: hidden; touch-action: manipulation; 
   }
 
+  /* 💡 第一頁掉落的籃球物件調整為適合手機點擊的尺寸 */
+  .drop-field .money-item {
+    position: absolute;
+    width: 65px; height: 65px; 
+    background: radial-gradient(circle at 30% 30%, #fdba74 0%, #f97316 60%, #c2410c 100%);
+    color: #fff; border: 3px solid #7c2d12; border-radius: 50%;
+    font-size: 18px; font-weight: bold; z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    transform: translateX(-50%);
+  }
+  .drop-field .money-item::before {
+    content: '🏀';
+    position: absolute; top: -14px; font-size: 14px;
+  }
+
+  /* 💡 固定下方托盤高度，確保放收集籃球時不會擠壓上方掉落區 */
   .tray {
-    height: 70px; flex: 0 0 auto; 
+    height: 65px; flex: 0 0 auto; 
     margin: 0 10px 4px 10px; padding: 4px;
     border: 2px solid #cbd5e1; background: #ffffff; border-radius: 12px;
     display: flex; flex-wrap: wrap; align-content: flex-start; gap: 4px;
@@ -269,26 +274,7 @@
     font-size: 15px; font-weight: bold; color: #334155;
   }
 
-  .money-item {
-    display: flex; justify-content: center; align-items: center; 
-    font-weight: bold; cursor: pointer; text-align: center;
-    box-shadow: 1px 3px 5px rgba(0,0,0,0.3); transition: transform 0.1s;
-  }
-  .money-item:active { transform: scale(0.9); }
-  
-  .money-custom { 
-    background: radial-gradient(circle at 30% 30%, #fdba74 0%, #f97316 60%, #c2410c 100%); 
-    color: #fff; 
-    border: 2px solid #7c2d12; 
-    border-radius: 50%; 
-  }
-
-  @keyframes fall {
-    0% { top: -50px; }
-    100% { top: 170px; }
-  }
-
-  .tray .money-item { width: 34px; height: 34px; font-size: 11px; border-radius: 50%; }
+  .tray .money-item { width: 32px; height: 32px; font-size: 11px; border-radius: 50%; }
 
   .tap-hammer-effect {
     position: absolute; font-size: 32px; pointer-events: none; z-index: 99999;
@@ -627,7 +613,7 @@
     overflowScreen.style.display = 'none';
     pauseBtn.innerText = "⏸ 暫停";
     
-    // 💡 數字維持 5, 6, 7, 8, 9
+    // 💡 數字範圍精準維持 5, 6, 7, 8, 9
     const possibleValues = [5, 6, 7, 8, 9];
     currentCoinValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
     requiredCount = Math.floor(Math.random() * 4) + 2; 
@@ -668,6 +654,7 @@
     }
   }
 
+  // 💡 第一階段籃球掉落邏輯：使用固定的左右分佈軌道 (leftLanes)，確保籃球從左右兩邊平均掉落、絕不黏在一起
   function spawnFallingCoin() {
     if (isPaused || isTransitioning) return;
     
@@ -675,8 +662,9 @@
     coinEl.className = 'money-item money-custom';
     coinEl.innerText = `$${currentCoinValue}`;
 
-    const randomX = Math.random() * (dropField.clientWidth - 80);
-    coinEl.style.left = randomX + 'px';
+    const leftLanes = [15, 35, 55, 75, 85];
+    const randomLane = leftLanes[Math.floor(Math.random() * leftLanes.length)];
+    coinEl.style.left = randomLane + '%';
     
     let cfg = getSpeedConfig();
     const duration = cfg.fallDuration + Math.random() * 1.5;
