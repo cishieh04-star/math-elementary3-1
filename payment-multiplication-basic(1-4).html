@@ -319,7 +319,7 @@
 
   <div id="startScreen">
     <div class="start-content-box">
-      <h1>🪙 基礎乘法遊戲(5-9)</h1>
+      <h1>🪙 基礎乘法遊戲(1-4)</h1>
 
       <div class="intro-card">
         <h3>📖 操作說明</h3>
@@ -625,7 +625,8 @@
     overflowScreen.style.display = 'none';
     pauseBtn.innerText = "⏸ 暫停";
     
-    const possibleValues = [5, 6, 7, 8, 9];
+    // 💡 數字部分改回 1, 2, 3, 4
+    const possibleValues = [1, 2, 3, 4];
     currentCoinValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
     requiredCount = Math.floor(Math.random() * 4) + 2; 
     currentTarget = currentCoinValue * requiredCount;
@@ -799,7 +800,8 @@
 
     let options = [correctStr];
     while(options.length < 4) {
-      let rndVal1 = Math.floor(Math.random() * 5) + 5;
+      // 💡 錯誤選項中的數字也設定為 1, 2, 3, 4 範圍
+      let rndVal1 = [1, 2, 3, 4][Math.floor(Math.random() * 4)];
       let rndVal2 = Math.floor(Math.random() * 4) + 2;
       let wrongAns = rndVal1 * rndVal2;
       let wrongStr = `${rndVal1} × ${rndVal2} = ${wrongAns}`;
