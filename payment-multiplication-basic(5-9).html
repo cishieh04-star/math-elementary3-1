@@ -212,7 +212,7 @@
 
   #warningMsg { font-size: 11px; font-weight: bold; color: #e65100; height: 14px; background: #fff; text-align: center; flex-shrink: 0; }
 
-  /* 💡 確保第一頁掉落區擁有足夠的最小高度 (160px)，防止在小米等手機上被壓扁卡住 */
+  /* 💡 確保第一頁掉落區擁有足夠的最小高度 (160px)，防止被壓扁 */
   .drop-field {
     flex: 1 1 auto; 
     min-height: 160px;
@@ -236,12 +236,20 @@
     100% { top: 170px; }
   }
 
+  /* 💡 下方收集托盤（tray）內的方塊已大幅放大（56x40，字體 16px 粗體），清晰易讀 */
   .tray {
-    height: 65px; flex: 0 0 auto; 
-    margin: 0 10px 4px 10px; padding: 4px;
+    height: 85px; flex: 0 0 auto; 
+    margin: 0 10px 4px 10px; padding: 6px;
     border: 2px solid #cbd5e1; background: #ffffff; border-radius: 12px;
-    display: flex; flex-wrap: wrap; align-content: flex-start; gap: 4px;
+    display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px;
     overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .tray .money-item { 
+    width: 56px; height: 40px; 
+    font-size: 16px; font-weight: bold; 
+    border-radius: 8px; 
+    background: #0ea5e9; color: #fff; 
+    border: 2px solid #0369a1;
   }
 
   .wallet {
@@ -252,9 +260,7 @@
     font-size: 15px; font-weight: bold; color: #334155;
   }
 
-  .tray .money-item { width: 34px; height: 28px; font-size: 10px; border-radius: 5px; background: #0ea5e9; color: #fff; }
-
-  /* 🏀 敲擊時出現的籃球特效動畫 */
+  /* 🏀 點擊時彈出可愛的籃球特效 (🏀) */
   .tap-hammer-effect {
     position: absolute; font-size: 38px; pointer-events: none; z-index: 99999;
     animation: hammerTapAnim 0.4s ease-out forwards;
@@ -505,7 +511,6 @@
     }
   }
 
-  // 💡 點擊時彈出可愛的籃球特效 (🏀)
   function showHammerEffect(x, y) {
     const hammer = document.createElement('div');
     hammer.className = 'tap-hammer-effect';
@@ -593,7 +598,7 @@
     overflowScreen.style.display = 'none';
     pauseBtn.innerText = "⏸ 暫停";
     
-    // 💡 數字維持 5, 6, 7, 8, 9
+    // 💡 數字範圍精準維持 5, 6, 7, 8, 9
     const possibleValues = [5, 6, 7, 8, 9];
     currentCoinValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
     requiredCount = Math.floor(Math.random() * 4) + 2; 
@@ -641,7 +646,8 @@
     coinEl.className = 'money-item money-custom';
     coinEl.innerText = `$${currentCoinValue}`;
 
-    const randomX = Math.random() * (dropField.clientWidth - 80);
+    const maxAllowedWidth = Math.max(20, dropField.clientWidth - 90);
+    const randomX = Math.random() * maxAllowedWidth + 10;
     coinEl.style.left = randomX + 'px';
     
     let cfg = getSpeedConfig();
@@ -755,7 +761,7 @@
     }
   }
 
-  // 第二畫面：選算式（方塊造型）
+  // 第二畫面：選算式
   function triggerTetrisQuiz() {
     isTransitioning = false;
     skipBtnContainer.style.display = 'none';
