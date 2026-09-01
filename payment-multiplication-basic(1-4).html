@@ -212,7 +212,7 @@
 
   #warningMsg { font-size: 11px; font-weight: bold; color: #e65100; height: 14px; background: #fff; text-align: center; flex-shrink: 0; }
 
-  /* 💡 確保第一頁掉落區擁有足夠的最小高度 (160px)，防止在小米等手機上被壓扁卡住 */
+  /* 💡 確保第一頁掉落區擁有足夠高度 (min-height: 160px) */
   .drop-field {
     flex: 1 1 auto; 
     min-height: 160px;
@@ -221,7 +221,7 @@
     position: relative; overflow: hidden; touch-action: manipulation; 
   }
 
-  /* 💡 第一頁掉落的方塊物件（原汁原味方塊造型） */
+  /* 💡 第一頁掉落的方塊造型（方塊外觀） */
   .drop-field .money-item {
     position: absolute;
     width: 70px; height: 45px; 
@@ -236,7 +236,7 @@
     100% { top: 170px; }
   }
 
-  /* 💡 放大下方收集托盤（tray）內的方塊尺寸，讓小孩看得清楚（從 34x28 放大至 50x36，字體 14px） */
+  /* 💡 下方收集托盤（tray）內的方塊放大尺寸，清晰可見 */
   .tray {
     height: 80px; flex: 0 0 auto; 
     margin: 0 10px 4px 10px; padding: 6px;
@@ -260,6 +260,7 @@
     font-size: 15px; font-weight: bold; color: #334155;
   }
 
+  /* 🏀 點擊時彈出可愛的籃球特效 (🏀) */
   .tap-hammer-effect {
     position: absolute; font-size: 38px; pointer-events: none; z-index: 99999;
     animation: hammerTapAnim 0.4s ease-out forwards;
@@ -297,7 +298,7 @@
           <li><strong>第一頁 (付錢)：</strong>點擊掉落的數字方塊來湊出金額（敲擊時會出現籃球特效！）！</li>
           <li><strong>第二頁 (選算式)：</strong>點擊選出正確的乘法算式方塊！</li>
           <li><strong>第三頁 (接小燈籠)：</strong>看著算式，點選掉落的正確答案小燈籠！</li>
-          <li><strong>🔊 聽題目按鈕：</strong>若手機聽不到聲音，隨時點擊畫面上的「🔊 聽題目」按鈕即可朗讀！</li>
+          <li><strong>🔊 聽題目按鈕：</strong>若手機聽不到聲音，隨時點擊畫面上的 "🔊 聽題目" 按鈕即可朗讀！</li>
           <li><strong>🎚️ 調整速度拉霸：</strong>右上角可自由左右滑動來控制方塊掉落快慢！</li>
         </ul>
       </div>
@@ -638,7 +639,6 @@
     }
   }
 
-  // 💡 修正方塊生成位置，確保方塊永遠不會超出左右邊界被裁剪
   function spawnFallingCoin() {
     if (isPaused || isTransitioning) return;
     
