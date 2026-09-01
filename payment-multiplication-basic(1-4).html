@@ -212,7 +212,7 @@
 
   #warningMsg { font-size: 11px; font-weight: bold; color: #e65100; height: 14px; background: #fff; text-align: center; flex-shrink: 0; }
 
-  /* 💡 確保第一頁掉落區擁有足夠的最小高度 (160px)，防止被壓扁 */
+  /* 💡 確保第一頁掉落區擁有足夠高度 (min-height: 160px) */
   .drop-field {
     flex: 1 1 auto; 
     min-height: 160px;
@@ -236,20 +236,21 @@
     100% { top: 170px; }
   }
 
-  /* 💡 放大下方收集托盤（tray）內的方塊尺寸，讓數字變大、清楚可見（從原本的 34x28 放大至 56x40，字體 16px 粗體） */
+  /* 💡 下方收集托盤（tray）內的方塊已大幅放大（56x40，字體 20px 粗體且置中） */
   .tray {
-    height: 85px; flex: 0 0 auto; 
+    height: 90px; flex: 0 0 auto; 
     margin: 0 10px 4px 10px; padding: 6px;
     border: 2px solid #cbd5e1; background: #ffffff; border-radius: 12px;
     display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px;
     overflow-y: auto; -webkit-overflow-scrolling: touch;
   }
   .tray .money-item { 
-    width: 56px; height: 40px; 
-    font-size: 16px; font-weight: bold; 
+    width: 56px; height: 44px; 
+    font-size: 20px; font-weight: bold; 
     border-radius: 8px; 
     background: #0ea5e9; color: #fff; 
     border: 2px solid #0369a1;
+    display: flex; align-items: center; justify-content: center;
   }
 
   .wallet {
@@ -298,7 +299,7 @@
           <li><strong>第一頁 (付錢)：</strong>點擊掉落的數字方塊來湊出金額（敲擊時會出現籃球特效！）！</li>
           <li><strong>第二頁 (選算式)：</strong>點擊選出正確的乘法算式方塊！</li>
           <li><strong>第三頁 (接小燈籠)：</strong>看著算式，點選掉落的正確答案小燈籠！</li>
-          <li><strong>🔊 聽題目按鈕：</strong>若手機聽不到聲音，隨時點擊畫面上的 "🔊 聽題目" 按鈕即可朗讀！</li>
+          <li><strong>🔊 聽題目按鈕：</strong>若手機聽不到聲音，隨時點擊畫面上的「🔊 聽題目」按鈕即可朗讀！</li>
           <li><strong>🎚️ 調整速度拉霸：</strong>右上角可自由左右滑動來控制方塊掉落快慢！</li>
         </ul>
       </div>
@@ -376,7 +377,7 @@
       已支付金額：<span id="currentAmount">0</span> 元
     </div>
     
-    <!-- 💡 防呆過關按鈕：若在某些裝置語音卡住，可以直接點擊此按鈕手動推進至下一關 -->
+    <!-- 💡 防呆過關按鈕：確保在任何裝置上若語音卡住，可以直接點擊手動推進至下一關 -->
     <div id="skipBtnContainer">
       <button id="skipBtn">➡️ 進入下一關</button>
     </div>
@@ -955,7 +956,7 @@
           playErrorSound();
           quizFeedback3.style.color = '#dc2626';
           quizFeedback3.innerText = `❌ ${val} 不對喔，小燈籠飛走了！再想一想！`;
-          speakText("再想一下喔", 1.0);
+          speakText("Desired...", 1.0);
           optionEl.remove();
         }
       };
