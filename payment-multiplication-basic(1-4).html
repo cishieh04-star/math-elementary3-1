@@ -28,6 +28,7 @@
     touch-action: manipulation;
   }
 
+  /* 💡 確保所有裝置都能看到完整畫面，不超出螢幕範圍 */
   #gameContainer {
     display: flex; flex-direction: column; 
     height: 100vh; height: 100dvh; 
@@ -230,10 +231,10 @@
 
   #warningMsg { font-size: 11px; font-weight: bold; color: #e65100; height: 14px; background: #fff; text-align: center; flex-shrink: 0; }
 
-  /* 💡 確保第一頁掉落區有足夠的最小高度 (160px)，在小米等手機上絕不被壓扁卡住 */
+  /* 💡 確保第一頁掉落區擁有足夠的最小高度 (170px)，防止在小米等手機上被壓扁 */
   .drop-field {
     flex: 1 1 auto; 
-    min-height: 160px;
+    min-height: 170px;
     margin: 4px 10px; padding: 6px;
     border: 3px dashed #aaa; background: #eef; border-radius: 15px;
     position: relative; overflow: hidden; touch-action: manipulation; 
@@ -256,6 +257,13 @@
     position: absolute; top: -14px; font-size: 14px;
   }
 
+  /* 💡 修正：明確定義第一頁籃球掉落動畫範圍（從上方 -60px 順暢落至底部 200px） */
+  @keyframes fall {
+    0% { top: -60px; }
+    100% { top: 200px; }
+  }
+
+  /* 💡 固定下方托盤高度，確保放收集籃球時不會擠壓上方掉落區 */
   .tray {
     height: 65px; flex: 0 0 auto; 
     margin: 0 10px 4px 10px; padding: 4px;
@@ -652,7 +660,7 @@
     }
   }
 
-  // 💡 第一階段籃球掉落邏輯：使用固定的左右分佈軌道，確保籃球從左右兩邊平均掉落、絕不黏在一起
+  // 💡 第一階段籃球掉落邏輯：使用左右分散軌道 (leftLanes)，確保籃球由上往下順暢掉落、絕不卡在最上方
   function spawnFallingCoin() {
     if (isPaused || isTransitioning) return;
     
