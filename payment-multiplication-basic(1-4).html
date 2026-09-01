@@ -14,7 +14,7 @@
     -webkit-tap-highlight-color: transparent;
   } 
   
-  body, button, .money-item, .falling-option, .basketball-option {
+  body, button, .money-item, .falling-option, .lantern-option {
     cursor: pointer !important;
   }
 
@@ -79,7 +79,7 @@
     max-height: 95vh; display: flex; flex-direction: column; align-items: center;
   }
   .quiz-box h2 { color: #2563eb; margin: 0 0 5px 0; font-size: 18px; }
-  .quiz-box p { font-size: 16px; font-weight: bold; margin: 6px 0; color: #1e293b; }
+  .quiz-box p { font-size: 15px; font-weight: bold; margin: 6px 0; }
   
   .hammer-tool-bar {
     display: flex; align-items: center; gap: 8px; margin: 4px 0;
@@ -92,69 +92,50 @@
   }
 
   .tetris-drop-area {
-    width: 100%; height: 210px; background: #f8fafc; border: 3px dashed #94a3b8;
+    width: 100%; height: 190px; background: #f8fafc; border: 3px dashed #94a3b8;
     border-radius: 12px; position: relative; overflow: hidden; margin: 6px 0;
     flex-shrink: 0;
   }
   
-  /* 🏀 第二畫面籃球樣式 */
+  /* 🧩 第二畫面維持原本的「方塊」造型，並放大字體保護視力 */
   .falling-option {
     position: absolute; 
-    width: 85px; height: 85px; 
-    background: radial-gradient(circle at 30% 30%, #fdba74 0%, #f97316 60%, #c2410c 100%); 
-    color: #fff;
-    font-size: 14px; font-weight: bold; 
+    width: 90%; max-width: 340px; height: 46px; 
+    background: #f59e0b; color: #fff;
+    font-size: 18px; font-weight: bold; 
     display: flex; align-items: center; justify-content: center;
-    border-radius: 50%; 
-    cursor: pointer; 
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    border: 3px solid #7c2d12;
-    transform: translateX(-50%);
-    animation: dropDownBall linear forwards;
-    padding: 4px;
-    text-align: center;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    left: 50%; transform: translateX(-50%);
+    animation: dropDown linear forwards;
+    padding: 5px;
     z-index: 999;
   }
-  .falling-option::before {
-    content: '🏀';
-    position: absolute; top: -16px; font-size: 16px;
-  }
-  .falling-option:active { transform: translateX(-50%) scale(0.9); background-color: #9a3412; }
+  .falling-option:active { transform: translateX(-50%) scale(0.9); background-color: #dc2626; }
 
-  @keyframes dropDownBall {
-    0% { top: -80px; }
-    100% { top: 115px; }
+  @keyframes dropDown {
+    0% { top: -50px; }
+    100% { top: 140px; }
   }
 
-  /* 🏀 第三畫面籃球樣式 */
-  .basketball-option {
-    position: absolute; 
-    width: 90px; height: 90px; 
-    background: radial-gradient(circle at 30% 30%, #fdba74 0%, #f97316 60%, #c2410c 100%); 
-    color: #fff;
-    font-size: 22px; font-weight: bold; 
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 50%; 
-    cursor: pointer; 
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    border: 3px solid #7c2d12;
-    transform: translateX(-50%);
-    animation: dropDownBall3 linear forwards;
-    padding: 4px;
-    text-align: center;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  /* 🏮 第三畫面維持「小燈籠」型態 */
+  .lantern-option {
+    position: absolute; width: 85px; height: 50px; background: #dc2626; color: #fef08a;
+    font-size: 18px; font-weight: bold; display: flex; align-items: center; justify-content: center;
+    border-radius: 50% 50% 40% 40%; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    border: 2px solid #b91c1c;
+    animation: dropDownLantern linear forwards;
+    padding: 5px;
     z-index: 999;
   }
-  .basketball-option::before {
-    content: '🏀';
-    position: absolute; top: -16px; font-size: 16px;
+  .lantern-option::before {
+    content: '🏮';
+    position: absolute; top: -12px; font-size: 14px;
   }
-  .basketball-option:active { transform: scale(0.9); background-color: #9a3412; }
+  .lantern-option:active { transform: scale(0.9); background-color: #b91c1c; }
 
-  @keyframes dropDownBall3 {
-    0% { top: -80px; }
-    100% { top: 120px; }
+  @keyframes dropDownLantern {
+    0% { top: -50px; }
+    100% { top: 130px; }
   }
 
   #overflowScreen {
@@ -231,39 +212,33 @@
 
   #warningMsg { font-size: 11px; font-weight: bold; color: #e65100; height: 14px; background: #fff; text-align: center; flex-shrink: 0; }
 
-  /* 💡 確保第一頁掉落區擁有足夠的最小高度 (170px)，防止在小米等手機上被壓扁 */
+  /* 💡 確保第一頁掉落區擁有足夠的最小高度 (160px)，防止在小米等手機上被壓扁卡住 */
   .drop-field {
     flex: 1 1 auto; 
-    min-height: 170px;
+    min-height: 160px;
     margin: 4px 10px; padding: 6px;
     border: 3px dashed #aaa; background: #eef; border-radius: 15px;
     position: relative; overflow: hidden; touch-action: manipulation; 
   }
 
-  /* 💡 第一頁掉落的籃球物件 */
+  /* 💡 第一頁掉落的方塊物件（原汁原味方塊造型） */
   .drop-field .money-item {
     position: absolute;
-    width: 65px; height: 65px; 
-    background: radial-gradient(circle at 30% 30%, #fdba74 0%, #f97316 60%, #c2410c 100%);
-    color: #fff; border: 3px solid #7c2d12; border-radius: 50%;
-    font-size: 18px; font-weight: bold; z-index: 10;
+    width: 70px; height: 45px; 
+    background: #0ea5e9; color: #fff; border: 2px solid #0369a1; border-radius: 8px;
+    font-size: 16px; font-weight: bold; z-index: 10;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    box-shadow: 1px 3px 5px rgba(0,0,0,0.3);
     transform: translateX(-50%);
   }
-  .drop-field .money-item::before {
-    content: '🏀';
-    position: absolute; top: -14px; font-size: 14px;
-  }
 
-  /* 💡 修正：明確定義第一頁籃球掉落動畫範圍（從上方 -60px 順暢落至底部 200px） */
+  /* 💡 修正：明確定義第一頁方塊掉落動畫範圍（從上方 -50px 順暢落至底部 180px） */
   @keyframes fall {
-    0% { top: -60px; }
-    100% { top: 200px; }
+    0% { top: -50px; }
+    100% { top: 180px; }
   }
 
-  /* 💡 固定下方托盤高度，確保放收集籃球時不會擠壓上方掉落區 */
+  /* 💡 固定下方托盤高度 */
   .tray {
     height: 65px; flex: 0 0 auto; 
     margin: 0 10px 4px 10px; padding: 4px;
@@ -280,15 +255,16 @@
     font-size: 15px; font-weight: bold; color: #334155;
   }
 
-  .tray .money-item { width: 32px; height: 32px; font-size: 11px; border-radius: 50%; }
+  .tray .money-item { width: 34px; height: 28px; font-size: 10px; border-radius: 5px; background: #0ea5e9; color: #fff; }
 
+  /* 🏀 敲擊時出現的籃球特效動畫 */
   .tap-hammer-effect {
-    position: absolute; font-size: 32px; pointer-events: none; z-index: 99999;
+    position: absolute; font-size: 38px; pointer-events: none; z-index: 99999;
     animation: hammerTapAnim 0.4s ease-out forwards;
   }
   @keyframes hammerTapAnim {
     0% { transform: scale(0.5) rotate(-30deg); opacity: 1; }
-    50% { transform: scale(1.3) rotate(15deg); opacity: 1; }
+    50% { transform: scale(1.4) rotate(15deg); opacity: 1; }
     100% { transform: scale(1) rotate(0deg); opacity: 0; }
   }
 
@@ -316,9 +292,9 @@
       <div class="intro-card">
         <h3>📖 操作說明</h3>
         <ul>
-          <li><strong>第一頁 (付錢)：</strong>點擊掉落的籃球來湊出金額！</li>
-          <li><strong>第二頁 (選算式)：</strong>點擊選出正確的乘法算式籃球（左右分散掉落，絕不黏在一起）！</li>
-          <li><strong>第三頁 (接籃球)：</strong>看著算式，點選掉落的正確答案籃球（左右分散掉落）！</li>
+          <li><strong>第一頁 (付錢)：</strong>點擊掉落的數字方塊來湊出金額（敲擊時會出現籃球特效！）！</li>
+          <li><strong>第二頁 (選算式)：</strong>點擊選出正確的乘法算式方塊！</li>
+          <li><strong>第三頁 (接小燈籠)：</strong>看著算式，點選掉落的正確答案小燈籠！</li>
           <li><strong>🔊 聽題目按鈕：</strong>若手機聽不到聲音，隨時點擊畫面上的「🔊 聽題目」按鈕即可朗讀！</li>
           <li><strong>🎚️ 調整速度拉霸：</strong>右上角可自由左右滑動來控制方塊掉落快慢！</li>
         </ul>
@@ -331,10 +307,10 @@
   <!-- 第二畫面：選算式 -->
   <div id="quizScreen">
     <div class="quiz-box">
-      <h2>🏀 第二畫面：選乘法算式（籃球挑戰）</h2>
+      <h2>🧩 第二畫面：選乘法算式</h2>
       <div class="hammer-tool-bar">
-        <span class="hammer-icon">🏀</span>
-        <span style="font-size: 13px; font-weight: bold; color: #b45309;">請點擊正確的乘法算式籃球（左右分散掉落）！</span>
+        <span class="hammer-icon">🔨</span>
+        <span style="font-size: 13px; font-weight: bold; color: #b45309;">請點擊正確的乘法算式方塊！</span>
       </div>
       <p id="quizQuestionText">請選擇正確的乘法橫式：</p>
       <div class="tetris-drop-area" id="tetrisDropArea"></div>
@@ -342,17 +318,17 @@
     </div>
   </div>
 
-  <!-- 第三畫面：看算式，籃球掉落選總額 -->
+  <!-- 第三畫面：看算式，小燈籠掉落選總額 -->
   <div id="quizScreen3">
     <div class="quiz-box">
-      <h2>🏀 第三畫面：籃球乘法計算總額</h2>
+      <h2>🏮 第三畫面：小燈籠乘法計算總額</h2>
       <div class="hammer-tool-bar">
-        <span class="hammer-icon">🏀</span>
-        <span style="font-size: 13px; font-weight: bold; color: #b45309;">下方算式等於多少？請點擊正確的籃球！</span>
+        <span class="hammer-icon">🏮</span>
+        <span style="font-size: 13px; font-weight: bold; color: #b45309;">下方算式等於多少？請點擊正確的小燈籠！</span>
       </div>
-      <p id="quizQuestionText3" style="font-size: 21px; color: #dc2626; margin: 8px 0; font-weight: bold;">下方算式：?</p>
+      <p id="quizQuestionText3" style="font-size: 20px; color: #dc2626; margin: 8px 0; font-weight: bold;">下方算式：?</p>
       <div class="tetris-drop-area" id="tetrisDropArea3"></div>
-      <div id="quizFeedback3" style="font-size: 14px; font-weight: bold; color: #dc2626; height: 18px;"></div>
+      <div id="quizFeedback3" style="font-size: 13px; font-weight: bold; color: #dc2626; height: 18px;"></div>
     </div>
   </div>
 
@@ -385,8 +361,8 @@
     </div>
     
     <div class="hammer-tool-bar" style="margin: 3px 10px 0 10px; justify-content: center; padding: 3px;">
-      <span class="hammer-icon" style="font-size: 14px;">🏀</span>
-      <span style="font-size: 11px; font-weight: bold; color: #b45309;">第一頁 : 點擊掉落的籃球來付錢！</span>
+      <span class="hammer-icon" style="font-size: 14px;">🔨</span>
+      <span style="font-size: 11px; font-weight: bold; color: #b45309;">第一頁 : 點擊掉落方塊來付錢！</span>
     </div>
     <div id="warningMsg"></div>
     
@@ -532,6 +508,7 @@
     }
   }
 
+  // 💡 點擊時彈出可愛的籃球特效 (🏀)
   function showHammerEffect(x, y) {
     const hammer = document.createElement('div');
     hammer.className = 'tap-hammer-effect';
@@ -619,7 +596,7 @@
     overflowScreen.style.display = 'none';
     pauseBtn.innerText = "⏸ 暫停";
     
-    // 💡 數字範圍精準維持 1, 2, 3, 4
+    // 💡 數字範圍維持 1, 2, 3, 4
     const possibleValues = [1, 2, 3, 4];
     currentCoinValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
     requiredCount = Math.floor(Math.random() * 4) + 2; 
@@ -660,7 +637,6 @@
     }
   }
 
-  // 💡 第一階段籃球掉落邏輯：使用左右分散軌道 (leftLanes)，確保籃球由上往下順暢掉落、絕不卡在最上方
   function spawnFallingCoin() {
     if (isPaused || isTransitioning) return;
     
@@ -668,9 +644,8 @@
     coinEl.className = 'money-item money-custom';
     coinEl.innerText = `$${currentCoinValue}`;
 
-    const leftLanes = [15, 35, 55, 75, 85];
-    const randomLane = leftLanes[Math.floor(Math.random() * leftLanes.length)];
-    coinEl.style.left = randomLane + '%';
+    const randomX = Math.random() * (dropField.clientWidth - 80);
+    coinEl.style.left = randomX + 'px';
     
     let cfg = getSpeedConfig();
     const duration = cfg.fallDuration + Math.random() * 1.5;
@@ -783,7 +758,7 @@
     }
   }
 
-  // 第二畫面：選算式
+  // 第二畫面：選算式（原汁原味方塊造型）
   function triggerTetrisQuiz() {
     isTransitioning = false;
     skipBtnContainer.style.display = 'none';
@@ -796,7 +771,7 @@
 
     let options = [correctStr];
     while(options.length < 4) {
-      let rndVal1 = [1, 2, 3, 4][Math.floor(Math.random() * 4)];
+      let rndVal1 = Math.floor(Math.random() * 4) + 1;
       let rndVal2 = Math.floor(Math.random() * 4) + 2;
       let wrongAns = rndVal1 * rndVal2;
       let wrongStr = `${rndVal1} × ${rndVal2} = ${wrongAns}`;
@@ -807,23 +782,20 @@
     options.sort(() => Math.random() - 0.5);
 
     quizQuestionText.innerHTML = `總金額 ${currentTarget} 元（${collectedCount} 個 ${currentCoinValue} 元），哪一個是正確的乘法橫式？`;
-    speakText(`總金額 ${currentTarget} 元，請選擇正確的乘法算式籃球！`, 0.85);
+    speakText(`總金額 ${currentTarget} 元，請選擇正確的乘法算式方塊！`, 0.85);
 
     let cfg = getSpeedConfig();
     let quizDuration = cfg.fallDuration + 3.0;
-
-    let leftPositions = [15, 38, 62, 85]; 
 
     options.forEach((optStr, index) => {
       let optionEl = document.createElement('div');
       optionEl.className = 'falling-option';
       optionEl.innerText = optStr;
       
-      optionEl.style.left = leftPositions[index] + '%';
-      let startTop = -80 - (index * 45);
+      let startTop = -50 - (index * 60);
       optionEl.style.top = startTop + 'px';
       optionEl.style.animationDuration = quizDuration + 's';
-      optionEl.style.animationDelay = (index * 1.8) + 's';
+      optionEl.style.animationDelay = (index * 2.5) + 's';
       optionEl.style.animationIterationCount = 'infinite';
 
       const selectOption = (e) => {
@@ -842,14 +814,13 @@
             if (el !== optionEl) el.remove();
           });
 
-          let computedLeft = window.getComputedStyle(optionEl).left;
           let computedTop = window.getComputedStyle(optionEl).top;
           optionEl.style.animation = 'none';
-          optionEl.style.left = computedLeft;
           optionEl.style.top = computedTop;
           optionEl.style.backgroundColor = '#16a34a'; 
+          optionEl.style.transform = 'translateX(-50%) scale(1.05)';
           optionEl.style.zIndex = '99';
-          optionEl.innerText = `🏀 ${correctStr}`;
+          optionEl.innerText = `🎉 ${correctStr}`;
 
           quizFeedback.style.color = '#16a34a';
           quizFeedback.innerText = `🎉 答對了！ ${correctStr}！準備進入第三個畫面！`;
@@ -872,7 +843,7 @@
         } else {
           playErrorSound();
           quizFeedback.style.color = '#dc2626';
-          quizFeedback.innerText = `❌ ${optStr} 不對喔，籃球飛走了！`;
+          quizFeedback.innerText = `❌ ${optStr} 不對喔，方塊飛走了！`;
           speakText("再想一下喔", 1.0);
           optionEl.remove();
         }
@@ -884,7 +855,7 @@
     });
   }
 
-  // 第三畫面：籃球掉落選總額
+  // 第三畫面：維持燈籠型態
   function triggerQuizScreen3(equationWithoutAns) {
     isTransitioning = false;
     skipBtnContainer.style.display = 'none';
@@ -896,7 +867,7 @@
     quizQuestionText3.innerHTML = `${equationWithoutAns} ?`;
     
     let cleanEquationSpeech = equationWithoutAns.replace('×', '乘以');
-    speakText(`請看算式，${cleanEquationSpeech} 等於多少呢？請接住掉落的正確籃球！`, 0.85);
+    speakText(`請看算式，${cleanEquationSpeech} 等於多少呢？請接住掉落的小燈籠！`, 0.85);
 
     let correctAnsVal = currentTarget;
     let options = [correctAnsVal];
@@ -914,19 +885,19 @@
 
     let leftPositions = [15, 38, 62, 85]; 
     let cfg = getSpeedConfig();
-    let ballDuration = cfg.fallDuration + 4.0;
+    let lanternDuration = cfg.fallDuration + 4.0;
 
     options.forEach((val, index) => {
       let optionEl = document.createElement('div');
-      optionEl.className = 'basketball-option'; 
+      optionEl.className = 'lantern-option'; 
       optionEl.innerText = val;
       
       optionEl.style.left = leftPositions[index] + '%';
-      let startTop = -80 - (index * 45);
+      let startTop = -60 - (index * 50);
       optionEl.style.top = startTop + 'px';
       
-      optionEl.style.animationDuration = ballDuration + 's';
-      optionEl.style.animationDelay = (index * 1.8) + 's';
+      optionEl.style.animationDuration = lanternDuration + 's';
+      optionEl.style.animationDelay = (index * 3.5) + 's';
       optionEl.style.animationIterationCount = 'infinite';
 
       const selectOption3 = (e) => {
@@ -941,7 +912,7 @@
         playHammerSound();
 
         if (val === correctAnsVal) {
-          document.querySelectorAll('#quizScreen3 .basketball-option').forEach(el => {
+          document.querySelectorAll('#quizScreen3 .lantern-option').forEach(el => {
             if (el !== optionEl) el.remove();
           });
 
@@ -952,8 +923,9 @@
           optionEl.style.top = computedTop;
           optionEl.style.backgroundColor = '#16a34a'; 
           optionEl.style.borderColor = '#15803d';
+          optionEl.style.transform = 'scale(1.05)';
           optionEl.style.zIndex = '99';
-          optionEl.innerText = `🏀 ${currentTarget}`;
+          optionEl.innerText = `🏮 ${currentTarget}`;
 
           quizFeedback3.style.color = '#16a34a';
           quizFeedback3.innerText = `🎉 答對了！ ${equationWithoutAns} ${currentTarget}！`;
@@ -979,7 +951,7 @@
         } else {
           playErrorSound();
           quizFeedback3.style.color = '#dc2626';
-          quizFeedback3.innerText = `❌ ${val} 不對喔，籃球飛走了！再想一想！`;
+          quizFeedback3.innerText = `❌ ${val} 不對喔，小燈籠飛走了！再想一想！`;
           speakText("再想一下喔", 1.0);
           optionEl.remove();
         }
