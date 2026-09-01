@@ -91,18 +91,19 @@
     100% { transform: rotate(15deg); }
   }
 
+  /* 💡 確保掉落區內含 overflow: hidden，絕對不會讓方塊掉到框框外 */
   .tetris-drop-area {
     width: 100%; height: 210px; background: #f8fafc; border: 3px dashed #94a3b8;
     border-radius: 12px; position: relative; overflow: hidden; margin: 6px 0;
     flex-shrink: 0;
   }
   
-  /* 🧩 第二畫面方塊樣式：改為左右分散、寬度適中，絕不黏在一起疊成一團 */
+  /* 🧩 第二畫面方塊樣式：控制在虛線框內落下（終點 top: 110px） */
   .falling-option {
     position: absolute; 
-    width: 21%; height: 50px; 
+    width: 21%; height: 46px; 
     background: #f59e0b; color: #fff;
-    font-size: 14px; font-weight: bold; 
+    font-size: 13px; font-weight: bold; 
     display: flex; align-items: center; justify-content: center;
     border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     transform: translateX(-50%);
@@ -114,19 +115,19 @@
   .falling-option:active { transform: translateX(-50%) scale(0.9); background-color: #dc2626; }
 
   @keyframes dropDown {
-    0% { top: -60px; }
-    100% { top: 135px; }
+    0% { top: -50px; }
+    100% { top: 110px; }
   }
 
-  /* 🏮 第三畫面維持燈籠型態 */
+  /* 🏮 第三畫面燈籠樣式：控制在虛線框內落下（終點 top: 110px） */
   .lantern-option {
-    position: absolute; width: 85px; height: 50px; background: #dc2626; color: #fef08a;
-    font-size: 18px; font-weight: bold; display: flex; align-items: center; justify-content: center;
+    position: absolute; width: 75px; height: 45px; background: #dc2626; color: #fef08a;
+    font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center;
     border-radius: 50% 50% 40% 40%; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     border: 2px solid #b91c1c;
     transform: translateX(-50%);
     animation: dropDownLantern linear forwards;
-    padding: 5px;
+    padding: 2px;
     z-index: 999;
   }
   .lantern-option::before {
@@ -136,8 +137,8 @@
   .lantern-option:active { transform: scale(0.9); background-color: #b91c1c; }
 
   @keyframes dropDownLantern {
-    0% { top: -60px; }
-    100% { top: 130px; }
+    0% { top: -50px; }
+    100% { top: 110px; }
   }
 
   #overflowScreen {
@@ -317,7 +318,7 @@
       <h2>🧩 第二畫面：選乘法算式</h2>
       <div class="hammer-tool-bar">
         <span class="hammer-icon">🔨</span>
-        <span style="font-size: 13px; font-weight: bold; color: #b45309;">請點擊正確的乘法算式方塊（左右分散掉落）！</span>
+        <span style="font-size: 13px; font-weight: bold; color: #b45309;">請點擊正確的乘法算式方塊（框內掉落）！</span>
       </div>
       <p id="quizQuestionText">請選擇正確的乘法橫式：</p>
       <div class="tetris-drop-area" id="tetrisDropArea"></div>
@@ -765,7 +766,7 @@
     }
   }
 
-  // 💡 第二畫面：選算式（修復方塊黏在一起的問題，改為左右分散的 4 個獨立軌道落下）
+  // 第二畫面：選算式
   function triggerTetrisQuiz() {
     isTransitioning = false;
     skipBtnContainer.style.display = 'none';
@@ -794,8 +795,7 @@
     let cfg = getSpeedConfig();
     let quizDuration = cfg.fallDuration + 3.0;
 
-    // 💡 賦予 4 個方塊不同的左右橫向位置，絕不疊在一起
-    let leftPositions = [15, 38, 62, 85];
+    let leftPositions = [15, 38, 62, 85]; 
 
     options.forEach((optStr, index) => {
       let optionEl = document.createElement('div');
