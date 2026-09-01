@@ -99,7 +99,7 @@
   /* 🏀 第二畫面籃球樣式（加入 transform: translateX(-50%) 確保永遠不會超出左右邊界） */
   .falling-option {
     position: absolute; 
-    width: 86px; height: 86px; 
+    width: 95px; height: 95px; 
     background: radial-gradient(circle at 30% 30%, #fdba74 0%, #f97316 60%, #c2410c 100%); 
     color: #fff;
     font-size: 14px; font-weight: bold; 
@@ -405,6 +405,7 @@
       已支付金額：<span id="currentAmount">0</span> 元
     </div>
     
+    <!-- 💡 防呆過關按鈕：若在某些裝置語音卡住，可以直接點擊此按鈕手動推進至下一關 -->
     <div id="skipBtnContainer">
       <button id="skipBtn">➡️ 進入下一關</button>
     </div>
@@ -494,6 +495,7 @@
     setTimeout(() => playTone(1046.50, 'square', 0.5, 0.4), 450); 
   }
 
+  // 💡 雙保險語音防呆機制 (Fallback Timer)：確保在任何裝置上若語音沒結束或無法觸發 onend，也能自動解鎖繼續
   function speakText(text, speedRate, onFinished = null) {
     lastSpokenText = text;
     if (!('speechSynthesis' in window)) {
@@ -625,7 +627,7 @@
     overflowScreen.style.display = 'none';
     pauseBtn.innerText = "⏸ 暫停";
     
-    // 💡 數字部分已更新為 5, 6, 7, 8, 9
+    // 💡 數字維持 5, 6, 7, 8, 9
     const possibleValues = [5, 6, 7, 8, 9];
     currentCoinValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
     requiredCount = Math.floor(Math.random() * 4) + 2; 
@@ -787,7 +789,7 @@
     }
   }
 
-  // 第二畫面：選算式（籃球挑戰 - 採用左右不同方向分散掉落，絕對不黏在一起）
+  // 第二畫面：選算式
   function triggerTetrisQuiz() {
     isTransitioning = false;
     skipBtnContainer.style.display = 'none';
@@ -800,7 +802,6 @@
 
     let options = [correctStr];
     while(options.length < 4) {
-      // 💡 錯誤選項中的數字也設定為 5, 6, 7, 8, 9 範圍
       let rndVal1 = [5, 6, 7, 8, 9][Math.floor(Math.random() * 5)];
       let rndVal2 = Math.floor(Math.random() * 4) + 2;
       let wrongAns = rndVal1 * rndVal2;
@@ -889,7 +890,7 @@
     });
   }
 
-  // 第三畫面：籃球掉落選總額（同樣採用左右不同方向分散掉落）
+  // 第三畫面：籃球掉落選總額
   function triggerQuizScreen3(equationWithoutAns) {
     isTransitioning = false;
     skipBtnContainer.style.display = 'none';
