@@ -97,12 +97,12 @@
     flex-shrink: 0;
   }
   
-  /* 🧩 第二畫面方塊樣式：左右分散，絕不黏在一起 */
+  /* 🧩 第二畫面方塊樣式：控制在虛線框內落下（終點 top: 110px） */
   .falling-option {
     position: absolute; 
-    width: 21%; height: 50px; 
+    width: 21%; height: 46px; 
     background: #f59e0b; color: #fff;
-    font-size: 14px; font-weight: bold; 
+    font-size: 13px; font-weight: bold; 
     display: flex; align-items: center; justify-content: center;
     border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     transform: translateX(-50%);
@@ -114,19 +114,19 @@
   .falling-option:active { transform: translateX(-50%) scale(0.9); background-color: #dc2626; }
 
   @keyframes dropDown {
-    0% { top: -60px; }
-    100% { top: 135px; }
+    0% { top: -50px; }
+    100% { top: 110px; }
   }
 
-  /* 🏮 第三畫面維持燈籠型態 */
+  /* 🏮 第三畫面燈籠樣式：控制在虛線框內落下（終點 top: 110px） */
   .lantern-option {
-    position: absolute; width: 85px; height: 50px; background: #dc2626; color: #fef08a;
-    font-size: 18px; font-weight: bold; display: flex; align-items: center; justify-content: center;
+    position: absolute; width: 75px; height: 45px; background: #dc2626; color: #fef08a;
+    font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center;
     border-radius: 50% 50% 40% 40%; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     border: 2px solid #b91c1c;
     transform: translateX(-50%);
     animation: dropDownLantern linear forwards;
-    padding: 5px;
+    padding: 2px;
     z-index: 999;
   }
   .lantern-option::before {
@@ -136,8 +136,8 @@
   .lantern-option:active { transform: scale(0.9); background-color: #b91c1c; }
 
   @keyframes dropDownLantern {
-    0% { top: -60px; }
-    100% { top: 130px; }
+    0% { top: -50px; }
+    100% { top: 110px; }
   }
 
   #overflowScreen {
@@ -214,7 +214,6 @@
 
   #warningMsg { font-size: 11px; font-weight: bold; color: #e65100; height: 14px; background: #fff; text-align: center; flex-shrink: 0; }
 
-  /* 💡 確保第一頁掉落區擁有足夠高度 (min-height: 160px) */
   .drop-field {
     flex: 1 1 auto; 
     min-height: 160px;
@@ -223,7 +222,6 @@
     position: relative; overflow: hidden; touch-action: manipulation; 
   }
 
-  /* 💡 第一頁掉落的方塊物件 */
   .drop-field .money-item {
     position: absolute;
     width: 70px; height: 45px; 
@@ -231,6 +229,7 @@
     font-size: 16px; font-weight: bold; z-index: 10;
     display: flex; align-items: center; justify-content: center;
     box-shadow: 1px 3px 5px rgba(0,0,0,0.3);
+    transform: translateX(-50%);
   }
 
   @keyframes fall {
@@ -238,7 +237,6 @@
     100% { top: 170px; }
   }
 
-  /* 💡 下方收集托盤（tray）內的方塊已大幅放大（56x40，字體 16px 粗體且置中） */
   .tray {
     height: 85px; flex: 0 0 auto; 
     margin: 0 10px 4px 10px; padding: 6px;
@@ -263,7 +261,6 @@
     font-size: 15px; font-weight: bold; color: #334155;
   }
 
-  /* 🏀 點擊時彈出可愛的籃球特效 (🏀) */
   .tap-hammer-effect {
     position: absolute; font-size: 38px; pointer-events: none; z-index: 99999;
     animation: hammerTapAnim 0.4s ease-out forwards;
@@ -310,13 +307,12 @@
     </div>
   </div>
 
-  <!-- 第二畫面：選算式 -->
   <div id="quizScreen">
     <div class="quiz-box">
       <h2>🧩 第二畫面：選乘法算式</h2>
       <div class="hammer-tool-bar">
         <span class="hammer-icon">🔨</span>
-        <span style="font-size: 13px; font-weight: bold; color: #b45309;">請點擊正確的乘法算式方塊（左右分散掉落）！</span>
+        <span style="font-size: 13px; font-weight: bold; color: #b45309;">請點擊正確的乘法算式方塊（框內掉落）！</span>
       </div>
       <p id="quizQuestionText">請選擇正確的乘法橫式：</p>
       <div class="tetris-drop-area" id="tetrisDropArea"></div>
@@ -324,7 +320,6 @@
     </div>
   </div>
 
-  <!-- 第三畫面：看算式，小燈籠掉落選總額 -->
   <div id="quizScreen3">
     <div class="quiz-box">
       <h2>🏮 第三畫面：小燈籠乘法計算總額</h2>
@@ -379,7 +374,6 @@
       已支付金額：<span id="currentAmount">0</span> 元
     </div>
     
-    <!-- 💡 防呆過關按鈕：確保在任何裝置上若語音卡住，可以直接點擊手動推進至下一關 -->
     <div id="skipBtnContainer">
       <button id="skipBtn">➡️ 進入下一關</button>
     </div>
@@ -793,7 +787,7 @@
     let cfg = getSpeedConfig();
     let quizDuration = cfg.fallDuration + 3.0;
 
-    let leftPositions = [15, 38, 62, 85];
+    let leftPositions = [15, 38, 62, 85]; 
 
     options.forEach((optStr, index) => {
       let optionEl = document.createElement('div');
@@ -801,7 +795,7 @@
       optionEl.innerText = optStr;
       
       optionEl.style.left = leftPositions[index] + '%';
-      let startTop = -60 - (index * 50);
+      let startTop = -60 - (index * 45);
       optionEl.style.top = startTop + 'px';
       optionEl.style.animationDuration = quizDuration + 's';
       optionEl.style.animationDelay = (index * 1.8) + 's';
@@ -947,32 +941,5 @@
             colors: ['#FFD700', '#ff0000', '#00ff00', '#0000ff']
           });
 
-          successCount++;
-          successCountSpan.innerText = successCount;
-
-          startTransition(() => {
-            quizScreen3.style.display = 'none';
-            nextQuestion();
-          });
-
-          speakText(`太棒了！${cleanEquationSpeech} ${currentTarget}！恭喜完成所有挑戰！`, 0.85, () => {
-            endTransition();
-          });
-
-        } else {
-          playErrorSound();
-          quizFeedback3.style.color = '#dc2626';
-          quizFeedback3.innerText = `❌ ${val} 不對喔，小燈籠飛走了！再想一想！`;
-          speakText("再想一下喔", 1.0);
-          optionEl.remove();
-        }
-      };
-
-      optionEl.addEventListener('pointerdown', selectOption3);
-      optionEl.addEventListener('click', selectOption3);
-      tetrisDropArea3.appendChild(optionEl);
-    });
-  }
-</script>
-</body>
+@@ -1026,6 +1026,6 @@
 </html>
