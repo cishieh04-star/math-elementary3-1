@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>基礎乘法遊戲(5-9)</title>
+<title>基礎乘法遊戲(1-4)</title>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
   * { 
@@ -212,7 +212,7 @@
 
   #warningMsg { font-size: 11px; font-weight: bold; color: #e65100; height: 14px; background: #fff; text-align: center; flex-shrink: 0; }
 
-  /* 💡 確保第一頁掉落區擁有足夠高度 (min-height: 160px) */
+  /* 💡 確保第一頁掉落區擁有足夠的最小高度 (160px)，防止被壓扁 */
   .drop-field {
     flex: 1 1 auto; 
     min-height: 160px;
@@ -221,7 +221,7 @@
     position: relative; overflow: hidden; touch-action: manipulation; 
   }
 
-  /* 💡 第一頁掉落的方塊造型（方塊外觀） */
+  /* 💡 第一頁掉落的方塊物件 */
   .drop-field .money-item {
     position: absolute;
     width: 70px; height: 45px; 
@@ -236,18 +236,18 @@
     100% { top: 170px; }
   }
 
-  /* 💡 下方收集托盤（tray）內的方塊放大尺寸，清晰可見 */
+  /* 💡 放大下方收集托盤（tray）內的方塊尺寸，讓數字變大、清楚可見（從原本的 34x28 放大至 56x40，字體 16px 粗體） */
   .tray {
-    height: 80px; flex: 0 0 auto; 
+    height: 85px; flex: 0 0 auto; 
     margin: 0 10px 4px 10px; padding: 6px;
     border: 2px solid #cbd5e1; background: #ffffff; border-radius: 12px;
     display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px;
     overflow-y: auto; -webkit-overflow-scrolling: touch;
   }
   .tray .money-item { 
-    width: 50px; height: 36px; 
-    font-size: 14px; font-weight: bold; 
-    border-radius: 6px; 
+    width: 56px; height: 40px; 
+    font-size: 16px; font-weight: bold; 
+    border-radius: 8px; 
     background: #0ea5e9; color: #fff; 
     border: 2px solid #0369a1;
   }
@@ -290,7 +290,7 @@
 
   <div id="startScreen">
     <div class="start-content-box">
-      <h1>🪙 基礎乘法遊戲(5-9)</h1>
+      <h1>🪙 基礎乘法遊戲(1-4)</h1>
 
       <div class="intro-card">
         <h3>📖 操作說明</h3>
@@ -598,8 +598,8 @@
     overflowScreen.style.display = 'none';
     pauseBtn.innerText = "⏸ 暫停";
     
-    // 💡 數字範圍維持 5, 6, 7, 8, 9
-    const possibleValues = [5, 6, 7, 8, 9];
+    // 💡 數字範圍修改回 1, 2, 3, 4
+    const possibleValues = [1, 2, 3, 4];
     currentCoinValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
     requiredCount = Math.floor(Math.random() * 4) + 2; 
     currentTarget = currentCoinValue * requiredCount;
@@ -774,7 +774,7 @@
 
     let options = [correctStr];
     while(options.length < 4) {
-      let rndVal1 = [5, 6, 7, 8, 9][Math.floor(Math.random() * 5)];
+      let rndVal1 = Math.floor(Math.random() * 4) + 1;
       let rndVal2 = Math.floor(Math.random() * 4) + 2;
       let wrongAns = rndVal1 * rndVal2;
       let wrongStr = `${rndVal1} × ${rndVal2} = ${wrongAns}`;
