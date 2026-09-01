@@ -92,29 +92,30 @@
   }
 
   .tetris-drop-area {
-    width: 100%; height: 190px; background: #f8fafc; border: 3px dashed #94a3b8;
+    width: 100%; height: 210px; background: #f8fafc; border: 3px dashed #94a3b8;
     border-radius: 12px; position: relative; overflow: hidden; margin: 6px 0;
     flex-shrink: 0;
   }
   
-  /* 🧩 第二畫面維持方塊造型 */
+  /* 🧩 第二畫面方塊樣式：改為左右分散、寬度適中，絕不黏在一起疊成一團 */
   .falling-option {
     position: absolute; 
-    width: 90%; max-width: 340px; height: 46px; 
+    width: 21%; height: 50px; 
     background: #f59e0b; color: #fff;
-    font-size: 18px; font-weight: bold; 
+    font-size: 14px; font-weight: bold; 
     display: flex; align-items: center; justify-content: center;
     border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-    left: 50%; transform: translateX(-50%);
+    transform: translateX(-50%);
     animation: dropDown linear forwards;
-    padding: 5px;
+    padding: 2px;
+    text-align: center;
     z-index: 999;
   }
   .falling-option:active { transform: translateX(-50%) scale(0.9); background-color: #dc2626; }
 
   @keyframes dropDown {
-    0% { top: -50px; }
-    100% { top: 140px; }
+    0% { top: -60px; }
+    100% { top: 135px; }
   }
 
   /* 🏮 第三畫面維持燈籠型態 */
@@ -123,6 +124,7 @@
     font-size: 18px; font-weight: bold; display: flex; align-items: center; justify-content: center;
     border-radius: 50% 50% 40% 40%; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     border: 2px solid #b91c1c;
+    transform: translateX(-50%);
     animation: dropDownLantern linear forwards;
     padding: 5px;
     z-index: 999;
@@ -134,7 +136,7 @@
   .lantern-option:active { transform: scale(0.9); background-color: #b91c1c; }
 
   @keyframes dropDownLantern {
-    0% { top: -50px; }
+    0% { top: -60px; }
     100% { top: 130px; }
   }
 
@@ -212,7 +214,7 @@
 
   #warningMsg { font-size: 11px; font-weight: bold; color: #e65100; height: 14px; background: #fff; text-align: center; flex-shrink: 0; }
 
-  /* 💡 確保第一頁掉落區擁有足夠高度 (min-height: 160px) */
+  /* 💡 確保第一頁掉落區擁有足夠的最小高度 (160px) */
   .drop-field {
     flex: 1 1 auto; 
     min-height: 160px;
@@ -229,6 +231,7 @@
     font-size: 16px; font-weight: bold; z-index: 10;
     display: flex; align-items: center; justify-content: center;
     box-shadow: 1px 3px 5px rgba(0,0,0,0.3);
+    transform: translateX(-50%);
   }
 
   @keyframes fall {
@@ -236,17 +239,17 @@
     100% { top: 170px; }
   }
 
-  /* 💡 下方收集托盤（tray）內的方塊已大幅放大（56x40，字體 20px 粗體且置中） */
+  /* 💡 下方收集托盤（tray）內的方塊已大幅放大（56x40，字體 16px 粗體且置中） */
   .tray {
-    height: 90px; flex: 0 0 auto; 
+    height: 85px; flex: 0 0 auto; 
     margin: 0 10px 4px 10px; padding: 6px;
     border: 2px solid #cbd5e1; background: #ffffff; border-radius: 12px;
     display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px;
     overflow-y: auto; -webkit-overflow-scrolling: touch;
   }
   .tray .money-item { 
-    width: 56px; height: 44px; 
-    font-size: 20px; font-weight: bold; 
+    width: 56px; height: 40px; 
+    font-size: 16px; font-weight: bold; 
     border-radius: 8px; 
     background: #0ea5e9; color: #fff; 
     border: 2px solid #0369a1;
@@ -297,7 +300,7 @@
         <h3>📖 操作說明</h3>
         <ul>
           <li><strong>第一頁 (付錢)：</strong>點擊掉落的數字方塊來湊出金額（敲擊時會出現籃球特效！）！</li>
-          <li><strong>第二頁 (選算式)：</strong>點擊選出正確的乘法算式方塊！</li>
+          <li><strong>第二頁 (選算式)：</strong>點擊選出正確的乘法算式方塊（左右分散掉落，絕不黏在一起）！</li>
           <li><strong>第三頁 (接小燈籠)：</strong>看著算式，點選掉落的正確答案小燈籠！</li>
           <li><strong>🔊 聽題目按鈕：</strong>若手機聽不到聲音，隨時點擊畫面上的「🔊 聽題目」按鈕即可朗讀！</li>
           <li><strong>🎚️ 調整速度拉霸：</strong>右上角可自由左右滑動來控制方塊掉落快慢！</li>
@@ -314,7 +317,7 @@
       <h2>🧩 第二畫面：選乘法算式</h2>
       <div class="hammer-tool-bar">
         <span class="hammer-icon">🔨</span>
-        <span style="font-size: 13px; font-weight: bold; color: #b45309;">請點擊正確的乘法算式方塊！</span>
+        <span style="font-size: 13px; font-weight: bold; color: #b45309;">請點擊正確的乘法算式方塊（左右分散掉落）！</span>
       </div>
       <p id="quizQuestionText">請選擇正確的乘法橫式：</p>
       <div class="tetris-drop-area" id="tetrisDropArea"></div>
@@ -599,7 +602,7 @@
     overflowScreen.style.display = 'none';
     pauseBtn.innerText = "⏸ 暫停";
     
-    // 💡 數字範圍修改回 1, 2, 3, 4
+    // 💡 數字範圍精準維持 1, 2, 3, 4
     const possibleValues = [1, 2, 3, 4];
     currentCoinValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
     requiredCount = Math.floor(Math.random() * 4) + 2; 
@@ -762,7 +765,7 @@
     }
   }
 
-  // 第二畫面：選算式
+  // 💡 第二畫面：選算式（修復方塊黏在一起的問題，改為左右分散的 4 個獨立軌道落下）
   function triggerTetrisQuiz() {
     isTransitioning = false;
     skipBtnContainer.style.display = 'none';
@@ -791,15 +794,19 @@
     let cfg = getSpeedConfig();
     let quizDuration = cfg.fallDuration + 3.0;
 
+    // 💡 賦予 4 個方塊不同的左右橫向位置，絕不疊在一起
+    let leftPositions = [15, 38, 62, 85];
+
     options.forEach((optStr, index) => {
       let optionEl = document.createElement('div');
       optionEl.className = 'falling-option';
       optionEl.innerText = optStr;
       
-      let startTop = -50 - (index * 60);
+      optionEl.style.left = leftPositions[index] + '%';
+      let startTop = -60 - (index * 50);
       optionEl.style.top = startTop + 'px';
       optionEl.style.animationDuration = quizDuration + 's';
-      optionEl.style.animationDelay = (index * 2.5) + 's';
+      optionEl.style.animationDelay = (index * 1.8) + 's';
       optionEl.style.animationIterationCount = 'infinite';
 
       const selectOption = (e) => {
@@ -818,11 +825,13 @@
             if (el !== optionEl) el.remove();
           });
 
+          let computedLeft = window.getComputedStyle(optionEl).left;
           let computedTop = window.getComputedStyle(optionEl).top;
           optionEl.style.animation = 'none';
+          optionEl.style.left = computedLeft;
           optionEl.style.top = computedTop;
           optionEl.style.backgroundColor = '#16a34a'; 
-          optionEl.style.transform = 'translateX(-50%) scale(1.05)';
+          optionEl.style.transform = 'scale(1.05)';
           optionEl.style.zIndex = '99';
           optionEl.innerText = `🎉 ${correctStr}`;
 
@@ -956,7 +965,7 @@
           playErrorSound();
           quizFeedback3.style.color = '#dc2626';
           quizFeedback3.innerText = `❌ ${val} 不對喔，小燈籠飛走了！再想一想！`;
-          speakText("Desired...", 1.0);
+          speakText("再想一下喔", 1.0);
           optionEl.remove();
         }
       };
