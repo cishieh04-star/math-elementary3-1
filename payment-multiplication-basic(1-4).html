@@ -28,7 +28,6 @@
     touch-action: manipulation;
   }
 
-  /* 💡 確保主容器完美適配所有手機螢幕，不超出範圍 */
   #gameContainer {
     display: flex; flex-direction: column; 
     height: 100vh; height: 100dvh; 
@@ -130,10 +129,10 @@
   /* 🏀 第三畫面籃球樣式 */
   .basketball-option {
     position: absolute; 
-    width: 85px; height: 85px; 
+    width: 90px; height: 90px; 
     background: radial-gradient(circle at 30% 30%, #fdba74 0%, #f97316 60%, #c2410c 100%); 
     color: #fff;
-    font-size: 20px; font-weight: bold; 
+    font-size: 22px; font-weight: bold; 
     display: flex; align-items: center; justify-content: center;
     border-radius: 50%; 
     cursor: pointer; 
@@ -231,7 +230,7 @@
 
   #warningMsg { font-size: 11px; font-weight: bold; color: #e65100; height: 14px; background: #fff; text-align: center; flex-shrink: 0; }
 
-  /* 💡 修正 1：給予第一頁掉落區固定且足夠的最小高度 (160px)，防止在手機上被壓扁 */
+  /* 💡 確保第一頁掉落區有足夠的最小高度 (160px)，在小米等手機上絕不被壓扁卡住 */
   .drop-field {
     flex: 1 1 auto; 
     min-height: 160px;
@@ -240,7 +239,7 @@
     position: relative; overflow: hidden; touch-action: manipulation; 
   }
 
-  /* 💡 修正 2：第一頁掉落的籃球物件調整為適合手機點擊的尺寸 */
+  /* 💡 第一頁掉落的籃球物件 */
   .drop-field .money-item {
     position: absolute;
     width: 65px; height: 65px; 
@@ -257,7 +256,6 @@
     position: absolute; top: -14px; font-size: 14px;
   }
 
-  /* 💡 修正 3：固定下方托盤高度，確保放收集籃球時不會擠壓上方掉落區 */
   .tray {
     height: 65px; flex: 0 0 auto; 
     margin: 0 10px 4px 10px; padding: 4px;
@@ -391,6 +389,7 @@
       已支付金額：<span id="currentAmount">0</span> 元
     </div>
     
+    <!-- 💡 防呆過關按鈕：若在某些裝置語音卡住，可以直接點擊此按鈕手動推進至下一關 -->
     <div id="skipBtnContainer">
       <button id="skipBtn">➡️ 進入下一關</button>
     </div>
@@ -480,7 +479,7 @@
     setTimeout(() => playTone(1046.50, 'square', 0.5, 0.4), 450); 
   }
 
-  // 💡 雙保險語音防呆機制：確保任何手機（包含小米手機）在語音結束或未觸發時都能自動解鎖並繼續
+  // 💡 雙保險語音防呆機制 (Fallback Timer)：確保在任何裝置上若語音沒結束或無法觸發 onend，也能自動解鎖繼續
   function speakText(text, speedRate, onFinished = null) {
     lastSpokenText = text;
     if (!('speechSynthesis' in window)) {
@@ -612,7 +611,7 @@
     overflowScreen.style.display = 'none';
     pauseBtn.innerText = "⏸ 暫停";
     
-    // 💡 數字範圍維持 1, 2, 3, 4
+    // 💡 數字範圍精準維持 1, 2, 3, 4
     const possibleValues = [1, 2, 3, 4];
     currentCoinValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
     requiredCount = Math.floor(Math.random() * 4) + 2; 
@@ -653,6 +652,7 @@
     }
   }
 
+  // 💡 第一階段籃球掉落邏輯：使用固定的左右分佈軌道，確保籃球從左右兩邊平均掉落、絕不黏在一起
   function spawnFallingCoin() {
     if (isPaused || isTransitioning) return;
     
@@ -660,10 +660,9 @@
     coinEl.className = 'money-item money-custom';
     coinEl.innerText = `$${currentCoinValue}`;
 
-    // 💡 確保掉落位置在容器寬度內，並預留邊距避免跑出框框外
-    const maxX = Math.max(20, dropField.clientWidth - 75);
-    const randomX = Math.random() * maxX;
-    coinEl.style.left = randomX + 'px';
+    const leftLanes = [15, 35, 55, 75, 85];
+    const randomLane = leftLanes[Math.floor(Math.random() * leftLanes.length)];
+    coinEl.style.left = randomLane + '%';
     
     let cfg = getSpeedConfig();
     const duration = cfg.fallDuration + Math.random() * 1.5;
