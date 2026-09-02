@@ -91,14 +91,13 @@
     100% { transform: rotate(15deg); }
   }
 
-  /* 💡 確保掉落區內含 overflow: hidden，絕對不會讓方塊掉到框框外 */
   .tetris-drop-area {
     width: 100%; height: 210px; background: #f8fafc; border: 3px dashed #94a3b8;
     border-radius: 12px; position: relative; overflow: hidden; margin: 6px 0;
     flex-shrink: 0;
   }
   
-  /* 🧩 第二畫面方塊樣式：控制在虛線框內落下（終點 top: 110px） */
+  /* 🧩 第二畫面方塊樣式：控制在虛線框內落下、左右分散不黏在一起 */
   .falling-option {
     position: absolute; 
     width: 21%; height: 46px; 
@@ -119,7 +118,7 @@
     100% { top: 110px; }
   }
 
-  /* 🏮 第三畫面燈籠樣式：控制在虛線框內落下（終點 top: 110px） */
+  /* 🏮 第三畫面燈籠樣式：控制在虛線框內落下 */
   .lantern-option {
     position: absolute; width: 75px; height: 45px; background: #dc2626; color: #fef08a;
     font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center;
@@ -215,7 +214,6 @@
 
   #warningMsg { font-size: 11px; font-weight: bold; color: #e65100; height: 14px; background: #fff; text-align: center; flex-shrink: 0; }
 
-  /* 💡 確保第一頁掉落區擁有足夠的最小高度 (160px) */
   .drop-field {
     flex: 1 1 auto; 
     min-height: 160px;
@@ -224,7 +222,6 @@
     position: relative; overflow: hidden; touch-action: manipulation; 
   }
 
-  /* 💡 第一頁掉落的方塊物件 */
   .drop-field .money-item {
     position: absolute;
     width: 70px; height: 45px; 
@@ -240,7 +237,6 @@
     100% { top: 170px; }
   }
 
-  /* 💡 下方收集托盤（tray）內的方塊已大幅放大（56x40，字體 16px 粗體且置中） */
   .tray {
     height: 85px; flex: 0 0 auto; 
     margin: 0 10px 4px 10px; padding: 6px;
@@ -265,7 +261,6 @@
     font-size: 15px; font-weight: bold; color: #334155;
   }
 
-  /* 🏀 點擊時彈出可愛的籃球特效 (🏀) */
   .tap-hammer-effect {
     position: absolute; font-size: 38px; pointer-events: none; z-index: 99999;
     animation: hammerTapAnim 0.4s ease-out forwards;
@@ -276,13 +271,16 @@
     100% { transform: scale(1) rotate(0deg); opacity: 0; }
   }
 
+  /* 💡 超大明顯的強制過關/進入下一關按鈕，專門用來解決 HyperOS 語音回呼失效造成的卡關問題 */
   #skipBtnContainer {
-    display: none; position: absolute; bottom: 75px; left: 50%; transform: translateX(-50%); z-index: 10000;
+    display: none; position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%); z-index: 10000;
+    width: 90%; max-width: 320px; text-align: center;
   }
   #skipBtn {
-    font-size: 16px; font-weight: bold; padding: 10px 22px;
-    background: #10b981; color: white; border: 3px solid #047857; border-radius: 20px;
-    cursor: pointer; box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    font-size: 18px; font-weight: bold; padding: 14px 20px;
+    background: #10b981; color: white; border: 3px solid #047857; border-radius: 25px;
+    cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    width: 100%;
     animation: pulseBtn 0.8s infinite alternate;
   }
   @keyframes pulseBtn {
@@ -381,9 +379,9 @@
       已支付金額：<span id="currentAmount">0</span> 元
     </div>
     
-    <!-- 💡 防呆過關按鈕：確保在任何裝置上若語音卡住，可以直接點擊手動推進至下一關 -->
+    <!-- 💡 強制過關按鈕：在 Xiaomi HyperOS 上若語音事件被攔截卡住，點擊此按鈕即可無條件直接進入下一關 -->
     <div id="skipBtnContainer">
-      <button id="skipBtn">➡️ 進入下一關</button>
+      <button id="skipBtn">➡️ 點擊這裡進入下一關</button>
     </div>
   </div>
 
@@ -471,7 +469,7 @@
     setTimeout(() => playTone(1046.50, 'square', 0.5, 0.4), 450); 
   }
 
-  // 💡 雙保險語音防呆機制 (Fallback Timer)：確保在任何裝置上若語音沒結束或無法觸發 onend，也能自動解鎖繼續
+  // 💡 強化版雙保險語音防呆機制：確保在 HyperOS / Android 14 上即使 onend 被系統阻擋，也能自動計時解鎖
   function speakText(text, speedRate, onFinished = null) {
     lastSpokenText = text;
     if (!('speechSynthesis' in window)) {
