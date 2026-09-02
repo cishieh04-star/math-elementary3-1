@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>基礎乘法遊戲(1-4)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+<title>小四數學：位值概念俄羅斯方塊遊戲</title>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
   * { 
@@ -14,21 +14,15 @@
     -webkit-tap-highlight-color: transparent;
   } 
   
-  body, button, .money-item, .falling-option, .lantern-option {
-    cursor: pointer !important;
-  }
-
   html, body {
     margin: 0; padding: 0; 
     height: 100vh; height: 100dvh; 
     width: 100vw;
     overflow: hidden; 
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-    background-color: #f4f4f4;
-    touch-action: manipulation;
+    background-color: #f1f5f9;
   }
 
-  /* 💡 確保所有裝置都能看到完整畫面，不超出螢幕範圍 */
   #gameContainer {
     display: flex; flex-direction: column; 
     height: 100vh; height: 100dvh; 
@@ -42,12 +36,12 @@
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: #e0f2fe; color: #1e293b; z-index: 9999;
     display: flex; flex-direction: column; justify-content: center; align-items: center;
-    overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 15px; text-align: left;
+    overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px 15px; text-align: left;
   }
   .start-content-box {
     max-width: 500px; width: 100%; display: flex; flex-direction: column; align-items: center; margin: auto;
   }
-  #startScreen h1 { font-size: 22px; color: #0284c7; margin: 0 0 10px 0; text-align: center; }
+  #startScreen h1 { font-size: 24px; color: #0284c7; margin: 0 0 12px 0; text-align: center; }
   
   .intro-card {
     background: #ffffff; border: 2px solid #cbd5e1;
@@ -59,235 +53,153 @@
   .intro-card li { margin-bottom: 3px; }
 
   .start-btn { 
-    font-size: 20px; font-weight: bold; margin-top: 5px; padding: 12px 30px; 
+    font-size: 22px; font-weight: bold; margin-top: 10px; padding: 14px 30px; 
     background: #2563eb; color: #fff; border: none; border-radius: 15px; 
     cursor: pointer; box-shadow: 0 4px 15px rgba(37,99,235,0.3);
     width: 100%; max-width: 280px; text-align: center;
   }
   .start-btn:active { transform: scale(0.95); }
 
-  #quizScreen, #quizScreen3 {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(15, 23, 42, 0.9); color: #fff; z-index: 8888;
-    display: none; flex-direction: column; justify-content: center; align-items: center;
-    text-align: center; padding: 10px;
-    overflow-y: auto; -webkit-overflow-scrolling: touch;
-  }
-  .quiz-box {
-    background: #ffffff; color: #1e293b; width: 100%; max-width: 480px;
-    border-radius: 16px; padding: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    max-height: 95vh; display: flex; flex-direction: column; align-items: center;
-  }
-  .quiz-box h2 { color: #2563eb; margin: 0 0 5px 0; font-size: 18px; }
-  .quiz-box p { font-size: 15px; font-weight: bold; margin: 6px 0; }
-  
-  .hammer-tool-bar {
-    display: flex; align-items: center; gap: 8px; margin: 4px 0;
-    background: #fef3c7; border: 2px dashed #f59e0b; padding: 4px 10px; border-radius: 10px;
-  }
-  .hammer-icon { font-size: 20px; animation: bounceHammer 1s infinite alternate; }
-  @keyframes bounceHammer {
-    0% { transform: rotate(-15deg); }
-    100% { transform: rotate(15deg); }
-  }
-
-  /* 💡 確保掉落區內含 overflow: hidden，絕對不會讓方塊掉到框框外 */
-  .tetris-drop-area {
-    width: 100%; height: 210px; background: #f8fafc; border: 3px dashed #94a3b8;
-    border-radius: 12px; position: relative; overflow: hidden; margin: 6px 0;
-    flex-shrink: 0;
-  }
-  
-  /* 🧩 第二畫面方塊樣式：控制在虛線框內落下（終點 top: 110px） */
-  .falling-option {
-    position: absolute; 
-    width: 21%; height: 46px; 
-    background: #f59e0b; color: #fff;
-    font-size: 13px; font-weight: bold; 
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-    transform: translateX(-50%);
-    animation: dropDown linear forwards;
-    padding: 2px;
-    text-align: center;
-    z-index: 999;
-  }
-  .falling-option:active { transform: translateX(-50%) scale(0.9); background-color: #dc2626; }
-
-  @keyframes dropDown {
-    0% { top: -50px; }
-    100% { top: 110px; }
-  }
-
-  /* 🏮 第三畫面燈籠樣式：控制在虛線框內落下（終點 top: 110px） */
-  .lantern-option {
-    position: absolute; width: 75px; height: 45px; background: #dc2626; color: #fef08a;
-    font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center;
-    border-radius: 50% 50% 40% 40%; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    border: 2px solid #b91c1c;
-    transform: translateX(-50%);
-    animation: dropDownLantern linear forwards;
-    padding: 2px;
-    z-index: 999;
-  }
-  .lantern-option::before {
-    content: '🏮';
-    position: absolute; top: -12px; font-size: 14px;
-  }
-  .lantern-option:active { transform: scale(0.9); background-color: #b91c1c; }
-
-  @keyframes dropDownLantern {
-    0% { top: -50px; }
-    100% { top: 110px; }
-  }
-
-  #overflowScreen {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(239, 68, 68, 0.9); color: #fff; z-index: 8889;
-    display: none; flex-direction: column; justify-content: center; align-items: center;
-    text-align: center; padding: 20px;
-  }
-  #overflowScreen h2 { font-size: 26px; margin-bottom: 10px; }
-  #overflowScreen p { font-size: 17px; margin-bottom: 20px; }
-  .refund-btn {
-    font-size: 18px; font-weight: bold; padding: 12px 25px;
-    background: #ffffff; color: #dc2626; border: none; border-radius: 15px;
-    cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  }
-
+  /* 標題列：以不同底色區分四位數單位 */
   .header {
-    padding: 6px 10px; text-align: center; background: #fff;
+    padding: 10px 14px; background: #fff;
     flex: 0 0 auto; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 10;
     display: flex; justify-content: space-between; align-items: center;
   }
-  .header-left { display: flex; align-items: center; gap: 6px; }
-  .box-icon { font-size: 22px; line-height: 1; }
-  .target-display { font-size: 16px; font-weight: bold; color: #d32f2f; }
+  .header-left { display: flex; align-items: center; gap: 10px; width: 80%; }
+  .box-icon { font-size: 32px; line-height: 1; }
+  .target-content { display: flex; flex-direction: column; text-align: left; width: 100%; }
+  .target-display { font-size: 22px; font-weight: bold; line-height: 1.3; color: #0f172a; }
+  .target-sub { font-size: 14px; color: #334155; font-weight: bold; margin-top: 2px; }
   
-  .header-right { display: flex; align-items: center; gap: 6px; }
-  .score-display { font-size: 12px; font-weight: bold; color: #334155; background: #f1f5f9; padding: 4px 6px; border-radius: 6px; }
-
-  .control-group { 
-    display: flex; flex-direction: column; align-items: center; 
-    background: #f8fafc; padding: 3px 6px; border-radius: 8px; border: 1px solid #cbd5e1; 
+  /* 四位數單位底色區分 */
+  .wan-unit-bg {
+    background-color: #dbeafe; 
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid #bfdbfe;
   }
-  .control-row { display: flex; align-items: center; gap: 4px; margin-top: 1px; }
-  .control-tip { font-size: 10px; font-weight: bold; color: #6d28d9; line-height: 1.1; }
+  .ge-unit-bg {
+    background-color: #fee2e2; 
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid #fecaca;
+  }
+
+  .header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .score-display { font-size: 13px; font-weight: bold; color: #334155; background: #f1f5f9; padding: 6px 8px; border-radius: 6px; }
+
+  /* 控制面板 */
+  .control-panel {
+    display: flex; justify-content: space-between; align-items: center; gap: 6px;
+    background: #ffffff; padding: 6px 10px; border-bottom: 1px solid #e2e8f0;
+    flex: 0 0 auto;
+  }
+
+  .speed-control-box {
+    background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px;
+    padding: 4px 8px; display: flex; flex-direction: column; align-items: center;
+  }
+  .speed-title { font-size: 11px; font-weight: bold; color: #7c3aed; margin-bottom: 2px; }
+  .speed-row { display: flex; align-items: center; gap: 4px; }
   
-  .speed-slider { 
-    width: 60px; 
-    accent-color: #7c3aed; 
-    cursor: pointer; 
+  .speed-btn {
+    width: 26px; height: 26px; background: #3b82f6; color: white; border: none; border-radius: 6px;
+    font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center;
   }
-  .speed-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #7c3aed;
-    border: 2px solid #ffffff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  }
-  .speed-slider::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #7c3aed;
-    border: 2px solid #ffffff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  }
+  .speed-btn:active { transform: scale(0.9); background: #1d4ed8; }
+  .speed-display-text { font-size: 12px; font-weight: bold; color: #1e293b; width: 42px; text-align: center; }
 
-  .speed-label { font-size: 10px; font-weight: bold; color: #6d28d9; width: 30px; text-align: center; }
-
-  .btn-container { display: flex; gap: 4px; }
-  .speak-btn {
-    font-size: 12px; font-weight: bold; padding: 4px 8px;
-    color: white; background: #0ea5e9; border: none; border-radius: 6px;
-    cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  .action-btn {
+    font-size: 13px; font-weight: bold; padding: 8px 10px; border-radius: 10px; border: none; cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 4px;
+    color: white; text-shadow: 0 1px 1px rgba(0,0,0,0.1);
   }
-  .pause-btn {
-    font-size: 12px; font-weight: bold; padding: 4px 6px;
-    color: white; background: #f59e0b; border: none; border-radius: 6px;
-    cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  }
+  .listen-btn { background: #0ea5e9; }
+  .pause-btn { background: #f59e0b; }
+  .action-btn:active { transform: scale(0.95); }
 
-  #warningMsg { font-size: 11px; font-weight: bold; color: #e65100; height: 14px; background: #fff; text-align: center; flex-shrink: 0; }
+  #warningMsg { font-size: 12px; font-weight: bold; color: #e65100; height: 16px; background: #fff; text-align: center; flex-shrink: 0; }
 
-  /* 💡 確保第一頁掉落區擁有足夠的最小高度 (160px) */
+  /* 掉落方塊區域 (改為籃球造型) */
   .drop-field {
-    flex: 1 1 auto; 
-    min-height: 160px;
-    margin: 4px 10px; padding: 6px;
-    border: 3px dashed #aaa; background: #eef; border-radius: 15px;
-    position: relative; overflow: hidden; touch-action: manipulation; 
+    flex: 0 0 150px; 
+    margin: 4px 10px; padding: 4px;
+    border: 3px dashed #94a3b8; background: #eef2f7; border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    touch-action: none; 
   }
 
-  /* 💡 第一頁掉落的方塊物件 */
-  .drop-field .money-item {
+  .falling-digit {
     position: absolute;
-    width: 70px; height: 45px; 
-    background: #0ea5e9; color: #fff; border: 2px solid #0369a1; border-radius: 8px;
-    font-size: 16px; font-weight: bold; z-index: 10;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 1px 3px 5px rgba(0,0,0,0.3);
-    transform: translateX(-50%);
+    width: 65px; height: 65px; 
+    background: radial-gradient(circle at 30% 30%, #fdba74 0%, #f97316 60%, #c2410c 100%);
+    color: white; border: 3px solid #7c2d12; border-radius: 50%;
+    display: flex; justify-content: center; align-items: center; 
+    font-size: 20px; font-weight: bold; cursor: pointer; text-align: center;
+    box-shadow: 1px 3px 8px rgba(0,0,0,0.4); transition: transform 0.1s;
+    animation: fall linear forwards;
+    z-index: 10;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
   }
+  .falling-digit::before {
+    content: '🏀';
+    position: absolute; top: -14px; font-size: 14px;
+  }
+  .falling-digit:active { transform: scale(0.9); }
 
   @keyframes fall {
-    0% { top: -50px; }
-    100% { top: 170px; }
+    0% { top: -60px; }
+    100% { top: 90px; }
   }
 
-  /* 💡 下方收集托盤（tray）內的方塊已大幅放大（56x40，字體 16px 粗體且置中） */
-  .tray {
-    height: 85px; flex: 0 0 auto; 
-    margin: 0 10px 4px 10px; padding: 6px;
-    border: 2px solid #cbd5e1; background: #ffffff; border-radius: 12px;
-    display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px;
-    overflow-y: auto; -webkit-overflow-scrolling: touch;
+  /* 國小標準定位板區域 */
+  .place-table-container {
+    flex: 0 0 auto;
+    margin: 4px 10px; padding: 8px;
+    background: #ffffff; border: 2px solid #cbd5e1; border-radius: 12px;
   }
-  .tray .money-item { 
-    width: 56px; height: 40px; 
-    font-size: 16px; font-weight: bold; 
-    border-radius: 8px; 
-    background: #0ea5e9; color: #fff; 
-    border: 2px solid #0369a1;
-    display: flex; align-items: center; justify-content: center;
+  .place-title-bar { font-size: 12px; font-weight: bold; color: #334155; margin-bottom: 6px; text-align: center; }
+  
+  .place-table {
+    display: flex; justify-content: space-between; gap: 4px;
   }
+  .digit-box {
+    flex: 1; height: 58px;
+    border: 2px solid #cbd5e1; border-radius: 8px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: #f8fafc; transition: all 0.3s;
+  }
+  .digit-box.active-place {
+    border-color: #2563eb; background: #eff6ff; box-shadow: 0 0 8px rgba(37,99,235,0.3);
+  }
+  .digit-box-title { font-size: 10px; color: #64748b; margin-bottom: 2px; }
+  .digit-box-val { font-size: 18px; font-weight: bold; color: #0f172a; }
 
-  .wallet {
-    flex: 0 0 auto; 
-    display: flex; justify-content: center; align-items: center;
-    background: #cfd8dc; box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-    padding: 8px 10px calc(8px + env(safe-area-inset-bottom)) 10px; 
-    font-size: 15px; font-weight: bold; color: #334155;
+  /* 卡通互動列 */
+  .cartoon-bar {
+    flex: 0 0 auto;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: #fffbeb; padding: 6px 12px; margin: 0 10px 8px 10px; border-radius: 10px; border: 2px solid #fde68a;
   }
+  .cartoon-avatar { font-size: 28px; cursor: pointer; animation: bounce 2s infinite; transition: transform 0.2s; }
+  .cartoon-avatar:active { transform: scale(1.3) rotate(15deg); }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  .cartoon-bubble { font-size: 12px; font-weight: bold; background: #fff; padding: 5px 10px; border-radius: 8px; border: 1px solid #fcd34d; color: #92400e; }
 
-  /* 🏀 點擊時彈出可愛的籃球特效 (🏀) */
-  .tap-hammer-effect {
-    position: absolute; font-size: 38px; pointer-events: none; z-index: 99999;
-    animation: hammerTapAnim 0.4s ease-out forwards;
-  }
-  @keyframes hammerTapAnim {
-    0% { transform: scale(0.5) rotate(-30deg); opacity: 1; }
-    50% { transform: scale(1.4) rotate(15deg); opacity: 1; }
-    100% { transform: scale(1) rotate(0deg); opacity: 0; }
-  }
-
+  /* 小米手機專用防卡死過關按鈕 (恆常顯示或過關時放大) */
   #skipBtnContainer {
-    display: none; position: absolute; bottom: 75px; left: 50%; transform: translateX(-50%); z-index: 10000;
+    display: block; position: absolute; bottom: 65px; left: 50%; transform: translateX(-50%); z-index: 10000;
   }
   #skipBtn {
-    font-size: 16px; font-weight: bold; padding: 10px 22px;
+    font-size: 15px; font-weight: bold; padding: 8px 20px;
     background: #10b981; color: white; border: 3px solid #047857; border-radius: 20px;
-    cursor: pointer; box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-    animation: pulseBtn 0.8s infinite alternate;
-  }
-  @keyframes pulseBtn {
-    0% { transform: scale(1); }
-    100% { transform: scale(1.05); }
+    cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   }
 </style>
 </head>
@@ -295,141 +207,145 @@
 
   <div id="startScreen">
     <div class="start-content-box">
-      <h1>🪙 基礎乘法遊戲(1-4)</h1>
+      <h1>🌸 十萬大冒險：位值俄羅斯方塊</h1>
 
       <div class="intro-card">
         <h3>📖 操作說明</h3>
         <ul>
-          <li><strong>第一頁 (付錢)：</strong>點擊掉落的數字方塊來湊出金額（敲擊時會出現籃球特效！）！</li>
-          <li><strong>第二頁 (選算式)：</strong>點擊選出正確的乘法算式方塊（左右分散掉落，絕不黏在一起）！</li>
-          <li><strong>第三頁 (接小燈籠)：</strong>看著算式，點選掉落的正確答案小燈籠！</li>
-          <li><strong>🔊 聽題目按鈕：</strong>若手機聽不到聲音，隨時點擊畫面上的「🔊 聽題目」按鈕即可朗讀！</li>
-          <li><strong>🎚️ 調整速度拉霸：</strong>右上角可自由左右滑動來控制方塊掉落快慢！</li>
+          <li><strong>點擊變籃球：</strong>點擊掉落的方塊時，會瞬間變成明顯的籃球🏀！</li>
+          <li><strong>小米防卡死專用：</strong>下方隨時有「➡️ 進入下一題」按鈕，絕不卡關！</li>
+          <li><strong>四位數底色分組：</strong>以不同底色區分萬級與個級。</li>
         </ul>
       </div>
 
-      <button class="start-btn" id="startBtn">▶ 點擊開始遊戲</button>
+      <button class="start-btn" id="startBtn">▶ 點擊開始挑戰</button>
     </div>
-  </div>
-
-  <!-- 第二畫面：選算式 -->
-  <div id="quizScreen">
-    <div class="quiz-box">
-      <h2>🧩 第二畫面：選乘法算式</h2>
-      <div class="hammer-tool-bar">
-        <span class="hammer-icon">🔨</span>
-        <span style="font-size: 13px; font-weight: bold; color: #b45309;">請點擊正確的乘法算式方塊（框內掉落）！</span>
-      </div>
-      <p id="quizQuestionText">請選擇正確的乘法橫式：</p>
-      <div class="tetris-drop-area" id="tetrisDropArea"></div>
-      <div id="quizFeedback" style="font-size: 14px; font-weight: bold; color: #dc2626; height: 18px;"></div>
-    </div>
-  </div>
-
-  <!-- 第三畫面：看算式，小燈籠掉落選總額 -->
-  <div id="quizScreen3">
-    <div class="quiz-box">
-      <h2>🏮 第三畫面：小燈籠乘法計算總額</h2>
-      <div class="hammer-tool-bar">
-        <span class="hammer-icon">🏮</span>
-        <span style="font-size: 13px; font-weight: bold; color: #b45309;">下方算式等於多少？請點擊正確的小燈籠！</span>
-      </div>
-      <p id="quizQuestionText3" style="font-size: 20px; color: #dc2626; margin: 8px 0; font-weight: bold;">下方算式：?</p>
-      <div class="tetris-drop-area" id="tetrisDropArea3"></div>
-      <div id="quizFeedback3" style="font-size: 13px; font-weight: bold; color: #dc2626; height: 18px;"></div>
-    </div>
-  </div>
-
-  <div id="overflowScreen">
-    <h2>⚠️ 哎呀，金額超過囉！</h2>
-    <p>你支付的錢超過目標金額了～</p>
-    <button class="refund-btn" id="refundBtn">🔄 全部退回，重新開始</button>
   </div>
 
   <div id="gameContainer">
     <div class="header">
       <div class="header-left">
-        <div class="box-icon">🎁</div>
-        <div class="target-display">要付 <span id="displayTarget">?</span> 元</div>
+        <div class="box-icon">🎯</div>
+        <div class="target-content">
+          <div class="target-display">目標數字：<span id="displayTarget">?</span></div>
+          <div class="target-sub" id="displayTargetText">讀法：載入中...</div>
+        </div>
       </div>
       <div class="header-right">
         <div class="score-display">已完成: <span id="successCount">0</span> 關</div>
-        <div class="control-group">
-          <div class="control-tip">調整速度拉霸</div>
-          <div class="control-row">
-            <input type="range" id="speedSlider" class="speed-slider" min="1" max="10" value="5" step="1">
-            <span id="speedLabel" class="speed-label">速度5</span>
-            <div class="btn-container">
-              <button class="speak-btn" id="speakBtn" onclick="manualSpeak()">🔊 聽題目</button>
-              <button class="pause-btn" id="pauseBtn">⏸ 暫停</button>
-            </div>
-          </div>
+      </div>
+    </div>
+
+    <!-- 控制面板 -->
+    <div class="control-panel">
+      <div class="speed-control-box">
+        <div class="speed-title">掉落速度</div>
+        <div class="speed-row">
+          <button class="speed-btn" onclick="adjustSpeed(-1)">-</button>
+          <span class="speed-display-text" id="speedLabel">速度 2</span>
+          <button class="speed-btn" onclick="adjustSpeed(1)">+</button>
+        </div>
+      </div>
+
+      <button class="action-btn listen-btn" onclick="speakCurrentTarget()">🔊 聽題目</button>
+      <button class="action-btn pause-btn" id="pauseBtn" onclick="togglePause()">⏸ 暫停</button>
+    </div>
+
+    <div id="warningMsg"></div>
+    
+    <!-- 俄羅斯方塊掉落區 -->
+    <div class="drop-field" id="dropField"></div>
+
+    <!-- 國小標準定位板 -->
+    <div class="place-table-container">
+      <div class="place-title-bar" id="placeTitleBar">📍 請先選擇【個位】的數字：</div>
+      <div class="place-table">
+        <div class="digit-box" id="box_shiwan">
+          <div class="digit-box-title">十萬位</div>
+          <div class="digit-box-val" id="p_shiwan">?</div>
+        </div>
+        <div class="digit-box" id="box_wan">
+          <div class="digit-box-title">萬位</div>
+          <div class="digit-box-val" id="p_wan">?</div>
+        </div>
+        <div class="digit-box" id="box_qian">
+          <div class="digit-box-title">千位</div>
+          <div class="digit-box-val" id="p_qian">?</div>
+        </div>
+        <div class="digit-box" id="box_bai">
+          <div class="digit-box-title">百位</div>
+          <div class="digit-box-val" id="p_bai">?</div>
+        </div>
+        <div class="digit-box" id="box_shi">
+          <div class="digit-box-title">十位</div>
+          <div class="digit-box-val" id="p_shi">?</div>
+        </div>
+        <div class="digit-box active-place" id="box_ge">
+          <div class="digit-box-title">個位</div>
+          <div class="digit-box-val" id="p_ge">?</div>
         </div>
       </div>
     </div>
-    
-    <div class="hammer-tool-bar" style="margin: 3px 10px 0 10px; justify-content: center; padding: 3px;">
-      <span class="hammer-icon" style="font-size: 14px;">🔨</span>
-      <span style="font-size: 11px; font-weight: bold; color: #b45309;">第一頁 : 點擊掉落方塊來付錢！</span>
-    </div>
-    <div id="warningMsg"></div>
-    
-    <div class="drop-field" id="dropField"></div>
-    <div class="tray" id="trayCoins"></div>
 
-    <div class="wallet" id="wallet">
-      已支付金額：<span id="currentAmount">0</span> 元
+    <!-- 卡通小精靈 -->
+    <div class="cartoon-bar">
+      <div class="cartoon-avatar" id="cartoonAvatar" onclick="interactCartoon()" title="點我變身！">🦊</div>
+      <div class="cartoon-bubble" id="cartoonBubble">點我一下，看看我變身成什麼動物！</div>
     </div>
     
-    <!-- 💡 防呆過關按鈕：確保在任何裝置上若語音卡住，可以直接點擊手動推進至下一關 -->
+    <!-- 防卡死強制跳關按鈕 -->
     <div id="skipBtnContainer">
-      <button id="skipBtn">➡️ 進入下一關</button>
+      <button id="skipBtn" onclick="forceNextRound()">➡️ 進入下一題</button>
     </div>
   </div>
 
 <script>
-  let collectedCount = 0;   
-  let currentTarget = 0;
-  let currentCoinValue = 1; 
-  let requiredCount = 0;    
+  const questions = [
+    { num: 40980, text: "四萬零九百八十" },
+    { num: 51957, text: "五萬一千九百五十七" },
+    { num: 34670, text: "三萬四千六百七十" },
+    { num: 27724, text: "二萬七千七百二十四" },
+    { num: 100000, text: "十萬" }
+  ];
+
+  const placeKeys = [
+    { key: 'ge', name: '個位', id: 'p_ge', boxId: 'box_ge', divisor: 1, mod: 10 },
+    { key: 'shi', name: '十位', id: 'p_shi', boxId: 'box_shi', divisor: 10, mod: 10 },
+    { key: 'bai', name: '百位', id: 'p_bai', boxId: 'box_bai', divisor: 100, mod: 10 },
+    { key: 'qian', name: '千位', id: 'p_qian', boxId: 'box_qian', divisor: 1000, mod: 10 },
+    { key: 'wan', name: '萬位', id: 'p_wan', boxId: 'box_wan', divisor: 10000, mod: 10 },
+    { key: 'shiwan', name: '十萬位', id: 'p_shiwan', boxId: 'box_shiwan', divisor: 100000, mod: 10 }
+  ];
+
+  let currentQIndex = 0;
+  let currentStep = 0; 
+  let currentTargetNum = 0;
+  let currentTargetText = "";
   let successCount = 0; 
   let audioUnlocked = false; 
-  let isAnswering = false;
+  let isWinning = false;
   let isPaused = false;
-  let dropInterval = null;
-  let activeCoins = [];
-
-  let isTransitioning = false;
-  let transitionCallback = null;
-  let currentSpeechTimeout = null;
-  let lastSpokenText = "";
+  let currentActiveBlock = null; 
+  let blockTimeout = null;
+  let currentSpeedVal = 2; 
 
   const displayTarget = document.getElementById('displayTarget');
+  const displayTargetText = document.getElementById('displayTargetText');
   const successCountSpan = document.getElementById('successCount');
-  const trayCoins = document.getElementById('trayCoins');
   const dropField = document.getElementById('dropField');
   const startScreen = document.getElementById('startScreen');
-  const overflowScreen = document.getElementById('overflowScreen');
-  const quizScreen = document.getElementById('quizScreen');
-  const quizScreen3 = document.getElementById('quizScreen3');
-  const tetrisDropArea = document.getElementById('tetrisDropArea');
-  const tetrisDropArea3 = document.getElementById('tetrisDropArea3');
-  const quizQuestionText = document.getElementById('quizQuestionText');
-  const quizQuestionText3 = document.getElementById('quizQuestionText3');
-  const quizFeedback = document.getElementById('quizFeedback');
-  const quizFeedback3 = document.getElementById('quizFeedback3');
-  const currentAmountSpan = document.getElementById('currentAmount');
   const warningMsg = document.getElementById('warningMsg');
   const pauseBtn = document.getElementById('pauseBtn');
-  const speedSlider = document.getElementById('speedSlider');
-  const speedLabel = document.getElementById('speedLabel');
-  const refundBtn = document.getElementById('refundBtn');
   const startBtnEl = document.getElementById('startBtn');
-  const skipBtn = document.getElementById('skipBtn');
-  const skipBtnContainer = document.getElementById('skipBtnContainer');
-  
-  let audioCtx = null;
+  const speedLabel = document.getElementById('speedLabel');
+  const placeTitleBar = document.getElementById('placeTitleBar');
+  const cartoonBubble = document.getElementById('cartoonBubble');
+  const cartoonAvatar = document.getElementById('cartoonAvatar');
 
+  let avatars = ["🦊", "🐰", "🐼", "🦁", "🦄", "🐸", "🐯"];
+  let avIdx = 0;
+
+  let audioCtx = null;
   function initAudio() {
     try {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -458,8 +374,7 @@
     } catch(e) {}
   }
 
-  function playHammerSound() { playTone(600, 'sawtooth', 0.12, 0.4); }
-  function playPickupSound() { playTone(800, 'sine', 0.1, 0.3); }
+  function playDropSound() { playTone(400, 'square', 0.1, 0.2); }
   function playErrorSound() {
     playTone(150, 'sawtooth', 0.2, 0.4);
     setTimeout(() => playTone(100, 'sawtooth', 0.3, 0.4), 150);
@@ -471,106 +386,33 @@
     setTimeout(() => playTone(1046.50, 'square', 0.5, 0.4), 450); 
   }
 
-  // 💡 雙保險語音防呆機制 (Fallback Timer)：確保在任何裝置上若語音沒結束或無法觸發 onend，也能自動解鎖繼續
-  function speakText(text, speedRate, onFinished = null) {
-    lastSpokenText = text;
-    if (!('speechSynthesis' in window)) {
-      if (onFinished) onFinished();
-      return;
-    }
+  function speakText(text, speedRate = 0.85) {
+    if (!audioUnlocked || !('speechSynthesis' in window)) return;
     try {
       window.speechSynthesis.cancel(); 
-      if (currentSpeechTimeout) clearTimeout(currentSpeechTimeout);
-
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'zh-TW';
       utterance.rate = speedRate; 
-      utterance.volume = 1.0;
-
-      let finishedCalled = false;
-      const triggerEnd = () => {
-        if (!finishedCalled) {
-          finishedCalled = true;
-          if (currentSpeechTimeout) clearTimeout(currentSpeechTimeout);
-          if (onFinished) onFinished();
-        }
-      };
-
-      utterance.onend = triggerEnd;
-      utterance.onerror = triggerEnd;
-
-      let fallbackTime = Math.max(1500, text.length * 280 / speedRate);
-      currentSpeechTimeout = setTimeout(triggerEnd, fallbackTime);
-
       window.speechSynthesis.speak(utterance);
-    } catch(e) {
-      if (onFinished) onFinished();
-    }
+    } catch(e) {}
   }
 
-  function manualSpeak() {
-    if (lastSpokenText) {
-      speakText(lastSpokenText, 0.85);
-    } else {
-      speakText(`要付，${currentTarget} 元`, 0.85);
-    }
+  function speakCurrentTarget() {
+    let currentPlace = placeKeys[currentStep];
+    speakText(`目標數字是，${currentTargetText}。請找出，${currentPlace.name}的數字是什麼？`, 0.85);
   }
 
-  function showHammerEffect(x, y) {
-    const hammer = document.createElement('div');
-    hammer.className = 'tap-hammer-effect';
-    hammer.innerText = '🏀';
-    hammer.style.left = (x - 20) + 'px';
-    hammer.style.top = (y - 30) + 'px';
-    document.body.appendChild(hammer);
-    setTimeout(() => hammer.remove(), 400);
+  function adjustSpeed(amount) {
+    currentSpeedVal += amount;
+    if (currentSpeedVal < 1) currentSpeedVal = 1;
+    if (currentSpeedVal > 10) currentSpeedVal = 10;
+    speedLabel.innerText = `速度 ${currentSpeedVal}`;
   }
 
-  function getSpeedConfig() {
-    let val = parseInt(speedSlider.value);
-    speedLabel.innerText = "速度" + val;
-    let fallDuration = 24.0 - (val * 2.0); 
-    let interval = 6500 - (val * 500);
-    return { fallDuration, interval };
-  }
-
-  speedSlider.addEventListener('input', () => {
-    let cfg = getSpeedConfig();
-    if (!isAnswering && !isPaused) {
-      if (dropInterval) clearInterval(dropInterval);
-      dropInterval = setInterval(() => {
-        if (!isAnswering && !isPaused) spawnFallingCoin();
-      }, cfg.interval);
-    }
+  startBtnEl.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    startGame();
   });
-
-  function startTransition(callback) {
-    isTransitioning = true;
-    transitionCallback = callback;
-    skipBtnContainer.style.display = 'block';
-  }
-
-  function endTransition() {
-    if (isTransitioning) {
-      isTransitioning = false;
-      skipBtnContainer.style.display = 'none';
-      window.speechSynthesis.cancel();
-      if (currentSpeechTimeout) clearTimeout(currentSpeechTimeout);
-      
-      let cb = transitionCallback;
-      transitionCallback = null;
-      if (cb) cb();
-    }
-  }
-
-  skipBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); endTransition(); });
-  skipBtn.addEventListener('click', (e) => { e.stopPropagation(); endTransition(); });
-
-  startBtnEl.addEventListener('pointerdown', (e) => { e.preventDefault(); startGame(); });
-  startBtnEl.addEventListener('click', (e) => { startGame(); });
-
-  pauseBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); togglePause(); });
-  refundBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); refundAndResume(); });
 
   function startGame() {
     initAudio();
@@ -579,9 +421,8 @@
     if ('speechSynthesis' in window) {
       try {
         window.speechSynthesis.cancel();
-        let unlockUtterance = new SpeechSynthesisUtterance("遊戲開始");
-        unlockUtterance.volume = 0.01;
-        window.speechSynthesis.speak(unlockUtterance);
+        let unlockSpeech = new SpeechSynthesisUtterance('');
+        window.speechSynthesis.speak(unlockSpeech);
       } catch(e) {}
     }
 
@@ -591,389 +432,192 @@
     nextQuestion();
   }
 
+  function formatBackgroundGroupedNumber(numStr) {
+    if (numStr.length <= 4) {
+      return `<span class="ge-unit-bg">${numStr}</span>`;
+    } else {
+      let wanPart = numStr.slice(0, numStr.length - 4);
+      let gePart = numStr.slice(numStr.length - 4);
+      return `<span class="wan-unit-bg">${wanPart}</span><span style="margin:0 2px;"></span><span class="ge-unit-bg">${gePart}</span>`;
+    }
+  }
+
   function nextQuestion() {
-    isAnswering = false;
+    isWinning = false;
     isPaused = false;
-    isTransitioning = false;
-    transitionCallback = null;
-    skipBtnContainer.style.display = 'none';
-    
-    quizScreen.style.display = 'none';
-    quizScreen3.style.display = 'none';
-    overflowScreen.style.display = 'none';
+    currentStep = 0; 
     pauseBtn.innerText = "⏸ 暫停";
-    
-    // 💡 數字範圍精準維持 1, 2, 3, 4
-    const possibleValues = [1, 2, 3, 4];
-    currentCoinValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
-    requiredCount = Math.floor(Math.random() * 4) + 2; 
-    currentTarget = currentCoinValue * requiredCount;
 
-    displayTarget.innerText = currentTarget;
+    let q = questions[currentQIndex];
+    currentTargetNum = q.num;
+    currentTargetText = q.text;
+
+    let numStr = currentTargetNum.toString();
+    displayTarget.innerHTML = formatBackgroundGroupedNumber(numStr);
+    displayTargetText.innerText = `讀法：${currentTargetText}`;
     
-    collectedCount = 0;
+    placeKeys.forEach(p => {
+      document.getElementById(p.id).innerText = "?";
+      document.getElementById(p.boxId).classList.remove('active-place');
+    });
+    document.getElementById(placeKeys[0].boxId).classList.add('active-place');
+    placeTitleBar.innerText = `📍 請先選擇【${placeKeys[0].name}】的數字：`;
+
     warningMsg.innerText = "";
-    renderTray(); 
     
-    let cfg = getSpeedConfig();
-    if (dropInterval) clearInterval(dropInterval);
-    activeCoins.forEach(c => c.remove());
-    activeCoins = [];
+    if (blockTimeout) clearTimeout(blockTimeout);
+    if (currentActiveBlock) {
+      currentActiveBlock.remove();
+      currentActiveBlock = null;
+    }
 
-    dropInterval = setInterval(() => {
-      if (!isAnswering && !isPaused && !isTransitioning) spawnFallingCoin();
-    }, cfg.interval);
-
-    speakText(`要付，${currentTarget} 元`, 0.85);
+    spawnFallingDigit();
+    setTimeout(() => speakCurrentTarget(), 300);
   }
 
   function togglePause() {
-    if (isAnswering) return;
+    if (isWinning) return;
     isPaused = !isPaused;
 
     if (isPaused) {
       pauseBtn.innerText = "▶ 繼續";
       pauseBtn.style.background = "#16a34a";
       warningMsg.innerText = "⏸️ 遊戲已暫停，可以慢慢思考喔！";
-      activeCoins.forEach(c => c.style.animationPlayState = 'paused');
+      if (currentActiveBlock) currentActiveBlock.style.animationPlayState = 'paused';
+      if (blockTimeout) clearTimeout(blockTimeout);
     } else {
       pauseBtn.innerText = "⏸ 暫停";
       pauseBtn.style.background = "#f59e0b";
       warningMsg.innerText = "";
-      activeCoins.forEach(c => c.style.animationPlayState = 'running');
+      if (currentActiveBlock) {
+        currentActiveBlock.style.animationPlayState = 'running';
+      } else {
+        spawnFallingDigit();
+      }
     }
   }
 
-  function spawnFallingCoin() {
-    if (isPaused || isTransitioning) return;
+  function spawnFallingDigit() {
+    if (isPaused || isWinning) return;
     
-    const coinEl = document.createElement('div');
-    coinEl.className = 'money-item money-custom';
-    coinEl.innerText = `$${currentCoinValue}`;
+    if (currentActiveBlock) {
+      currentActiveBlock.remove();
+      currentActiveBlock = null;
+    }
 
-    const maxAllowedWidth = Math.max(20, dropField.clientWidth - 90);
-    const randomX = Math.random() * maxAllowedWidth + 10;
-    coinEl.style.left = randomX + 'px';
+    let currentPlace = placeKeys[currentStep];
+    let correctDigit = Math.floor(currentTargetNum / currentPlace.divisor) % currentPlace.mod;
+
+    let chosenDigit = correctDigit;
+    if (Math.random() < 0.6) {
+      let randomDistractors = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].filter(d => d !== correctDigit);
+      chosenDigit = randomDistractors[Math.floor(Math.random() * randomDistractors.length)];
+    }
+
+    const digitEl = document.createElement('div');
+    digitEl.className = 'falling-digit';
+    digitEl.innerText = chosenDigit;
+
+    const randomX = Math.random() * (dropField.clientWidth - 75);
+    digitEl.style.left = randomX + 'px';
     
-    let cfg = getSpeedConfig();
-    const duration = cfg.fallDuration + Math.random() * 1.5;
-    coinEl.style.animationDuration = duration + 's';
-    coinEl.style.animationName = 'fall';
-    coinEl.style.animationTimingFunction = 'linear';
-    coinEl.style.animationFillMode = 'forwards';
+    let duration = 16.0 - (currentSpeedVal * 1.4);
+    if (duration < 3.0) duration = 3.0;
+    digitEl.style.animationDuration = duration + 's';
 
-    const handleCoinTouch = (e) => {
+    const handleTouch = (e) => {
       e.preventDefault();
       e.stopPropagation();
-      if (isAnswering || isPaused || isTransitioning) return;
+      if (isWinning || isPaused) return;
 
-      const clientX = e.clientX || (e.touches && e.touches[0].clientX) || window.innerWidth / 2;
-      const clientY = e.clientY || (e.touches && e.touches[0].clientY) || window.innerHeight / 2;
-      showHammerEffect(clientX, clientY);
+      // 點擊瞬間變成籃球🏀
+      digitEl.innerText = "🏀";
+      digitEl.style.fontSize = "26px";
 
-      playHammerSound();
-      let totalAmount = collectedCount * currentCoinValue;
-
-      if (totalAmount + currentCoinValue > currentTarget) {
-        playErrorSound();
-        triggerOverflowPause();
-      } else {
-        warningMsg.innerText = "";
-        collectedCount++;
-        renderTray();
-      }
-      coinEl.remove();
-      activeCoins = activeCoins.filter(item => item !== coinEl);
-    };
-
-    coinEl.addEventListener('pointerdown', handleCoinTouch);
-    coinEl.addEventListener('click', handleCoinTouch);
-
-    coinEl.addEventListener('animationend', () => {
-      coinEl.remove();
-      activeCoins = activeCoins.filter(item => item !== coinEl);
-    });
-
-    dropField.appendChild(coinEl);
-    activeCoins.push(coinEl);
-  }
-
-  function triggerOverflowPause() {
-    isPaused = true;
-    playErrorSound();
-    speakText("金額超過囉，請退回重新開始！", 1.0);
-
-    activeCoins.forEach(c => c.style.animationPlayState = 'paused');
-    overflowScreen.style.display = 'flex';
-  }
-
-  function refundAndResume() {
-    playPickupSound();
-    collectedCount = 0;
-    renderTray(); 
-    
-    activeCoins.forEach(c => c.remove());
-    activeCoins = [];
-
-    overflowScreen.style.display = 'none';
-    isPaused = false;
-    pauseBtn.innerText = "⏸ 暫停";
-    pauseBtn.style.background = "#f59e0b";
-  }
-
-  function removeCoin() {
-    if (isAnswering || isPaused || isTransitioning) return;
-    if (collectedCount > 0) collectedCount--;
-    
-    warningMsg.innerText = "";
-    playPickupSound();
-    renderTray(); 
-  }
-
-  function renderTray() {
-    let totalAmount = collectedCount * currentCoinValue;
-    trayCoins.innerHTML = ''; 
-    currentAmountSpan.innerText = totalAmount;
-
-    for(let i=0; i<collectedCount; i++) {
-      let c = document.createElement('div');
-      c.className = 'money-item money-custom';
-      c.innerText = `${currentCoinValue}`;
-      let act = (e) => { if(e) e.preventDefault(); removeCoin(); };
-      c.addEventListener('pointerdown', act);
-      c.addEventListener('click', act);
-      trayCoins.appendChild(c);
-    }
-
-    if (totalAmount === currentTarget && currentTarget > 0 && !isAnswering) {
-      isAnswering = true; 
-      if (dropInterval) clearInterval(dropInterval);
-      activeCoins.forEach(c => c.remove());
-      activeCoins = [];
-
-      playCheerSound();
-      
-      startTransition(() => {
-        triggerTetrisQuiz();
-      });
-
-      speakText(`${totalAmount} 元，支付完成！請進入第二個畫面選算式`, 0.85, () => {
-        endTransition();
-      });
-
-    } else if (totalAmount < currentTarget && totalAmount > 0 && !isTransitioning) {
-      speakText(`${totalAmount} 元`, 1.3); 
-    }
-  }
-
-  // 第二畫面：選算式
-  function triggerTetrisQuiz() {
-    isTransitioning = false;
-    skipBtnContainer.style.display = 'none';
-
-    quizScreen.style.display = 'flex';
-    tetrisDropArea.innerHTML = '';
-    quizFeedback.innerText = '';
-
-    let correctStr = `${currentCoinValue} × ${collectedCount} = ${currentTarget}`;
-
-    let options = [correctStr];
-    while(options.length < 4) {
-      let rndVal1 = Math.floor(Math.random() * 4) + 1;
-      let rndVal2 = Math.floor(Math.random() * 4) + 2;
-      let wrongAns = rndVal1 * rndVal2;
-      let wrongStr = `${rndVal1} × ${rndVal2} = ${wrongAns}`;
-      if (!options.includes(wrongStr) && wrongAns !== currentTarget) {
-        options.push(wrongStr);
-      }
-    }
-    options.sort(() => Math.random() - 0.5);
-
-    quizQuestionText.innerHTML = `總金額 ${currentTarget} 元（${collectedCount} 個 ${currentCoinValue} 元），哪一個是正確的乘法橫式？`;
-    speakText(`總金額 ${currentTarget} 元，請選擇正確的乘法算式方塊！`, 0.85);
-
-    let cfg = getSpeedConfig();
-    let quizDuration = cfg.fallDuration + 3.0;
-
-    let leftPositions = [15, 38, 62, 85]; 
-
-    options.forEach((optStr, index) => {
-      let optionEl = document.createElement('div');
-      optionEl.className = 'falling-option';
-      optionEl.innerText = optStr;
-      
-      optionEl.style.left = leftPositions[index] + '%';
-      let startTop = -60 - (index * 50);
-      optionEl.style.top = startTop + 'px';
-      optionEl.style.animationDuration = quizDuration + 's';
-      optionEl.style.animationDelay = (index * 1.8) + 's';
-      optionEl.style.animationIterationCount = 'infinite';
-
-      const selectOption = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (isTransitioning) return;
+      if (chosenDigit === correctDigit) {
+        playDropSound();
+        document.getElementById(currentPlace.id).innerText = chosenDigit;
+        document.getElementById(currentPlace.boxId).classList.remove('active-place');
         
-        const clientX = e.clientX || (e.touches && e.touches[0].clientX) || window.innerWidth / 2;
-        const clientY = e.clientY || (e.touches && e.touches[0].clientY) || window.innerHeight / 2;
-        showHammerEffect(clientX, clientY);
+        setTimeout(() => {
+          digitEl.remove();
+          currentActiveBlock = null;
+        }, 200);
 
-        playHammerSound();
+        currentStep++;
+        if (currentStep >= placeKeys.length) {
+          isWinning = true;
+          if (blockTimeout) clearTimeout(blockTimeout);
 
-        if (optStr === correctStr) {
-          document.querySelectorAll('.falling-option').forEach(el => {
-            if (el !== optionEl) el.remove();
-          });
+          successCount++;
+          successCountSpan.innerText = successCount;
 
-          let computedLeft = window.getComputedStyle(optionEl).left;
-          let computedTop = window.getComputedStyle(optionEl).top;
-          optionEl.style.animation = 'none';
-          optionEl.style.left = computedLeft;
-          optionEl.style.top = computedTop;
-          optionEl.style.backgroundColor = '#16a34a'; 
-          optionEl.style.transform = 'scale(1.05)';
-          optionEl.style.zIndex = '99';
-          optionEl.innerText = `🎉 ${correctStr}`;
-
-          quizFeedback.style.color = '#16a34a';
-          quizFeedback.innerText = `🎉 答對了！ ${correctStr}！準備進入第三個畫面！`;
           playCheerSound();
-          
-          confetti({
-            particleCount: 120, spread: 70, origin: { y: 0.6 },
-            colors: ['#FFD700', '#ff0000', '#00ff00', '#0000ff']
-          });
+          speakText(`太棒了！${currentTargetText}，完全正確！`, 0.85);
 
-          startTransition(() => {
-            quizScreen.style.display = 'none';
-            triggerQuizScreen3(`${currentCoinValue} × ${collectedCount} =`);
-          });
-
-          speakText(`答對了！${currentCoinValue} 乘以 ${collectedCount} 等於 ${currentTarget}！接下來進入第三個畫面！`, 0.85, () => {
-            endTransition();
-          });
-
-        } else {
-          playErrorSound();
-          quizFeedback.style.color = '#dc2626';
-          quizFeedback.innerText = `❌ ${optStr} 不對喔，方塊飛走了！`;
-          speakText("再想一下喔", 1.0);
-          optionEl.remove();
-        }
-      };
-
-      optionEl.addEventListener('pointerdown', selectOption);
-      optionEl.addEventListener('click', selectOption);
-      tetrisDropArea.appendChild(optionEl);
-    });
-  }
-
-  // 第三畫面：維持燈籠型態
-  function triggerQuizScreen3(equationWithoutAns) {
-    isTransitioning = false;
-    skipBtnContainer.style.display = 'none';
-
-    quizScreen3.style.display = 'flex';
-    tetrisDropArea3.innerHTML = '';
-    quizFeedback3.innerText = '';
-
-    quizQuestionText3.innerHTML = `${equationWithoutAns} ?`;
-    
-    let cleanEquationSpeech = equationWithoutAns.replace('×', '乘以');
-    speakText(`請看算式，${cleanEquationSpeech} 等於多少呢？請接住掉落的小燈籠！`, 0.85);
-
-    let correctAnsVal = currentTarget;
-    let options = [correctAnsVal];
-    
-    while(options.length < 4) {
-      let offset = (Math.floor(Math.random() * 4) - 2) * currentCoinValue;
-      if (offset === 0) offset = currentCoinValue;
-      let wrongVal = correctAnsVal + offset;
-      if (wrongVal <= 0) wrongVal = correctAnsVal + 5;
-      if (!options.includes(wrongVal)) {
-        options.push(wrongVal);
-      }
-    }
-    options.sort(() => Math.random() - 0.5);
-
-    let leftPositions = [15, 38, 62, 85]; 
-    let cfg = getSpeedConfig();
-    let lanternDuration = cfg.fallDuration + 4.0;
-
-    options.forEach((val, index) => {
-      let optionEl = document.createElement('div');
-      optionEl.className = 'lantern-option'; 
-      optionEl.innerText = val;
-      
-      optionEl.style.left = leftPositions[index] + '%';
-      let startTop = -60 - (index * 50);
-      optionEl.style.top = startTop + 'px';
-      
-      optionEl.style.animationDuration = lanternDuration + 's';
-      optionEl.style.animationDelay = (index * 3.5) + 's';
-      optionEl.style.animationIterationCount = 'infinite';
-
-      const selectOption3 = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (isTransitioning) return;
-        
-        const clientX = e.clientX || (e.touches && e.touches[0].clientX) || window.innerWidth / 2;
-        const clientY = e.clientY || (e.touches && e.touches[0].clientY) || window.innerHeight / 2;
-        showHammerEffect(clientX, clientY);
-
-        playHammerSound();
-
-        if (val === correctAnsVal) {
-          document.querySelectorAll('#quizScreen3 .lantern-option').forEach(el => {
-            if (el !== optionEl) el.remove();
-          });
-
-          let computedLeft = window.getComputedStyle(optionEl).left;
-          let computedTop = window.getComputedStyle(optionEl).top;
-          optionEl.style.animation = 'none';
-          optionEl.style.left = computedLeft;
-          optionEl.style.top = computedTop;
-          optionEl.style.backgroundColor = '#16a34a'; 
-          optionEl.style.borderColor = '#15803d';
-          optionEl.style.transform = 'scale(1.05)';
-          optionEl.style.zIndex = '99';
-          optionEl.innerText = `🏮 ${currentTarget}`;
-
-          quizFeedback3.style.color = '#16a34a';
-          quizFeedback3.innerText = `🎉 答對了！ ${equationWithoutAns} ${currentTarget}！`;
-          playCheerSound();
-          
           confetti({
             particleCount: 150, spread: 80, origin: { y: 0.6 },
             colors: ['#FFD700', '#ff0000', '#00ff00', '#0000ff']
           });
 
-          successCount++;
-          successCountSpan.innerText = successCount;
-
-          startTransition(() => {
-            quizScreen3.style.display = 'none';
-            nextQuestion();
-          });
-
-          speakText(`太棒了！${cleanEquationSpeech} ${currentTarget}！恭喜完成所有挑戰！`, 0.85, () => {
-            endTransition();
-          });
-
+          // 自動跳關，並提供保底手動按鈕
+          currentQIndex = (currentQIndex + 1) % questions.length;
+          setTimeout(nextQuestion, 2500);
         } else {
-          playErrorSound();
-          quizFeedback3.style.color = '#dc2626';
-          quizFeedback3.innerText = `❌ ${val} 不對喔，小燈籠飛走了！再想一想！`;
-          speakText("再想一下喔", 1.0);
-          optionEl.remove();
+          let nextPlace = placeKeys[currentStep];
+          document.getElementById(nextPlace.boxId).classList.add('active-place');
+          placeTitleBar.innerText = `📍 請接著選擇【${nextPlace.name}】的數字：`;
+          speakText(`答對了！請找${nextPlace.name}`, 1.0);
+          
+          blockTimeout = setTimeout(spawnFallingDigit, 400);
         }
-      };
+      } else {
+        playErrorSound();
+        warningMsg.innerText = `❌ ${currentPlace.name}不是 ${chosenDigit} 喔，再試一次！`;
+        speakText("選錯囉，再找找看", 1.0);
+        
+        setTimeout(() => {
+          digitEl.remove();
+          currentActiveBlock = null;
+        }, 200);
 
-      optionEl.addEventListener('pointerdown', selectOption3);
-      optionEl.addEventListener('click', selectOption3);
-      tetrisDropArea3.appendChild(optionEl);
+        blockTimeout = setTimeout(spawnFallingDigit, 300);
+      }
+    };
+
+    digitEl.addEventListener('pointerdown', handleTouch);
+    digitEl.addEventListener('click', handleTouch);
+
+    digitEl.addEventListener('animationend', () => {
+      digitEl.remove();
+      currentActiveBlock = null;
+      if (!isWinning && !isPaused) {
+        blockTimeout = setTimeout(spawnFallingDigit, 150);
+      }
     });
+
+    dropField.appendChild(digitEl);
+    currentActiveBlock = digitEl;
+  }
+
+  function forceNextRound() {
+    if (blockTimeout) clearTimeout(blockTimeout);
+    nextQuestion();
+  }
+
+  function interactCartoon() {
+    avIdx = (avIdx + 1) % avatars.length;
+    cartoonAvatar.innerText = avatars[avIdx];
+    let currentPlace = placeKeys[currentStep];
+    const dialogs = [
+      `加油！現在要找的是「${currentPlace.name}」喔！`,
+      "從右邊的個位數慢慢往左邊推敲就對了！",
+      "注意看上方以底色區分的萬級與個級，不要漏掉零喔！",
+      "太棒了！你做得很好，繼續保持！"
+    ];
+    let selectedMsg = dialogs[Math.floor(Math.random() * dialogs.length)];
+    cartoonBubble.innerText = selectedMsg;
+    speakText(selectedMsg, 1.0);
   }
 </script>
 </body>
