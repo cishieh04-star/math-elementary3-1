@@ -97,7 +97,7 @@
     flex-shrink: 0;
   }
   
-  /* 🧩 第二畫面方塊樣式：控制在虛線框內落下（終點 top: 110px） */
+  /* 🧩 第二畫面方塊樣式：控制在虛線框內落下、左右分散不黏在一起 */
   .falling-option {
     position: absolute; 
     width: 21%; height: 46px; 
@@ -118,7 +118,7 @@
     100% { top: 110px; }
   }
 
-  /* 🏮 第三畫面燈籠樣式：控制在虛線框內落下（終點 top: 110px） */
+  /* 🏮 第三畫面燈籠樣式：控制在虛線框內落下 */
   .lantern-option {
     position: absolute; width: 75px; height: 45px; background: #dc2626; color: #fef08a;
     font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center;
@@ -271,13 +271,16 @@
     100% { transform: scale(1) rotate(0deg); opacity: 0; }
   }
 
+  /* 💡 超大明顯的強制過關按鈕，專門用來解決 HyperOS 語音回呼失效造成的卡關問題 */
   #skipBtnContainer {
-    display: none; position: absolute; bottom: 75px; left: 50%; transform: translateX(-50%); z-index: 10000;
+    display: none; position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%); z-index: 10000;
+    width: 90%; max-width: 320px; text-align: center;
   }
   #skipBtn {
-    font-size: 16px; font-weight: bold; padding: 10px 22px;
-    background: #10b981; color: white; border: 3px solid #047857; border-radius: 20px;
-    cursor: pointer; box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    font-size: 18px; font-weight: bold; padding: 14px 20px;
+    background: #10b981; color: white; border: 3px solid #047857; border-radius: 25px;
+    cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    width: 100%;
     animation: pulseBtn 0.8s infinite alternate;
   }
   @keyframes pulseBtn {
@@ -307,6 +310,7 @@
     </div>
   </div>
 
+  <!-- 第二畫面：選算式 -->
   <div id="quizScreen">
     <div class="quiz-box">
       <h2>🧩 第二畫面：選乘法算式</h2>
@@ -320,6 +324,7 @@
     </div>
   </div>
 
+  <!-- 第三畫面：看算式，小燈籠掉落選總額 -->
   <div id="quizScreen3">
     <div class="quiz-box">
       <h2>🏮 第三畫面：小燈籠乘法計算總額</h2>
@@ -374,8 +379,9 @@
       已支付金額：<span id="currentAmount">0</span> 元
     </div>
     
+    <!-- 💡 強制過關按鈕：在 Xiaomi HyperOS 上若語音事件被攔截卡住，點擊此按鈕即可無條件直接進入下一關 -->
     <div id="skipBtnContainer">
-      <button id="skipBtn">➡️ 進入下一關</button>
+      <button id="skipBtn">➡️ 點擊這裡進入下一關</button>
     </div>
   </div>
 
@@ -463,7 +469,7 @@
     setTimeout(() => playTone(1046.50, 'square', 0.5, 0.4), 450); 
   }
 
-  // 💡 雙保險語音防呆機制 (Fallback Timer)：確保在任何裝置上若語音沒結束或無法觸發 onend，也能自動解鎖繼續
+  // 💡 強化版雙保險語音防呆機制：確保在 HyperOS / Android 14 上即使 onend 被系統阻擋，也能自動計時解鎖
   function speakText(text, speedRate, onFinished = null) {
     lastSpokenText = text;
     if (!('speechSynthesis' in window)) {
@@ -795,7 +801,7 @@
       optionEl.innerText = optStr;
       
       optionEl.style.left = leftPositions[index] + '%';
-      let startTop = -60 - (index * 45);
+      let startTop = -60 - (index * 50);
       optionEl.style.top = startTop + 'px';
       optionEl.style.animationDuration = quizDuration + 's';
       optionEl.style.animationDelay = (index * 1.8) + 's';
@@ -941,5 +947,32 @@
             colors: ['#FFD700', '#ff0000', '#00ff00', '#0000ff']
           });
 
-@@ -1026,6 +1026,6 @@
+          successCount++;
+          successCountSpan.innerText = successCount;
+
+          startTransition(() => {
+            quizScreen3.style.display = 'none';
+            nextQuestion();
+          });
+
+          speakText(`太棒了！${cleanEquationSpeech} ${currentTarget}！恭喜完成所有挑戰！`, 0.85, () => {
+            endTransition();
+          });
+
+        } else {
+          playErrorSound();
+          quizFeedback3.style.color = '#dc2626';
+          quizFeedback3.innerText = `❌ ${val} 不對喔，小燈籠飛走了！再想一想！`;
+          speakText("再想一下喔", 1.0);
+          optionEl.remove();
+        }
+      };
+
+      optionEl.addEventListener('pointerdown', selectOption3);
+      optionEl.addEventListener('click', selectOption3);
+      tetrisDropArea3.appendChild(optionEl);
+    });
+  }
+</script>
+</body>
 </html>
