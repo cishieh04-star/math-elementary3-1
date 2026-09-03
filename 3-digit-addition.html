@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>三位數直式加法進位遊戲(進階版)</title>
+    <title>三位數直式加法遊戲(進位版)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * { 
@@ -22,18 +22,18 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             overflow: hidden; touch-action: manipulation;
         }
-        h1 { color: #b45309; font-size: 17px; margin: 2px 0; }
+        h1 { color: #b45309; font-size: 15px; margin: 2px 0; }
         
         #gameScreen { 
             width: 100%; max-width: 500px; height: 100%; max-height: 100dvh;
             display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
-            background: #fff; border-radius: 0; border: none; padding: 8px 10px; 
+            background: #fff; border-radius: 0; border: none; padding: 6px 10px; 
             box-shadow: none; margin: 0 auto;
             position: relative;
         }
         @media (min-width: 520px) {
             #gameScreen {
-                border-radius: 16px; border: 3px solid #f59e0b; max-height: 92vh; height: auto;
+                border-radius: 16px; border: 3px solid #f59e0b; max-height: 94vh; height: auto;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: auto;
             }
         }
@@ -68,52 +68,68 @@
         
         .status-bar { 
             display: flex; justify-content: space-between; align-items: center; 
-            width: 100%; font-size: 14px; font-weight: bold; color: #b45309; 
-            border-bottom: 2px solid #fef3c7; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; 
+            width: 100%; font-size: 13px; font-weight: bold; color: #b45309; 
+            border-bottom: 2px solid #fef3c7; padding-bottom: 3px; padding-left: 4px; padding-right: 4px; 
             flex-shrink: 0;
         }
 
         .btn-group { display: flex; gap: 6px; align-items: center; }
         .control-btn {
             background-color: #f59e0b; color: white; border: none; border-radius: 8px;
-            padding: 4px 10px; font-size: 13px; font-weight: bold; cursor: pointer;
+            padding: 4px 10px; font-size: 12px; font-weight: bold; cursor: pointer;
             box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
         .control-btn:active { transform: scale(0.95); background-color: #d97706; }
         .speak-btn { background-color: #0ea5e9; }
         .speak-btn:active { background-color: #0284c7; }
 
-        .step-banner { 
-            background: #fef3c7; color: #92400e; padding: 6px 10px; border-radius: 8px; 
-            font-size: 13px; font-weight: bold; width: 100%; line-height: 1.3; text-align: center;
+        /* 調整速度拉霸與聽題目控制面板區 */
+        .top-panel {
+            display: flex; justify-content: space-between; align-items: center; width: 100%;
+            background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 4px 8px;
             flex-shrink: 0;
+        }
+        .slider-box {
+            display: flex; align-items: center; gap: 6px;
+        }
+        .slider-title { font-size: 11px; font-weight: bold; color: #7c3aed; }
+        .slider-row { display: flex; align-items: center; gap: 4px; }
+        .slider-row input[type=range] {
+            width: 85px; cursor: pointer; accent-color: #8b5cf6; height: 6px;
+        }
+        .speed-text { font-size: 11px; font-weight: bold; color: #7c3aed; width: 38px; text-align: left; }
+
+        .step-banner { 
+            background: #fef3c7; color: #92400e; padding: 5px 8px; border-radius: 8px; 
+            font-size: 13px; font-weight: bold; width: 100%; line-height: 1.3; text-align: center;
+            flex-shrink: 0; border: 1.5px dashed #f59e0b;
         }
 
         /* 三位數直式排版區 (百位、十位與個位三欄) */
         .vertical-math {
             display: inline-flex; flex-direction: column; align-items: flex-end;
-            font-size: 30px; font-weight: bold; font-family: monospace;
-            background: #f8fafc; padding: 8px 14px 8px 22px; border-radius: 12px; border: 2px solid #cbd5e1;
+            font-size: 28px; font-weight: bold; font-family: monospace;
+            background: #f8fafc; padding: 6px 12px 6px 20px; border-radius: 12px; border: 2px solid #cbd5e1;
             position: relative;
             flex-shrink: 0;
         }
         .math-row { display: flex; gap: 8px; width: 100%; justify-content: flex-end; }
-        .math-line { width: 100%; height: 3px; background: #333; margin: 3px 0; }
-        .cell { width: 35px; text-align: center; display: flex; align-items: center; justify-content: center; height: 38px; }
+        .math-line { width: 100%; height: 3px; background: #333; margin: 2px 0; }
+        .cell { width: 34px; text-align: center; display: flex; align-items: center; justify-content: center; height: 36px; }
         
-        .operator { position: absolute; left: 8px; top: 44px; font-size: 24px; color: #333; }
+        .operator { position: absolute; left: 8px; top: 40px; font-size: 22px; color: #333; }
         
         /* 十位與百位上方的進位格子 */
         .carry-box {
             position: absolute; top: 2px;
-            font-size: 15px; color: #ef4444; font-weight: bold;
+            font-size: 14px; color: #ef4444; font-weight: bold;
             background: #fee2e2; border: 2px dashed #ef4444; border-radius: 6px;
-            width: 32px; height: 26px; display: flex; align-items: center; justify-content: center;
+            width: 30px; height: 24px; display: flex; align-items: center; justify-content: center;
             opacity: 0; transform: scale(0.3);
             transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        #carryH { left: 48px; }   /* 百位進位格子位置 */
-        #carryT { left: 91px; }   /* 十位進位格子位置 */
+        #carryH { left: 46px; }   /* 百位進位格子位置 */
+        #carryT { left: 88px; }   /* 十位進位格子位置 */
 
         .carry-box.show {
             opacity: 1; 
@@ -122,18 +138,18 @@
         }
 
         #drop-game-container {
-            position: relative; width: 100%; height: 100px;
+            position: relative; width: 100%; height: 110px;
             background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 10px;
             overflow: hidden; touch-action: manipulation;
             flex-shrink: 0;
         }
 
         .falling-option {
-            position: absolute; width: 50px; height: 50px;
+            position: absolute; width: 46px; height: 46px;
             background: radial-gradient(circle, #fcd34d 60%, #f59e0b 100%);
             border: 3px solid #d97706; border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 22px; font-weight: bold; color: #78350f;
+            font-size: 20px; font-weight: bold; color: #78350f;
             cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.2);
             animation: fall linear forwards; z-index: 999;
         }
@@ -141,7 +157,7 @@
 
         @keyframes fall {
             0% { top: -50px; }
-            100% { top: 50px; }
+            100% { top: 64px; }
         }
     </style>
 </head>
@@ -156,10 +172,9 @@
                 <div class="intro-card">
                     <h3>📖 遊戲使用說明</h3>
                     <ul>
-                        <li><strong>第一步：計算個位數：</strong>由右到左，先將個位數相加，點擊正確的掉落方塊，若超過10會自動向十位進位。</li>
-                        <li><strong>第二步：計算十位數：</strong>接著計算十位數相加（別忘了加上進位 1），選對後若超過10會向百位進位。</li>
-                        <li><strong>第三步：計算百位數：</strong>最後計算百位數相加（含進位 1），點擊正確答案即可完成整題闖關。</li>
-                        <li><strong>🔊 貼心按鈕：</strong>若想再聽一次題目，可隨時點擊「🔊 聽題目」按鈕；需要休息可點「暫停」。</li>
+                        <li><strong>無限隨機題庫：</strong>每次過關自動生成全新進位題目，提供最充分的練習機會！</li>
+                        <li><strong>速度拉霸與語音：</strong>可透過上方拉霸自由調整掉落速度，隨時點擊「🔊 聽題目」。</li>
+                        <li><strong>大字提示：</strong>上方橫幅隨時以清晰大字同步顯示目前步驟與進位提示。</li>
                     </ul>
                 </div>
 
@@ -168,14 +183,26 @@
         </div>
 
         <h1>🔄 三位數直式加法進位遊戲</h1>
+        
         <div class="status-bar">
             <div id="score">已完成: 0 關</div>
             <div class="btn-group">
-                <button class="control-btn speak-btn" onclick="manualSpeak()">🔊 聽題目</button>
                 <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
             </div>
         </div>
         
+        <!-- 速度拉霸與語音朗讀控制面板 -->
+        <div class="top-panel">
+            <div class="slider-box">
+                <span class="slider-title">速度</span>
+                <div class="slider-row">
+                    <input type="range" id="speedSlider" min="1" max="10" value="4" oninput="updateSpeed(this.value)">
+                    <span class="speed-text" id="speedLabel">5.5秒</span>
+                </div>
+            </div>
+            <button class="control-btn speak-btn" onclick="manualSpeak()">🔊 聽題目</button>
+        </div>
+
         <div class="step-banner" id="stepBanner">請先算個位數相加！</div>
 
         <!-- 三位數直式呈現區 -->
@@ -208,7 +235,7 @@
             </div>
         </div>
 
-        <div id="feedback" style="font-size: 14px; color: #d97706; font-weight: bold; min-height: 18px; flex-shrink: 0;"></div>
+        <div id="feedback" style="font-size: 13px; color: #d97706; font-weight: bold; min-height: 16px; flex-shrink: 0;"></div>
         
         <div id="drop-game-container"></div>
     </div>
@@ -225,7 +252,20 @@
         let isPaused = false;
         let nextQuestionTimeout = null;
         let lastSpokenText = "";
-        let currentUtterance = null; // 全域常駐變數，保護語音不被回收
+        let currentUtterance = null;
+        let currentDropDuration = 5.5; // 預設掉落秒數
+
+        function updateSpeed(val) {
+            let numericVal = Number(val);
+            currentDropDuration = Number((9.0 - (numericVal * 0.7)).toFixed(1));
+            if (currentDropDuration < 1.8) currentDropDuration = 1.8;
+            document.getElementById('speedLabel').innerText = `${currentDropDuration}秒`;
+            
+            const activeEls = document.querySelectorAll('.falling-option');
+            activeEls.forEach(el => {
+                el.style.animationDuration = currentDropDuration + 's';
+            });
+        }
 
         function speak(text) {
             lastSpokenText = text;
@@ -244,7 +284,7 @@
             if (lastSpokenText) {
                 speak(lastSpokenText);
             } else {
-                speak("請依照步驟計算加法方塊。");
+                speak("請依照步驟計算進位加法方塊。");
             }
         }
 
@@ -290,6 +330,41 @@
             }
         }
 
+        // 自動隨機生成三位數「進位」加法題目函數
+        function generateRandomCarryingQuestion() {
+            let h1, t1, u1, h2, t2, u2;
+            let isValid = false;
+
+            while (!isValid) {
+                // 隨機產生百位 (1~4，避免加起來超過千位)
+                h1 = Math.floor(Math.random() * 4) + 1;
+                h2 = Math.floor(Math.random() * 4) + 1;
+
+                // 隨機產生十位 (0~9)
+                t1 = Math.floor(Math.random() * 9);
+                t2 = Math.floor(Math.random() * 9);
+
+                // 隨機產生個位 (5~9，確保個位數相加一定會 >= 10 產生進位)
+                u1 = Math.floor(Math.random() * 5) + 5;
+                u2 = Math.floor(Math.random() * 5) + 5;
+
+                // 檢查是否符合個位或十位有進位，讓進位遊戲更有意義
+                let sumU = u1 + u2;
+                let carry1 = Math.floor(sumU / 10);
+                let sumT = t1 + t2 + carry1;
+                let carry2 = Math.floor(sumT / 10);
+
+                // 確保百位總和不會太大（小於 10）
+                let sumH = h1 + h2 + carry2;
+
+                if ((carry1 > 0 || carry2 > 0) && sumH < 10) {
+                    isValid = true;
+                }
+            }
+
+            return { h1, t1, u1, h2, t2, u2 };
+        }
+
         function initQuestion() {
             if (isPaused) return;
             isLocked = false;
@@ -300,13 +375,8 @@
             document.getElementById('ansT').innerText = "?";
             document.getElementById('ansH').innerText = "?";
 
-            const questions = [
-                {h1: 2, t1: 4, u1: 7, h2: 3, t2: 8, u2: 5}, 
-                {h1: 1, t1: 5, u1: 6, h2: 4, t2: 7, u2: 8}, 
-                {h1: 3, t1: 2, u1: 9, h2: 2, t2: 9, u2: 4}, 
-                {h1: 4, t1: 6, u1: 8, h2: 1, t2: 5, u2: 7}  
-            ];
-            let q = questions[Math.floor(Math.random() * questions.length)];
+            // 每次自動隨機出一題新題目！
+            let q = generateRandomCarryingQuestion();
             h1 = q.h1; t1 = q.t1; u1 = q.u1; 
             h2 = q.h2; t2 = q.t2; u2 = q.u2;
             
@@ -326,7 +396,8 @@
             document.getElementById('tDown').innerText = t2;
             document.getElementById('uDown').innerText = u2;
 
-            document.getElementById('stepBanner').innerText = `步驟一：先算個位數 ${u1} ＋ ${u2}，個位數是多少呢？`;
+            let promptText = `步驟一：先算個位數 ${u1} ＋ ${u2}，個位數是多少呢？`;
+            document.getElementById('stepBanner').innerText = promptText;
             speak(`步驟一，先算個位數，${u1}加${u2}。個位數是多少呢？方塊掉下來囉！`);
 
             setupFalling();
@@ -370,7 +441,7 @@
 
             const randomX = Math.random() * (container.clientWidth - 50);
             el.style.left = randomX + 'px';
-            el.style.animationDuration = "5.5s"; 
+            el.style.animationDuration = currentDropDuration + 's'; 
 
             let isHandled = false;
             const handleSelect = (e) => {
