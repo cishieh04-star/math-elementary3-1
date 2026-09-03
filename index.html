@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>小三上數學互動遊戲</title>
     
-    <!-- 加上這幾行，強制通訊軟體（如 LINE）抓取正確的標題與說明，避免殘留舊的字樣 -->
+    <!-- 強制通訊軟體（如 LINE）抓取正確的標題與說明 -->
     <meta property="og:title" content="小三上數學互動遊戲(iOS)">
     <meta property="og:description" content="請選擇下列課程遊戲單元">
     <meta property="og:type" content="website">
@@ -90,8 +90,8 @@
         const games = [
             { name: "1.三位數直式加法遊戲(無進位)", file: "3-digit-addition(basic).html" },
             { name: "2.三位數直式加法遊戲(有進位)", file: "3-digit-addition.html" },
-            { name: "3.四位數直式加法遊戲(無進位)", file: "3-digit-addition(basic).html" },
-            { name: "4.五位數直式加法遊戲(無進位)", file: "3-digit-addition(basic).html" },
+            { name: "3.四位數直式加法遊戲(無進位)", file: "4-digit-addition(basic).html" }, /* 建議確認檔名是否正確 */
+            { name: "4.五位數直式加法遊戲(無進位)", file: "5-digit-addition(basic).html" }, /* 建議確認檔名是否正確 */
             { name: "5.火車接力遊戲(10000以內，以10為間隔)", file: "number-train10000-interface10.html" },
             { name: "6.火車接力遊戲(10000以內，以20為間隔)", file: "number-train10000-interface20.html" },
             { name: "7.火車接力遊戲(10000以內，以100為間隔)", file: "number-train10000-interface100.html" },
@@ -109,6 +109,7 @@
             { name: "19.乘法基礎遊戲(1-4)", file: "payment-multiplication-basic(1-4).html" },
             { name: "20.乘法基礎遊戲(5-9)", file: "payment-multiplication-basic(5-9).html" },
             { name: "21.乘法分拆計算", file: "multiplication-decomposition.html" }
+        ]; /* <-- 這裡原本少了一個 ] 結尾 */
 
         const listElement = document.getElementById('game-list');
         games.forEach(game => {
