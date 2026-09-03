@@ -98,7 +98,6 @@
         }
 
         .place-header {
-            display: flex.
             display: flex; gap: 8px; width: 100%; justify-content: center; font-weight: bold; font-size: 12px; color: #64748b; margin-bottom: -4px;
         }
         .place-col { width: 45px; text-align: center; }
@@ -230,16 +229,25 @@
         let nextQuestionTimeout = null;
         let lastSpokenText = "請先點擊開始挑戰！";
 
-        function speak(text) {
-            if (isPaused || !('speechSynthesis' in window)) return;
+        // 💡 序列式語音朗讀函數（支援 callback，確保唸完上一句才接下一句）
+        function speak(text, callback) {
+            if (isPaused || !('speechSynthesis' in window)) {
+                if (callback) callback();
+                return;
+            }
             lastSpokenText = text;
             try {
                 window.speechSynthesis.cancel();
                 const msg = new SpeechSynthesisUtterance(text);
                 msg.lang = 'zh-TW';
                 msg.rate = 0.85;
+                if (callback) {
+                    msg.onend = callback;
+                }
                 window.speechSynthesis.speak(msg);
-            } catch(e) {}
+            } catch(e) {
+                if (callback) callback();
+            }
         }
 
         function repeatCurrentPrompt() {
@@ -314,7 +322,7 @@
             }
         }
 
-        // 💡 三位數無限隨機出題（百位數絕不為 0，無進位）
+        // 💡 三位數無限隨機出題
         function initQuestion() {
             if (isPaused) return;
             isLocked = false;
@@ -358,15 +366,16 @@
 
             document.getElementById('stepBanner').innerText = `題目：${total1} + ${total2} 等於多少呢？`;
             
-            speak(`我們來算算看，${total1}加${total2}等於多少呢？`);
-            
-            setTimeout(() => {
-                if (!isPaused) {
-                    document.getElementById('stepBanner').innerText = `步驟一：先算個位數，${u1} 加上 ${u2} 等於多少呢？`;
-                    speak(`先算個位數，${u1}加${u2}。方塊掉下來囉！`);
-                    setupFalling();
-                }
-            }, 1000);
+            // 💡 串接語音：完整唸完題目後，才接著唸步驟一，絕不打斷！
+            speak(`我們來算算看，${total1}加${total2}等於多少呢？`, () => {
+                if (isPaused) return;
+                document.getElementById('stepBanner').innerText = `步驟一：先算個位數，${u1} 加上 ${u2} 等於多少呢？`;
+                speak(`先算個位數，${u1}加${u2}。方塊掉下來囉！`, () => {
+                    if (!isPaused) {
+                        setupFalling();
+                    }
+                });
+            });
         }
 
         function setupFalling() {
@@ -423,17 +432,18 @@
                         document.getElementById('feedback').innerText = `🎉 個位數算對了！個位數是 ${targetU}。`;
                         confetti();
 
-                        speak(`個位數算對了，個位數是 ${targetU}。`);
-
-                        setTimeout(() => {
-                            if (isPaused) return;
-                            document.getElementById('feedback').innerText = `接下來算十位數！`;
-                            isLocked = false;
-                            currentStep = 'tens';
-                            document.getElementById('stepBanner').innerText = `步驟二：算十位數，${t1} 加上 ${t2} 等於多少呢？`;
-                            speak(`接下來，請算出，${t1} 加上 ${t2} 等於多少呢？`);
-                            setupFalling();
-                        }, 2500);
+                        speak(`個位數算對了，個位數是 ${targetU}。`, () => {
+                            setTimeout(() => {
+                                if (isPaused) return;
+                                document.getElementById('feedback').innerText = `接下來算十位數！`;
+                                isLocked = false;
+                                currentStep = 'tens';
+                                document.getElementById('stepBanner').innerText = `步驟二：算十位數，${t1} 加上 ${t2} 等於多少呢？`;
+                                speak(`接下來，請算出，${t1} 加上 ${t2} 等於多少呢？`, () => {
+                                    setupFalling();
+                                });
+                            }, 1500);
+                        });
 
                     } else {
                         isHandled = true;
@@ -454,17 +464,18 @@
                         document.getElementById('feedback').innerText = `🎉 十位數算對了！最後算百位數！`;
                         confetti();
 
-                        speak(`十位數算對了。最後算百位數，${h1}加${h2}。`);
-
-                        setTimeout(() => {
-                            if (isPaused) return;
-                            document.getElementById('feedback').innerText = `最後算百位數！`;
-                            isLocked = false;
-                            currentStep = 'hundreds';
-                            document.getElementById('stepBanner').innerText = `步驟三：算百位數，${h1} 加上 ${h2} 等於多少呢？`;
-                            speak(`最後，請算出，${h1} 加上 ${h2} 等於多少呢？`);
-                            setupFalling();
-                        }, 2500);
+                        speak(`十位數算對了。最後算百位數，${h1}加${h2}。`, () => {
+                            setTimeout(() => {
+                                if (isPaused) return;
+                                document.getElementById('feedback').innerText = `最後算百位數！`;
+                                isLocked = false;
+                                currentStep = 'hundreds';
+                                document.getElementById('stepBanner').innerText = `步驟三：算百位數，${h1} 加上 ${h2} 等於多少呢？`;
+                                speak(`最後，請算出，${h1} 加上 ${h2} 等於多少呢？`, () => {
+                                    setupFalling();
+                                });
+                            }, 1500);
+                        });
 
                     } else {
                         isHandled = true;
@@ -490,12 +501,12 @@
                         document.getElementById('feedback').innerText = `🌟 太棒了！總金額是 ${grandTotal} 元，恭喜過關！`;
                         confetti();
 
-                        speak(`太棒了，總金額是 ${grandTotal} 元，恭喜過關！`);
-
-                        if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
-                        nextQuestionTimeout = setTimeout(() => {
-                            if (!isPaused) initQuestion();
-                        }, 3500);
+                        speak(`太棒了，總金額是 ${grandTotal} 元，恭喜過關！`, () => {
+                            if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+                            nextQuestionTimeout = setTimeout(() => {
+                                if (!isPaused) initQuestion();
+                            }, 2500);
+                        });
 
                     } else {
                         isHandled = true;
