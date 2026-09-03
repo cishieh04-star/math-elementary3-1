@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>三位數直式加法遊戲(無進位版)</title>
+    <title>二位數直式加法遊戲(無進位版)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * { 
@@ -80,21 +80,29 @@
         .speak-btn { background-color: #0ea5e9; }
         .speak-btn:active { background-color: #0284c7; }
 
-        /* 調整速度拉霸與聽題目控制面板區 */
+        /* 調整速度拉霸與上方控制面板區 */
         .top-panel {
             display: flex; justify-content: space-between; align-items: center; width: 100%;
             background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 4px 8px;
             flex-shrink: 0;
+            gap: 6px;
         }
         .slider-box {
-            display: flex; align-items: center; gap: 6px;
+            display: flex; align-items: center; gap: 4px;
         }
         .slider-title { font-size: 11px; font-weight: bold; color: #7c3aed; }
         .slider-row { display: flex; align-items: center; gap: 4px; }
         .slider-row input[type=range] {
-            width: 85px; cursor: pointer; accent-color: #8b5cf6; height: 6px;
+            width: 75px; cursor: pointer; accent-color: #8b5cf6; height: 6px;
         }
-        .speed-text { font-size: 11px; font-weight: bold; color: #7c3aed; width: 38px; text-align: left; }
+        .speed-text { font-size: 11px; font-weight: bold; color: #7c3aed; width: 34px; text-align: left; }
+
+        /* 拉霸右側的題目顯示樣式 */
+        .header-question-display {
+            background: #fef9c3; border: 1.5px solid #f59e0b; border-radius: 6px;
+            padding: 2px 6px; font-size: 13px; font-weight: bold; color: #b45309;
+            flex-grow: 1; text-align: center; letter-spacing: 0.5px;
+        }
 
         .step-banner { 
             background: #fef3c7; color: #92400e; padding: 6px 8px; border-radius: 6px; 
@@ -102,19 +110,28 @@
             flex-shrink: 0; border: 1.5px dashed #f59e0b;
         }
 
-        /* 三位數直式排版區 */
+        /* 二位數直式排版區與定位版設計 */
         .vertical-math {
             display: inline-flex; flex-direction: column; align-items: flex-end;
-            font-size: 26px; font-weight: bold; font-family: monospace;
-            background: #f8fafc; padding: 4px 12px 4px 18px; border-radius: 10px; border: 2px solid #cbd5e1;
+            font-size: 30px; font-weight: bold; font-family: monospace;
+            background: #f8fafc; padding: 6px 14px 6px 24px; border-radius: 12px; border: 2px solid #cbd5e1;
             position: relative;
             flex-shrink: 0;
         }
+
+        /* 定位版表頭（十位、個位） */
+        .place-header {
+            display: flex; gap: 6px; width: 100%; justify-content: flex-end; 
+            font-size: 12px; color: #64748b; font-weight: bold; margin-bottom: 3px;
+            padding-left: 20px;
+        }
+        .place-col { width: 38px; text-align: center; }
+
         .math-row { display: flex; gap: 6px; width: 100%; justify-content: flex-end; }
-        .math-line { width: 100%; height: 2px; background: #333; margin: 2px 0; }
-        .cell { width: 32px; text-align: center; display: flex; align-items: center; justify-content: center; height: 34px; }
+        .math-line { width: 100%; height: 3px; background: #333; margin: 3px 0; }
+        .cell { width: 38px; text-align: center; display: flex; align-items: center; justify-content: center; height: 40px; }
         
-        .operator { position: absolute; left: 6px; top: 38px; font-size: 20px; color: #333; }
+        .operator { position: absolute; left: 8px; top: 52px; font-size: 22px; color: #333; }
 
         /* 掉落方塊區域 */
         #drop-game-container {
@@ -125,11 +142,11 @@
         }
 
         .falling-option {
-            position: absolute; width: 46px; height: 46px;
+            position: absolute; width: 48px; height: 48px;
             background: radial-gradient(circle, #fcd34d 60%, #f59e0b 100%);
             border: 3px solid #d97706; border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 20px; font-weight: bold; color: #78350f;
+            font-size: 22px; font-weight: bold; color: #78350f;
             cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.2);
             animation: fall linear forwards; z-index: 999;
         }
@@ -137,7 +154,7 @@
 
         @keyframes fall {
             0% { top: -50px; }
-            100% { top: 74px; }
+            100% { top: 70px; }
         }
     </style>
 </head>
@@ -147,14 +164,14 @@
         <!-- 開始畫面遮罩：詳細使用說明 -->
         <div id="startOverlay">
             <div class="start-content-box">
-                <h2>✨ 三位數直式加法遊戲(無進位版) ✨</h2>
+                <h2>✨ 二位數直式加法遊戲(無進位版) ✨</h2>
 
                 <div class="intro-card">
                     <h3>📖 遊戲使用說明</h3>
                     <ul>
-                        <li><strong>步驟清晰：</strong>依照個位、十位、百位順序由右到左逐一挑戰。</li>
+                        <li><strong>定位版輔助：</strong>算式上方附有數位定位標示（十位、個位），方便對齊數字。</li>
+                        <li><strong>無限隨機題庫：</strong>自動生成無數個二位數無進位題目，練習最充分。</li>
                         <li><strong>語速與聽題目：</strong>可透過上方拉霸調整掉落速度，隨時點擊「🔊 聽題目」。</li>
-                        <li><strong>大字提示：</strong>上方橫幅隨時以清晰大字同步顯示目前步驟與計算加數。</li>
                     </ul>
                 </div>
 
@@ -162,7 +179,7 @@
             </div>
         </div>
 
-        <h1 style="font-size: 14px; margin: 2px 0;">🔄 三位數直式加法遊戲(無進位版)</h1>
+        <h1 style="font-size: 14px; margin: 2px 0;">🔄 二位數直式加法遊戲(無進位版)</h1>
         
         <div class="status-bar">
             <div id="score">已完成: 0 關</div>
@@ -171,7 +188,7 @@
             </div>
         </div>
         
-        <!-- 速度拉霸與語音朗讀控制面板 -->
+        <!-- 速度拉霸與上方題目顯示區 -->
         <div class="top-panel">
             <div class="slider-box">
                 <span class="slider-title">速度</span>
@@ -180,35 +197,40 @@
                     <span class="speed-text" id="speedLabel">4.0秒</span>
                 </div>
             </div>
+            <!-- 題目顯示在拉霸右邊 -->
+            <div class="header-question-display" id="headerQText">23 + 45 = ?</div>
             <button class="control-btn speak-btn" onclick="manualSpeak()">🔊 聽題目</button>
         </div>
 
         <!-- 清晰大字顯示目前步驟與題目 -->
         <div class="step-banner" id="stepBanner">請先算個位數相加！</div>
 
-        <!-- 三位數直式呈現區 -->
+        <!-- 二位數直式呈現區 (含定位版) -->
         <div class="vertical-math" id="mathBox">
+            <!-- 數學定位版表頭 -->
+            <div class="place-header">
+                <div class="place-col">十</div>
+                <div class="place-col">個</div>
+            </div>
+
             <div class="operator">+</div>
             
-            <!-- 第一個加數 (百、十、個) -->
+            <!-- 第一個加數 (十、個) -->
             <div class="math-row">
-                <div class="cell" id="hUp">2</div>
-                <div class="cell" id="tUp">3</div>
-                <div class="cell" id="uUp">4</div>
+                <div class="cell" id="tUp">2</div>
+                <div class="cell" id="uUp">3</div>
             </div>
             
-            <!-- 第二個加數 (百、十、個) -->
+            <!-- 第二個加數 (十、個) -->
             <div class="math-row">
-                <div class="cell" id="hDown">5</div>
                 <div class="cell" id="tDown">4</div>
-                <div class="cell" id="uDown">3</div>
+                <div class="cell" id="uDown">5</div>
             </div>
             
             <div class="math-line"></div>
             
-            <!-- 答案列 (百、十、個) -->
+            <!-- 答案列 (十、個) -->
             <div class="math-row">
-                <div class="cell" id="ansH">?</div>
                 <div class="cell" id="ansT">?</div>
                 <div class="cell" id="ansU">?</div>
             </div>
@@ -221,10 +243,10 @@
 
     <script>
         let score = 0;
-        let h1 = 2, t1 = 3, u1 = 4;
-        let h2 = 5, t2 = 4, u2 = 3;
-        let targetU = 7, targetT = 7, targetH = 7; 
-        let currentStep = 'unit'; // 'unit' (個位) -> 'tens' (十位) -> 'hundreds' (百位)
+        let t1 = 2, u1 = 3;
+        let t2 = 4, u2 = 5;
+        let targetU = 8, targetT = 6; 
+        let currentStep = 'unit'; // 'unit' (個位) -> 'tens' (十位)
         let gameInterval = null;
         let activeOptions = [];
         let isLocked = false;
@@ -235,36 +257,44 @@
 
         function updateSpeed(val) {
             let numericVal = Number(val);
-            // 數值越大秒數越短（掉越快）；拉霸 1~10 對應 7.5秒 至 2.0秒
             currentDropDuration = Number((8.5 - (numericVal * 0.65)).toFixed(1));
             if (currentDropDuration < 1.8) currentDropDuration = 1.8;
             document.getElementById('speedLabel').innerText = `${currentDropDuration}秒`;
             
-            // 即時調整畫面上現有方塊的掉落速度
             const activeEls = document.querySelectorAll('.falling-option');
             activeEls.forEach(el => {
                 el.style.animationDuration = currentDropDuration + 's';
             });
         }
 
-        function speak(text) {
+        function speak(text, onEndCallback) {
             lastSpokenText = text;
-            if (isPaused || !('speechSynthesis' in window)) return;
+            if (isPaused || !('speechSynthesis' in window)) {
+                if (onEndCallback) onEndCallback();
+                return;
+            }
             try {
                 window.speechSynthesis.cancel();
                 let utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'zh-TW';
                 utterance.rate = 0.85;
                 utterance.volume = 1.0;
+                
+                utterance.onend = function() {
+                    if (onEndCallback) onEndCallback();
+                };
+                
                 window.speechSynthesis.speak(utterance);
-            } catch(e) {}
+            } catch(e) {
+                if (onEndCallback) onEndCallback();
+            }
         }
 
         function manualSpeak() {
             if (lastSpokenText) {
                 speak(lastSpokenText);
             } else {
-                speak("請依照步驟計算加法方塊。");
+                speak("請依照步驟計算二位數加法方塊。");
             }
         }
 
@@ -310,40 +340,45 @@
             }
         }
 
+        // 自動隨機生成二位數「無進位」加法題目函數（個位數相加小於10，十位數相加小於10）
+        function generateRandomNoCarryQuestion() {
+            let t1 = Math.floor(Math.random() * 8) + 1; // 1~8
+            let t2 = Math.floor(Math.random() * (9 - t1)) + 1; // 確保 t1 + t2 < 10
+            let u1 = Math.floor(Math.random() * 8) + 1; // 1~8
+            let u2 = Math.floor(Math.random() * (9 - u1)) + 1; // 確保 u1 + u2 < 10
+            return { t1, u1, t2, u2 };
+        }
+
         function initQuestion() {
             if (isPaused) return;
             isLocked = false;
             currentStep = 'unit';
             document.getElementById('ansU').innerText = "?";
             document.getElementById('ansT').innerText = "?";
-            document.getElementById('ansH').innerText = "?";
 
-            const questions = [
-                {h1: 2, t1: 3, u1: 4, h2: 5, t2: 4, u2: 3}, 
-                {h1: 1, t1: 2, u1: 5, h2: 3, t2: 6, u2: 2}, 
-                {h1: 4, t1: 1, u1: 3, h2: 2, t2: 5, u2: 4}, 
-                {h1: 3, t1: 2, u1: 1, h2: 4, t2: 3, u2: 6}  
-            ];
-            let q = questions[Math.floor(Math.random() * questions.length)];
-            h1 = q.h1; t1 = q.t1; u1 = q.u1; 
-            h2 = q.h2; t2 = q.t2; u2 = q.u2;
+            let q = generateRandomNoCarryQuestion();
+            t1 = q.t1; u1 = q.u1; 
+            t2 = q.t2; u2 = q.u2;
             
+            let num1 = t1 * 10 + u1;
+            let num2 = t2 * 10 + u2;
+
             targetU = u1 + u2;
             targetT = t1 + t2;
-            targetH = h1 + h2;
 
-            document.getElementById('hUp').innerText = h1;
             document.getElementById('tUp').innerText = t1;
             document.getElementById('uUp').innerText = u1;
-            document.getElementById('hDown').innerText = h2;
             document.getElementById('tDown').innerText = t2;
             document.getElementById('uDown').innerText = u2;
 
+            document.getElementById('headerQText').innerText = `${num1} + ${num2} = ?`;
+
             let promptText = `步驟一：先算個位數 ${u1} ＋ ${u2}，個位數是多少呢？`;
             document.getElementById('stepBanner').innerText = promptText;
-            speak(`步驟一，先算個位數，${u1}加${u2}。個位數是多少呢？方塊掉下來囉！`);
-
-            setupFalling();
+            
+            speak(`步驟一，先算個位數，${u1}加${u2}。個位數是多少呢？方塊掉下來囉！`, () => {
+                if (!isPaused) setupFalling();
+            });
         }
 
         function setupFalling() {
@@ -354,7 +389,6 @@
 
             let currentTarget = targetU;
             if (currentStep === 'tens') currentTarget = targetT;
-            else if (currentStep === 'hundreds') currentTarget = targetH;
 
             let options = [currentTarget];
             while (options.length < 4) {
@@ -397,17 +431,17 @@
 
                         document.getElementById('ansU').innerText = targetU;
                         document.getElementById('feedback').innerText = `🎉 個位算對了！接下來算十位數！`;
-                        speak(`個位算對了。接下來，請算出十位數是多少呢？`);
                         confetti();
 
-                        setTimeout(() => {
+                        speak(`個位算對了。接下來，請算出十位數是多少呢？`, () => {
                             if (isPaused) return;
                             isLocked = false;
                             currentStep = 'tens';
                             document.getElementById('stepBanner').innerText = `步驟二：算十位數 ${t1} ＋ ${t2}，等於多少呢？`;
-                            speak(`步驟二，算十位數，${t1}加${t2}。等於多少呢？`);
-                            setupFalling();
-                        }, 3000);
+                            speak(`步驟二，算十位數，${t1}加${t2}。等於多少呢？`, () => {
+                                if (!isPaused) setupFalling();
+                            });
+                        });
 
                     } else {
                         isHandled = true;
@@ -417,7 +451,7 @@
                         setTimeout(() => el.remove(), 300);
                     }
 
-                } else if (currentStep === 'tens') {
+                } else {
                     if (val === targetT) {
                         isHandled = true;
                         isLocked = true;
@@ -425,50 +459,22 @@
                         activeOptions.forEach(opt => opt.remove());
 
                         document.getElementById('ansT').innerText = targetT;
-                        document.getElementById('feedback').innerText = `🎉 十位算對了！接下來算百位數！`;
-                        speak(`十位算對了。接下來，請算出百位數是多少呢？`);
+                        score++;
+                        document.getElementById('score').innerText = `已完成: ${score} 關`;
+                        document.getElementById('feedback').innerText = `🌟 太棒了！整題算完了，恭喜過關！`;
                         confetti();
 
-                        setTimeout(() => {
-                            if (isPaused) return;
-                            isLocked = false;
-                            currentStep = 'hundreds';
-                            document.getElementById('stepBanner').innerText = `步驟三：算百位數 ${h1} ＋ ${h2}，等於多少呢？`;
-                            speak(`步驟三，算百位數，${h1}加${h2}。等於多少呢？`);
-                            setupFalling();
-                        }, 3000);
+                        speak(`太棒了，整題算完了，恭喜過關！`, () => {
+                            if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+                            nextQuestionTimeout = setTimeout(() => {
+                                if (!isPaused) initQuestion();
+                            }, 1000);
+                        });
 
                     } else {
                         isHandled = true;
                         speak("再想一想，十位數加起來等於多少呢？");
                         document.getElementById('feedback').innerText = "❌ 十位數不對喔，再試一次！";
-                        el.style.opacity = "0";
-                        setTimeout(() => el.remove(), 300);
-                    }
-
-                } else {
-                    if (val === targetH) {
-                        isHandled = true;
-                        isLocked = true;
-                        if (gameInterval) clearInterval(gameInterval);
-                        activeOptions.forEach(opt => opt.remove());
-
-                        document.getElementById('ansH').innerText = targetH;
-                        score++;
-                        document.getElementById('score').innerText = `已完成: ${score} 關`;
-                        document.getElementById('feedback').innerText = `🌟 太棒了！整題算完了，恭喜過關！`;
-                        speak(`太棒了，整題算完了，恭喜過關！`);
-                        confetti();
-
-                        if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
-                        nextQuestionTimeout = setTimeout(() => {
-                            if (!isPaused) initQuestion();
-                        }, 6500);
-
-                    } else {
-                        isHandled = true;
-                        speak("再想一想，百位數加起來等於多少呢？");
-                        document.getElementById('feedback').innerText = "❌ 百位數不對喔，再試一次！";
                         el.style.opacity = "0";
                         setTimeout(() => el.remove(), 300);
                     }

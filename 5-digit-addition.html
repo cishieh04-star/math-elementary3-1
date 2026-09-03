@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>三位數直式加法進位遊戲(進位版)</title>
+    <title>五位數直式加法進位遊戲(進階版)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * { 
@@ -25,13 +25,13 @@
         h1 { color: #b45309; font-size: 15px; margin: 2px 0; }
         
         #gameScreen { 
-            width: 100%; max-width: 500px; height: 100%; max-height: 100dvh;
+            width: 100%; max-width: 540px; height: 100%; max-height: 100dvh;
             display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
             background: #fff; border-radius: 0; border: none; padding: 6px 10px; 
             box-shadow: none; margin: 0 auto;
             position: relative;
         }
-        @media (min-width: 520px) {
+        @media (min-width: 560px) {
             #gameScreen {
                 border-radius: 16px; border: 3px solid #f59e0b; max-height: 94vh; height: auto;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: auto;
@@ -83,21 +83,29 @@
         .speak-btn { background-color: #0ea5e9; }
         .speak-btn:active { background-color: #0284c7; }
 
-        /* 調整速度拉霸與聽題目控制面板區 */
+        /* 調整速度拉霸與上方題目顯示區 */
         .top-panel {
             display: flex; justify-content: space-between; align-items: center; width: 100%;
             background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 4px 8px;
             flex-shrink: 0;
+            gap: 6px;
         }
         .slider-box {
-            display: flex; align-items: center; gap: 6px;
+            display: flex; align-items: center; gap: 4px;
         }
         .slider-title { font-size: 11px; font-weight: bold; color: #7c3aed; }
         .slider-row { display: flex; align-items: center; gap: 4px; }
         .slider-row input[type=range] {
-            width: 85px; cursor: pointer; accent-color: #8b5cf6; height: 6px;
+            width: 75px; cursor: pointer; accent-color: #8b5cf6; height: 6px;
         }
-        .speed-text { font-size: 11px; font-weight: bold; color: #7c3aed; width: 38px; text-align: left; }
+        .speed-text { font-size: 11px; font-weight: bold; color: #7c3aed; width: 34px; text-align: left; }
+
+        /* 拉霸右側的題目顯示樣式 */
+        .header-question-display {
+            background: #fef9c3; border: 1.5px solid #f59e0b; border-radius: 6px;
+            padding: 2px 6px; font-size: 12px; font-weight: bold; color: #b45309;
+            flex-grow: 1; text-align: center; letter-spacing: 0.5px;
+        }
 
         .step-banner { 
             background: #fef3c7; color: #92400e; padding: 5px 8px; border-radius: 8px; 
@@ -105,31 +113,33 @@
             flex-shrink: 0; border: 1.5px dashed #f59e0b;
         }
 
-        /* 三位數直式排版區 (百位、十位與個位三欄) */
+        /* 五位數直式排版區 (調整格子寬度以適應五位數) */
         .vertical-math {
             display: inline-flex; flex-direction: column; align-items: flex-end;
-            font-size: 28px; font-weight: bold; font-family: monospace;
-            background: #f8fafc; padding: 6px 12px 6px 20px; border-radius: 12px; border: 2px solid #cbd5e1;
+            font-size: 24px; font-weight: bold; font-family: monospace;
+            background: #f8fafc; padding: 6px 10px 6px 16px; border-radius: 12px; border: 2px solid #cbd5e1;
             position: relative;
             flex-shrink: 0;
         }
-        .math-row { display: flex; gap: 8px; width: 100%; justify-content: flex-end; }
+        .math-row { display: flex; gap: 4px; width: 100%; justify-content: flex-end; }
         .math-line { width: 100%; height: 3px; background: #333; margin: 2px 0; }
-        .cell { width: 34px; text-align: center; display: flex; align-items: center; justify-content: center; height: 36px; }
+        .cell { width: 26px; text-align: center; display: flex; align-items: center; justify-content: center; height: 36px; }
         
-        .operator { position: absolute; left: 8px; top: 40px; font-size: 22px; color: #333; }
+        .operator { position: absolute; left: 6px; top: 40px; font-size: 20px; color: #333; }
         
-        /* 十位與百位上方的進位格子 */
+        /* 萬位、千位、百位與十位上方的進位格子 */
         .carry-box {
             position: absolute; top: 2px;
-            font-size: 14px; color: #ef4444; font-weight: bold;
+            font-size: 12px; color: #ef4444; font-weight: bold;
             background: #fee2e2; border: 2px dashed #ef4444; border-radius: 6px;
-            width: 30px; height: 24px; display: flex; align-items: center; justify-content: center;
+            width: 22px; height: 24px; display: flex; align-items: center; justify-content: center;
             opacity: 0; transform: scale(0.3);
             transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        #carryH { left: 46px; }   /* 百位進位格子位置 */
-        #carryT { left: 88px; }   /* 十位進位格子位置 */
+        #carryTTh { left: 36px; } /* 萬位進位格子位置 */
+        #carryTh { left: 66px; }  /* 千位進位格子位置 */
+        #carryH { left: 96px; }   /* 百位進位格子位置 */
+        #carryT { left: 126px; }  /* 十位進位格子位置 */
 
         .carry-box.show {
             opacity: 1; 
@@ -167,12 +177,12 @@
         <!-- 開始畫面遮罩：詳細使用說明 -->
         <div id="startOverlay">
             <div class="start-content-box">
-                <h2>✨ 三位數直式加法進位遊戲 ✨</h2>
+                <h2>✨ 五位數直式加法進位遊戲 ✨</h2>
 
                 <div class="intro-card">
                     <h3>📖 遊戲使用說明</h3>
                     <ul>
-                        <li><strong>無限隨機題庫：</strong>每次過關自動生成全新進位題目，提供最充分的練習機會！</li>
+                        <li><strong>全方位進位題庫：</strong>每次過關自動生成全新五位數題目，個位、十位、百位、千位皆會進行進位練習！</li>
                         <li><strong>速度拉霸與語音：</strong>可透過上方拉霸自由調整掉落速度，隨時點擊「🔊 聽題目」。</li>
                         <li><strong>大字提示：</strong>上方橫幅隨時以清晰大字同步顯示目前步驟與進位提示。</li>
                     </ul>
@@ -182,7 +192,7 @@
             </div>
         </div>
 
-        <h1>🔄 三位數直式加法進位遊戲</h1>
+        <h1>🔄 五位數直式加法進位遊戲</h1>
         
         <div class="status-bar">
             <div id="score">已完成: 0 關</div>
@@ -191,7 +201,7 @@
             </div>
         </div>
         
-        <!-- 速度拉霸與語音朗讀控制面板 -->
+        <!-- 速度拉霸與上方題目顯示區 -->
         <div class="top-panel">
             <div class="slider-box">
                 <span class="slider-title">速度</span>
@@ -200,26 +210,34 @@
                     <span class="speed-text" id="speedLabel">5.5秒</span>
                 </div>
             </div>
+            <!-- 題目顯示在拉霸右邊 -->
+            <div class="header-question-display" id="headerQText">12345 + 67890 = ?</div>
             <button class="control-btn speak-btn" onclick="manualSpeak()">🔊 聽題目</button>
         </div>
 
         <div class="step-banner" id="stepBanner">請先算個位數相加！</div>
 
-        <!-- 三位數直式呈現區 -->
+        <!-- 五位數直式呈現區 -->
         <div class="vertical-math" id="mathBox">
+            <div class="carry-box" id="carryTTh">1</div>
+            <div class="carry-box" id="carryTh">1</div>
             <div class="carry-box" id="carryH">1</div>
             <div class="carry-box" id="carryT">1</div>
             <div class="operator">+</div>
             
-            <!-- 第一個加數 (百、十、個) -->
+            <!-- 第一個加數 (萬、千、百、十、個) -->
             <div class="math-row">
-                <div class="cell" id="hUp">2</div>
+                <div class="cell" id="tthUp">1</div>
+                <div class="cell" id="thUp">2</div>
+                <div class="cell" id="hUp">3</div>
                 <div class="cell" id="tUp">4</div>
                 <div class="cell" id="uUp">7</div>
             </div>
             
-            <!-- 第二個加數 (百、十、個) -->
+            <!-- 第二個加數 (萬、千、百、十、個) -->
             <div class="math-row">
+                <div class="cell" id="tthDown">2</div>
+                <div class="cell" id="thDown">1</div>
                 <div class="cell" id="hDown">3</div>
                 <div class="cell" id="tDown">8</div>
                 <div class="cell" id="uDown">5</div>
@@ -227,8 +245,10 @@
             
             <div class="math-line"></div>
             
-            <!-- 答案列 (百、十、個) -->
+            <!-- 答案列 (萬、千、百、十、個) -->
             <div class="math-row">
+                <div class="cell" id="ansTTh">?</div>
+                <div class="cell" id="ansTh">?</div>
                 <div class="cell" id="ansH">?</div>
                 <div class="cell" id="ansT">?</div>
                 <div class="cell" id="ansU">?</div>
@@ -242,17 +262,16 @@
 
     <script>
         let score = 0;
-        let h1 = 2, t1 = 4, u1 = 7;
-        let h2 = 3, t2 = 8, u2 = 5;
-        let targetU = 2, targetT = 3, targetH = 6; 
-        let currentStep = 'unit'; // 'unit' (個位) -> 'tens' (十位) -> 'hundreds' (百位)
+        let tth1 = 1, th1 = 2, h1 = 3, t1 = 4, u1 = 7;
+        let tth2 = 2, th2 = 1, h2 = 3, t2 = 8, u2 = 5;
+        let targetU = 2, targetT = 3, targetH = 7, targetTh = 3, targetTTh = 3; 
+        let currentStep = 'unit'; // 'unit' -> 'tens' -> 'hundreds' -> 'thousands' -> 'tenthousands'
         let gameInterval = null;
         let activeOptions = [];
         let isLocked = false;
         let isPaused = false;
         let nextQuestionTimeout = null;
         let lastSpokenText = "";
-        let currentUtterance = null;
         let currentDropDuration = 5.5; // 預設掉落秒數
 
         function updateSpeed(val) {
@@ -267,24 +286,34 @@
             });
         }
 
-        function speak(text) {
+        function speak(text, onEndCallback) {
             lastSpokenText = text;
-            if (isPaused || !('speechSynthesis' in window)) return;
+            if (isPaused || !('speechSynthesis' in window)) {
+                if (onEndCallback) onEndCallback();
+                return;
+            }
             try {
                 window.speechSynthesis.cancel();
-                currentUtterance = new SpeechSynthesisUtterance(text);
-                currentUtterance.lang = 'zh-TW';
-                currentUtterance.rate = 0.85;
-                currentUtterance.volume = 1.0;
-                window.speechSynthesis.speak(currentUtterance);
-            } catch(e) {}
+                let utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'zh-TW';
+                utterance.rate = 0.85;
+                utterance.volume = 1.0;
+                
+                utterance.onend = function() {
+                    if (onEndCallback) onEndCallback();
+                };
+                
+                window.speechSynthesis.speak(utterance);
+            } catch(e) {
+                if (onEndCallback) onEndCallback();
+            }
         }
 
         function manualSpeak() {
             if (lastSpokenText) {
                 speak(lastSpokenText);
             } else {
-                speak("請依照步驟計算進位加法方塊。");
+                speak("請依照步驟計算五位數進位加法方塊。");
             }
         }
 
@@ -330,39 +359,54 @@
             }
         }
 
-        // 自動隨機生成三位數「進位」加法題目函數
+        // 強制每一個數位（個位、十位、百位、千位）相加都確保會進位！
         function generateRandomCarryingQuestion() {
-            let h1, t1, u1, h2, t2, u2;
+            let tth1, th1, h1, t1, u1, tth2, th2, h2, t2, u2;
             let isValid = false;
 
             while (!isValid) {
-                // 隨機產生百位 (1~4，避免加起來超過千位)
-                h1 = Math.floor(Math.random() * 4) + 1;
-                h2 = Math.floor(Math.random() * 4) + 1;
-
-                // 隨機產生十位 (0~9)
-                t1 = Math.floor(Math.random() * 9);
-                t2 = Math.floor(Math.random() * 9);
-
-                // 隨機產生個位 (5~9，確保個位數相加一定會 >= 10 產生進位)
+                // 個位相加強制 >= 10 (5~9)
                 u1 = Math.floor(Math.random() * 5) + 5;
                 u2 = Math.floor(Math.random() * 5) + 5;
 
-                // 檢查是否符合個位或十位有進位，讓進位遊戲更有意義
+                // 十位相加強制 >= 9，加上個位進位 1 後一定 >= 10 (5~9)
+                t1 = Math.floor(Math.random() * 5) + 5;
+                t2 = Math.floor(Math.random() * 5) + 4;
+
+                // 百位相加強制 >= 9，加上十位進位 1 後一定 >= 10 (5~9)
+                h1 = Math.floor(Math.random() * 5) + 5;
+                h2 = Math.floor(Math.random() * 5) + 4;
+
+                // 千位相加強制 >= 9，加上百位進位 1 後一定 >= 10 (5~9)
+                th1 = Math.floor(Math.random() * 5) + 5;
+                th2 = Math.floor(Math.random() * 5) + 4;
+
+                // 萬位設定 (1~4，加上千位進位 1 後總和不大於 9)
+                tth1 = Math.floor(Math.random() * 3) + 1;
+                tth2 = Math.floor(Math.random() * 3) + 1;
+
+                // 模擬逐位相加與進位檢查
                 let sumU = u1 + u2;
-                let carry1 = Math.floor(sumU / 10);
-                let sumT = t1 + t2 + carry1;
-                let carry2 = Math.floor(sumT / 10);
+                let c1 = Math.floor(sumU / 10);
+                
+                let sumT = t1 + t2 + c1;
+                let c2 = Math.floor(sumT / 10);
 
-                // 確保百位總和不會太大（小於 10）
-                let sumH = h1 + h2 + carry2;
+                let sumH = h1 + h2 + c2;
+                let c3 = Math.floor(sumH / 10);
 
-                if ((carry1 > 0 || carry2 > 0) && sumH < 10) {
+                let sumTh = th1 + th2 + c3;
+                let c4 = Math.floor(sumTh / 10);
+
+                let sumTTh = tth1 + tth2 + c4;
+
+                // 確保個位、十位、百位、千位皆有進位 (c1, c2, c3, c4 皆大於 0)，且萬位總和不超過 9
+                if (c1 > 0 && c2 > 0 && c3 > 0 && c4 > 0 && sumTTh < 10) {
                     isValid = true;
                 }
             }
 
-            return { h1, t1, u1, h2, t2, u2 };
+            return { tth1, th1, h1, t1, u1, tth2, th2, h2, t2, u2 };
         }
 
         function initQuestion() {
@@ -371,15 +415,22 @@
             currentStep = 'unit';
             document.getElementById('carryT').classList.remove('show');
             document.getElementById('carryH').classList.remove('show');
+            document.getElementById('carryTh').classList.remove('show');
+            document.getElementById('carryTTh').classList.remove('show');
             document.getElementById('ansU').innerText = "?";
             document.getElementById('ansT').innerText = "?";
             document.getElementById('ansH').innerText = "?";
+            document.getElementById('ansTh').innerText = "?";
+            document.getElementById('ansTTh').innerText = "?";
 
             // 每次自動隨機出一題新題目！
             let q = generateRandomCarryingQuestion();
-            h1 = q.h1; t1 = q.t1; u1 = q.u1; 
-            h2 = q.h2; t2 = q.t2; u2 = q.u2;
+            tth1 = q.tth1; th1 = q.th1; h1 = q.h1; t1 = q.t1; u1 = q.u1; 
+            tth2 = q.tth2; th2 = q.th2; h2 = q.h2; t2 = q.t2; u2 = q.u2;
             
+            let num1 = tth1 * 10000 + th1 * 1000 + h1 * 100 + t1 * 10 + u1;
+            let num2 = tth2 * 10000 + th2 * 1000 + h2 * 100 + t2 * 10 + u2;
+
             targetU = (u1 + u2) % 10;
             let carry1 = Math.floor((u1 + u2) / 10);
             
@@ -387,20 +438,35 @@
             targetT = tempT % 10;
             let carry2 = Math.floor(tempT / 10);
             
-            targetH = h1 + h2 + carry2;
+            let tempH = h1 + h2 + carry2;
+            targetH = tempH % 10;
+            let carry3 = Math.floor(tempH / 10);
 
+            let tempTh = th1 + th2 + carry3;
+            targetTh = tempTh % 10;
+            let carry4 = Math.floor(tempTh / 10);
+
+            targetTTh = tth1 + tth2 + carry4;
+
+            document.getElementById('tthUp').innerText = tth1;
+            document.getElementById('thUp').innerText = th1;
             document.getElementById('hUp').innerText = h1;
             document.getElementById('tUp').innerText = t1;
             document.getElementById('uUp').innerText = u1;
+            document.getElementById('tthDown').innerText = tth2;
+            document.getElementById('thDown').innerText = th2;
             document.getElementById('hDown').innerText = h2;
             document.getElementById('tDown').innerText = t2;
             document.getElementById('uDown').innerText = u2;
 
+            document.getElementById('headerQText').innerText = `${num1} + ${num2} = ?`;
+
             let promptText = `步驟一：先算個位數 ${u1} ＋ ${u2}，個位數是多少呢？`;
             document.getElementById('stepBanner').innerText = promptText;
-            speak(`步驟一，先算個位數，${u1}加${u2}。個位數是多少呢？方塊掉下來囉！`);
-
-            setupFalling();
+            
+            speak(`步驟一，先算個位數，${u1}加${u2}。個位數是多少呢？方塊掉下來囉！`, () => {
+                if (!isPaused) setupFalling();
+            });
         }
 
         function setupFalling() {
@@ -412,11 +478,13 @@
             let currentTarget = targetU;
             if (currentStep === 'tens') currentTarget = targetT;
             else if (currentStep === 'hundreds') currentTarget = targetH;
+            else if (currentStep === 'thousands') currentTarget = targetTh;
+            else if (currentStep === 'tenthousands') currentTarget = targetTTh;
 
             let options = [currentTarget];
             while (options.length < 4) {
                 let r = Math.floor(Math.random() * 10);
-                if (currentStep === 'hundreds') {
+                if (currentStep === 'tenthousands') {
                     r = Math.floor(Math.random() * 5) + 4;
                 }
                 if (!options.includes(r)) options.push(r);
@@ -459,17 +527,17 @@
                         document.getElementById('carryT').classList.add('show');
 
                         document.getElementById('feedback').innerText = `🎉 個位算對了！向十位進 1。接下來算十位數！`;
-                        speak(`個位算對了，向十位進 1。接下來，請算出十位數是多少呢？`);
                         confetti();
 
-                        setTimeout(() => {
+                        speak(`個位算對了，向十位進 1。接下來，請算出十位數是多少呢？`, () => {
                             if (isPaused) return;
                             isLocked = false;
                             currentStep = 'tens';
                             document.getElementById('stepBanner').innerText = `步驟二：算十位數 ${t1} ＋ ${t2} ＋ 進位 1，等於多少呢？`;
-                            speak(`步驟二，算十位數，${t1}加${t2}，加上進位1。等於多少呢？`);
-                            setupFalling();
-                        }, 3000);
+                            speak(`步驟二，算十位數，${t1}加${t2}，加上進位1。等於多少呢？`, () => {
+                                if (!isPaused) setupFalling();
+                            });
+                        });
 
                     } else {
                         isHandled = true;
@@ -490,17 +558,17 @@
                         document.getElementById('carryH').classList.add('show');
 
                         document.getElementById('feedback').innerText = `🎉 十位算對了！向百位進 1。接下來算百位數！`;
-                        speak(`十位算對了，向百位進 1。接下來，請算出百位數是多少呢？`);
                         confetti();
 
-                        setTimeout(() => {
+                        speak(`十位算對了，向百位進 1。接下來，請算出百位數是多少呢？`, () => {
                             if (isPaused) return;
                             isLocked = false;
                             currentStep = 'hundreds';
                             document.getElementById('stepBanner').innerText = `步驟三：算百位數 ${h1} ＋ ${h2} ＋ 進位 1，等於多少呢？`;
-                            speak(`步驟三，算百位數，${h1}加${h2}，加上進位1。等於多少呢？`);
-                            setupFalling();
-                        }, 3000);
+                            speak(`步驟三，算百位數，${h1}加${h2}，加上進位1。等於多少呢？`, () => {
+                                if (!isPaused) setupFalling();
+                            });
+                        });
 
                     } else {
                         isHandled = true;
@@ -510,7 +578,7 @@
                         setTimeout(() => el.remove(), 300);
                     }
 
-                } else {
+                } else if (currentStep === 'hundreds') {
                     if (val === targetH) {
                         isHandled = true;
                         isLocked = true;
@@ -518,22 +586,84 @@
                         activeOptions.forEach(opt => opt.remove());
 
                         document.getElementById('ansH').innerText = targetH;
+                        document.getElementById('carryTh').classList.add('show');
 
-                        score++;
-                        document.getElementById('score').innerText = `已完成: ${score} 關`;
-                        document.getElementById('feedback').innerText = `🌟 太棒了！整題算完了，恭喜過關！`;
-                        speak(`太棒了，整題算完了，恭喜過關！`);
+                        document.getElementById('feedback').innerText = `🎉 百位算對了！向千位進 1。接下來算千位數！`;
                         confetti();
 
-                        if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
-                        nextQuestionTimeout = setTimeout(() => {
-                            if (!isPaused) initQuestion();
-                        }, 6500);
+                        speak(`百位算對了，向千位進 1。接下來，請算出千位數是多少呢？`, () => {
+                            if (isPaused) return;
+                            isLocked = false;
+                            currentStep = 'thousands';
+                            document.getElementById('stepBanner').innerText = `步驟四：算千位數 ${th1} ＋ ${th2} ＋ 進位 1，等於多少呢？`;
+                            speak(`步驟四，算千位數，${th1}加${th2}，加上進位1。等於多少呢？`, () => {
+                                if (!isPaused) setupFalling();
+                            });
+                        });
 
                     } else {
                         isHandled = true;
-                        speak("再想一想，百位數加起來等於多少呢？");
+                        speak("再想一想，百位數加起來等於多少呢？別忘了加上進位的 1！");
                         document.getElementById('feedback').innerText = "❌ 百位數不對喔，別忘了加上進位的 1！";
+                        el.style.opacity = "0";
+                        setTimeout(() => el.remove(), 300);
+                    }
+
+                } else if (currentStep === 'thousands') {
+                    if (val === targetTh) {
+                        isHandled = true;
+                        isLocked = true;
+                        if (gameInterval) clearInterval(gameInterval);
+                        activeOptions.forEach(opt => opt.remove());
+
+                        document.getElementById('ansTh').innerText = targetTh;
+                        document.getElementById('carryTTh').classList.add('show');
+
+                        document.getElementById('feedback').innerText = `🎉 千位算對了！向萬位進 1。最後算萬位數！`;
+                        confetti();
+
+                        speak(`千位算對了，向萬位進 1。最後，請算出萬位數是多少呢？`, () => {
+                            if (isPaused) return;
+                            isLocked = false;
+                            currentStep = 'tenthousands';
+                            document.getElementById('stepBanner').innerText = `步驟五：算萬位數 ${tth1} ＋ ${tth2} ＋ 進位 1，等於多少呢？`;
+                            speak(`步驟五，算萬位數，${tth1}加${tth2}，加上進位1。等於多少呢？`, () => {
+                                if (!isPaused) setupFalling();
+                            });
+                        });
+
+                    } else {
+                        isHandled = true;
+                        speak("再想一想，千位數加起來等於多少呢？別忘了加上進位的 1！");
+                        document.getElementById('feedback').innerText = "❌ 千位數不對喔，別忘了加上進位的 1！";
+                        el.style.opacity = "0";
+                        setTimeout(() => el.remove(), 300);
+                    }
+
+                } else {
+                    if (val === targetTTh) {
+                        isHandled = true;
+                        isLocked = true;
+                        if (gameInterval) clearInterval(gameInterval);
+                        activeOptions.forEach(opt => opt.remove());
+
+                        document.getElementById('ansTTh').innerText = targetTTh;
+                        score++;
+                        document.getElementById('score').innerText = `已完成: ${score} 關`;
+                        document.getElementById('feedback').innerText = `🌟 太棒了！整題算完了，恭喜過關！`;
+                        confetti();
+
+                        speak(`太棒了，整題算完了，恭喜過關！`, () => {
+                            if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+                            nextQuestionTimeout = setTimeout(() => {
+                                if (!isPaused) initQuestion();
+                            }, 1000);
+                        });
+
+                    } else {
+                        isHandled = true;
+                        speak("再想一想，萬位數加起來等於多少呢？別忘了加上進位的 1！");
+                        document.getElementById('feedback').innerText = "❌ 萬位數不對喔，別忘了加上進位的 1！";
                         el.style.opacity = "0";
                         setTimeout(() => el.remove(), 300);
                     }
