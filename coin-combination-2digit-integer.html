@@ -158,7 +158,7 @@
                 <div class="intro-card">
                     <h3>📖 學習引導</h3>
                     <ul>
-                        <li><strong>數字規律：</strong>除了最左邊的位數不是 0 之外，其餘位數都是 0（例如 20+20、30+50）。</li>
+                        <li><strong>無限題庫：</strong>每次過關自動隨機產生新題目，提供充分練習機會！</li>
                         <li><strong>位值對齊：</strong>左邊是<strong>十位（十元銅板）</strong>，右邊是<strong>個位（一元硬幣）</strong>。</li>
                         <li><strong>步驟引導：</strong>先算個位數，再算十位數，答對時會朗讀總金額！</li>
                     </ul>
@@ -220,7 +220,6 @@
         let isLocked = false;
         let isPaused = false;
         let nextQuestionTimeout = null;
-        let lastQuestionIndex = -1;
         let lastSpokenText = "請先點擊開始挑戰！";
 
         function speak(text) {
@@ -304,6 +303,7 @@
             }
         }
 
+        // 💡 升級為無限隨機動態出題函數，讓小朋友有充分練習機會
         function initQuestion() {
             if (isPaused) return;
             isLocked = false;
@@ -311,24 +311,14 @@
             document.getElementById('ansU').innerText = "?";
             document.getElementById('ansT').innerText = "?";
 
-            const questions = [
-                {t1: 2, u1: 0, t2: 2, u2: 0}, 
-                {t1: 3, u1: 0, t2: 4, u2: 0}, 
-                {t1: 5, u1: 0, t2: 3, u2: 0}, 
-                {t1: 1, u1: 0, t2: 6, u2: 0}, 
-                {t1: 4, u1: 0, t2: 2, u2: 0}, 
-                {t1: 7, u1: 0, t2: 1, u2: 0}  
-            ];
+            // 隨機產生無進位的二位數（十位數不為0，相加小於10）
+            t1 = Math.floor(Math.random() * 8) + 1; // 1 到 8
+            let maxT2 = 9 - t1;
+            t2 = Math.floor(Math.random() * (maxT2 + 1)); // 0 到 maxT2
 
-            let qIndex;
-            do {
-                qIndex = Math.floor(Math.random() * questions.length);
-            } while (qIndex === lastQuestionIndex && questions.length > 1);
-            lastQuestionIndex = qIndex;
+            u1 = Math.floor(Math.random() * 10);
+            u2 = Math.floor(Math.random() * (10 - u1));
 
-            let q = questions[qIndex];
-            t1 = q.t1; u1 = q.u1; t2 = q.t2; u2 = q.u2;
-            
             targetU = u1 + u2;
             targetT = t1 + t2;
 
