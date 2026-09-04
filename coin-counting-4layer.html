@@ -163,7 +163,7 @@
 <body>
 
     <div id="gameScreen">
-        <!-- 開始畫面遮罩：保留絕對不會卡關的單純結構[cite: 3] -->
+        <!-- 開始畫面遮罩：極致單純，保證不卡首頁 -->
         <div id="startOverlay">
             <div class="start-content-box">
                 <h2>👛 錢包四層直式進位加法 👛</h2>
@@ -314,10 +314,8 @@
             }
         }
 
-        // 💡 採用絕對不會卡關的標準 startGame 結構[cite: 3]
+        // 💡 採用與成功版本完全相同的乾淨啟動邏輯，保證絕對不卡首頁
         function startGame() {
-            const dummy = new SpeechSynthesisUtterance("");
-            window.speechSynthesis.speak(dummy);
             document.getElementById('startOverlay').style.display = 'none';
             initQuestion();
         }
