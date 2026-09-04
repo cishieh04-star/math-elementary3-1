@@ -163,7 +163,7 @@
 <body>
 
     <div id="gameScreen">
-        <!-- 開始畫面遮罩 -->
+        <!-- 開始畫面遮罩：保留絕對不會卡關的單純結構[cite: 3] -->
         <div id="startOverlay">
             <div class="start-content-box">
                 <h2>👛 錢包四層直式進位加法 👛</h2>
@@ -314,6 +314,7 @@
             }
         }
 
+        // 💡 採用絕對不會卡關的標準 startGame 結構[cite: 3]
         function startGame() {
             const dummy = new SpeechSynthesisUtterance("");
             window.speechSynthesis.speak(dummy);
@@ -366,7 +367,7 @@
                 {th: 2, h: 12, t: 5, u: 9},[cite: 2, 3]
                 {th: 1, h: 15, t: 3, u: 4},[cite: 2, 3]
                 {th: 3, h: 11, t: 8, u: 2},[cite: 2, 3]
-                {th: 2, h: 8,  t: 12,u: 5}[cite: 2, 3]
+                {th: 2, h: 8,  t: 12,u: 5} [cite: 2, 3]
             ];
 
             let qIndex;
@@ -416,7 +417,7 @@
                 if (currentStep === 'ones') r = Math.floor(Math.random() * 15) + 1;
                 else if (currentStep === 'tens') r = (Math.floor(Math.random() * 10) + 1) * 10;
                 else if (currentStep === 'hundreds') r = (Math.floor(Math.random() * 10) + 8) * 100;
-                else if (currentStep === 'thousands') r = qThOptions(); // 確保千元選項正確
+                else if (currentStep === 'thousands') r = qThOptions(); 
                 else if (currentStep === 'total') r = window.totalVal + (Math.floor(Math.random() * 5) - 2) * 100;
 
                 if (!options.includes(r) && r > 0) options.push(r);
@@ -451,7 +452,7 @@
 
             let isHandled = false;
             const handleSelect = (e) => {
-                if (e) e.preventDefault();
+                if (e) { e.preventDefault(); e.stopPropagation(); }
                 if (isLocked || isHandled || isPaused) return;
 
                 if (currentStep === 'ones') {
