@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>四位數錢幣加法遊戲(隨機進位版)</title>
+    <title>有趣的四位數錢幣加法遊戲</title>
+    <!-- 引入灑花特效庫 -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * { 
@@ -205,6 +206,7 @@
         <div class="status-bar">
             <div id="score">已完成: 0 關</div>
             <div class="status-right">
+                <!-- 速度調整按鈕群組 (+/-) -->
                 <div class="speed-control-group">
                     <span>速度</span>
                     <button class="speed-btn" onclick="adjustSpeed(-1)" title="減慢">-</button>
@@ -263,7 +265,7 @@
         let th2 = 1, h2 = 4, t2 = 3, u2 = 5;
         let targetU = 8, targetT = 5, targetH = 7, targetTh = 3; 
         let total1 = 0, total2 = 0;
-        let currentStep = 'unit'; // 'unit' -> 'tens' -> 'hundreds' -> 'thousands'
+        let currentStep = 'unit'; 
         let gameInterval = null;
         let activeOptions = [];
         let isLocked = false;
@@ -271,7 +273,6 @@
         let nextQuestionTimeout = null;
         let lastSpokenText = "準備開始！";
 
-        // 掉落速度設定：秒數越小掉越快
         let speedLevel = 2; 
         const speedDurations = [0, 7.0, 5.0, 3.5, 2.0];
         const speedNames = ["", "慢速", "正常", "快速", "極速"];
@@ -331,6 +332,7 @@
             }
         }
 
+        // 💡 絕對不卡關的點擊初始化
         const startBtnEl = document.getElementById('startBtn');
         startBtnEl.addEventListener('pointerdown', (e) => {
             e.preventDefault();
@@ -338,6 +340,13 @@
         });
 
         function startGame() {
+            // 第一步：強制立刻隱藏首頁遮罩，保證平板、手機畫面一定切換
+            const overlay = document.getElementById('startOverlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
+
+            // 第二步：非同步解鎖語音引擎
             if ('speechSynthesis' in window) {
                 try {
                     window.speechSynthesis.cancel();
@@ -345,7 +354,7 @@
                     window.speechSynthesis.speak(dummy);
                 } catch(e) {}
             }
-            document.getElementById('startOverlay').style.display = 'none';
+
             initQuestion();
         }
 
@@ -393,7 +402,6 @@
             }
         }
 
-        // 💡 隨機出題函式：動態產生千、百、十、個位數
         function initQuestion() {
             if (isPaused) return;
             isLocked = false;
@@ -403,7 +411,6 @@
             document.getElementById('ansH').innerText = "?";
             document.getElementById('ansTh').innerText = "?";
 
-            // 隨機產生千位 (1~7)、百位 (0~8)、十位 (0~8)、個位 (0~8)
             th1 = Math.floor(Math.random() * 6) + 1;
             h1 = Math.floor(Math.random() * 9);
             t1 = Math.floor(Math.random() * 9);
@@ -467,7 +474,6 @@
 
             let options = [currentTarget];
             while (options.length < 4) {
-                // 為了讓低年級小朋友練習直式，單一位數加總選項範圍設定在 0 ~ 18 之間
                 let r = Math.floor(Math.random() * 19);
                 if (!options.includes(r)) options.push(r);
             }
@@ -503,4 +509,140 @@
                         isHandled = true;
                         isLocked = true;
                         if (gameInterval) clearInterval(gameInterval);
-                        activeOptions.forEach
+                        activeOptions.forEach(opt => opt.remove());
+
+                        document.getElementById('ansU').innerText = targetU;
+                        document.getElementById('feedback').innerText = `🎉 個位數算對了！個位數是 ${targetU}。`;
+                        confetti();
+
+                        speak(`個位數算對了，個位數是 ${targetU}。`, () => {
+                            setTimeout(() => {
+                                if (isPaused) return;
+                                document.getElementById('feedback').innerText = `接下來算十位數！`;
+                                isLocked = false;
+                                currentStep = 'tens';
+                                document.getElementById('stepBanner').innerText = `步驟二：算十位數，${t1} 個十元加上 ${t2} 個十元等於多少呢？`;
+                                speak(`接下來，請算出，${t1} 個十元加上 ${t2} 個十元等於多少呢？`, () => {
+                                    setupFalling();
+                                });
+                            }, 1000);
+                        });
+
+                    } else {
+                        isHandled = true;
+                        speak(`再想一想，${u1} 個一元加上 ${u2} 個一元等於多少呢？`);
+                        document.getElementById('feedback').innerText = "❌ 個位數不對喔，再數一次！";
+                        el.style.opacity = "0";
+                        setTimeout(() => el.remove(), 300);
+                    }
+
+                } else if (currentStep === 'tens') {
+                    if (val === targetT) {
+                        isHandled = true;
+                        isLocked = true;
+                        if (gameInterval) clearInterval(gameInterval);
+                        activeOptions.forEach(opt => opt.remove());
+
+                        document.getElementById('ansT').innerText = targetT;
+                        document.getElementById('feedback').innerText = `🎉 十位數算對了！接下來算百位數！`;
+                        confetti();
+
+                        speak(`十位數算對了。接下來，請算出，${h1} 個百元加上 ${h2} 個百元等於多少呢？`, () => {
+                            setTimeout(() => {
+                                if (isPaused) return;
+                                document.getElementById('feedback').innerText = `接下來算百位數！`;
+                                isLocked = false;
+                                currentStep = 'hundreds';
+                                document.getElementById('stepBanner').innerText = `步驟三：算百位數，${h1} 個百元加上 ${h2} 個百元等於多少呢？`;
+                                speak(`接下來，請算出，${h1} 個百元加上 ${h2} 個百元等於多少呢？`, () => {
+                                    setupFalling();
+                                });
+                            }, 1000);
+                        });
+
+                    } else {
+                        isHandled = true;
+                        speak(`再想一想，${t1} 個十元加上 ${t2} 個十元等於多少呢？`);
+                        document.getElementById('feedback').innerText = "❌ 十位數不對喔，再數一次！";
+                        el.style.opacity = "0";
+                        setTimeout(() => el.remove(), 300);
+                    }
+
+                } else if (currentStep === 'hundreds') {
+                    if (val === targetH) {
+                        isHandled = true;
+                        isLocked = true;
+                        if (gameInterval) clearInterval(gameInterval);
+                        activeOptions.forEach(opt => opt.remove());
+
+                        document.getElementById('ansH').innerText = targetH;
+                        document.getElementById('feedback').innerText = `🎉 百位數算對了！最後算千位數！`;
+                        confetti();
+
+                        speak(`百位數算對了。最後，請算出，${th1} 個千元加上 ${th2} 個千元等於多少呢？`, () => {
+                            setTimeout(() => {
+                                if (isPaused) return;
+                                document.getElementById('feedback').innerText = `最後算千位數！`;
+                                isLocked = false;
+                                currentStep = 'thousands';
+                                document.getElementById('stepBanner').innerText = `步驟四：算千位數，${th1} 個千元加上 ${th2} 個千元等於多少呢？`;
+                                speak(`最後，請算出，${th1} 個千元加上 ${th2} 個千元等於多少呢？`, () => {
+                                    setupFalling();
+                                });
+                            }, 1000);
+                        });
+
+                    } else {
+                        isHandled = true;
+                        speak(`再想一想，${h1} 個百元加上 ${h2} 個百元等於多少呢？`);
+                        document.getElementById('feedback').innerText = "❌ 百位數不對喔，再數一次！";
+                        el.style.opacity = "0";
+                        setTimeout(() => el.remove(), 300);
+                    }
+
+                } else {
+                    if (val === targetTh) {
+                        isHandled = true;
+                        isLocked = true;
+                        if (gameInterval) clearInterval(gameInterval);
+                        activeOptions.forEach(opt => opt.remove());
+
+                        document.getElementById('ansTh').innerText = targetTh;
+
+                        let grandTotal = targetTh * 1000 + targetH * 100 + targetT * 10 + targetU;
+
+                        score++;
+                        document.getElementById('score').innerText = `已完成: ${score} 關`;
+                        document.getElementById('feedback').innerText = `🌟 太棒了！總金額是 ${grandTotal} 元，恭喜過關！`;
+                        confetti();
+
+                        speak(`太棒了，總金額是 ${grandTotal} 元，恭喜過關！`, () => {
+                            if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+                            nextQuestionTimeout = setTimeout(() => {
+                                if (!isPaused) initQuestion();
+                            }, 2000);
+                        });
+
+                    } else {
+                        isHandled = true;
+                        speak(`再想一想，${th1} 個千元加上 ${th2} 個千元等於多少呢？`);
+                        document.getElementById('feedback').innerText = "❌ 千位數不對喔，再數一次！";
+                        el.style.opacity = "0";
+                        setTimeout(() => el.remove(), 300);
+                    }
+                }
+            };
+
+            el.addEventListener('pointerdown', handleSelect);
+            el.addEventListener('animationend', () => {
+                el.remove();
+                activeOptions = activeOptions.filter(item => item !== el);
+            });
+
+            container.appendChild(el);
+            activeOptions.push(el);
+        }
+    </script>
+</body>
+</html>
+```eof
