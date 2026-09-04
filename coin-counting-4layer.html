@@ -24,7 +24,7 @@
             position: relative;
         }
 
-        /* 💡 確保遮罩層級最高，絕對不阻擋點擊 */
+        /* 💡 確保遮罩層級最高，且內部所有元素都能接收點擊 */
         #startOverlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(255, 255, 255, 0.99);
@@ -33,6 +33,7 @@
         }
         .start-content-box {
             max-width: 450px; width: 100%; display: flex; flex-direction: column; align-items: center; margin: auto;
+            pointer-events: auto;
         }
         #startOverlay h2 { color: #b45309; font-size: 22px; margin-bottom: 10px; text-align: center; }
         
@@ -48,6 +49,7 @@
             background-color: #16a34a; color: white; border: none; border-radius: 12px;
             padding: 16px 40px; font-size: 20px; font-weight: bold; cursor: pointer;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2); width: 100%; max-width: 260px; text-align: center; margin-bottom: 10px;
+            pointer-events: auto;
         }
         .start-btn:active { transform: scale(0.95); background-color: #15803d; }
         
@@ -160,7 +162,7 @@
 </head>
 <body>
 
-    <!-- 開始畫面遮罩：獨立置於最外層 -->
+    <!-- 開始畫面遮罩 -->
     <div id="startOverlay">
         <div class="start-content-box">
             <h2>👛 錢包四層直式進位加法 👛</h2>
@@ -175,8 +177,8 @@
                 </ul>
             </div>
 
-            <!-- 💡 直接採用最直接、最不容易卡關的點擊觸發 -->
-            <button class="start-btn" onclick="startGame()">🎮 開始遊戲</button>
+            <!-- 💡 確保按鈕有最高的點擊觸發與游標反應 -->
+            <button class="start-btn" id="startBtn">🎮 開始遊戲</button>
         </div>
     </div>
 
@@ -303,14 +305,27 @@
             }
         }
 
-        // 💡 絕對不卡關的開始遊戲邏輯
+        // 💡 透過多重事件監聽（click, touchend, pointerdown）綁定按鈕，保證任何平板、手機一碰就開通
+        const startBtn = document.getElementById('startBtn');
+        if (startBtn) {
+            const handleStart = (e) => {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                startGame();
+            };
+            startBtn.addEventListener('click', handleStart);
+            startBtn.addEventListener('touchend', handleStart);
+            startBtn.addEventListener('pointerdown', handleStart);
+        }
+
         function startGame() {
             const overlay = document.getElementById('startOverlay');
             if (overlay) {
-                overlay.remove(); // 直接從頁面移除遮罩，絕不阻擋後續互動
+                overlay.remove(); // 直接從 DOM 中完全移除遮罩
             }
 
-            // 延遲一點點才初始化題目，讓瀏覽器渲染執行緒完全釋放
             setTimeout(() => {
                 initQuestion();
             }, 50);
