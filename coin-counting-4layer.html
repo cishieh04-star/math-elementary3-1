@@ -1,3 +1,6 @@
+這是一個乾淨、完全沒有多餘字元的版本，您可以直接複製下方的完整程式碼：
+
+```html
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -5,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>有趣的四位數錢幣加法遊戲</title>
     <!-- 引入灑花特效庫 -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="[https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js](https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js)"></script>
     <style>
         * { 
             box-sizing: border-box; 
@@ -80,7 +83,6 @@
             align-items: center;
         }
 
-        /* 速度調整群組樣式 (+/-) */
         .speed-control-group {
             display: flex;
             align-items: center;
@@ -206,7 +208,6 @@
         <div class="status-bar">
             <div id="score">已完成: 0 關</div>
             <div class="status-right">
-                <!-- 速度調整按鈕群組 (+/-) -->
                 <div class="speed-control-group">
                     <span>速度</span>
                     <button class="speed-btn" onclick="adjustSpeed(-1)" title="減慢">-</button>
@@ -332,7 +333,6 @@
             }
         }
 
-        // 💡 絕對不卡關的點擊初始化
         const startBtnEl = document.getElementById('startBtn');
         startBtnEl.addEventListener('pointerdown', (e) => {
             e.preventDefault();
@@ -340,13 +340,11 @@
         });
 
         function startGame() {
-            // 第一步：強制立刻隱藏首頁遮罩，保證平板、手機畫面一定切換
             const overlay = document.getElementById('startOverlay');
             if (overlay) {
                 overlay.style.display = 'none';
             }
 
-            // 第二步：非同步解鎖語音引擎
             if ('speechSynthesis' in window) {
                 try {
                     window.speechSynthesis.cancel();
@@ -645,4 +643,3 @@
     </script>
 </body>
 </html>
-```eof
