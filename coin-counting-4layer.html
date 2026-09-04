@@ -9,29 +9,30 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
             font-family: sans-serif; text-align: center; background-color: #fef3c7; 
-            margin: 0; padding: env(safe-area-inset-top, 2px) env(safe-area-inset-right, 2px) env(safe-area-inset-bottom, 2px) env(safe-area-inset-left, 2px); 
-            min-height: 100vh; min-height: calc(100vh - env(safe-area-inset-bottom));
+            margin: 0; padding: 0; 
+            width: 100vw; height: 100vh; height: 100dvh;
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
             overflow: hidden; touch-action: manipulation; 
         }
         h1 { color: #b45309; font-size: 15px; margin: 2px 0; }
         
         #gameScreen { 
-            width: 100%; max-width: 500px; height: 98vh; max-height: 820px;
+            width: 100%; max-width: 500px; height: 100%; max-height: 820px;
             display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
             background: #fff; border-radius: 14px; border: 3px solid #f59e0b; padding: 6px; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: auto;
             position: relative;
         }
 
+        /* 💡 確保遮罩層級最高，絕對不阻擋點擊 */
         #startOverlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.98); border-radius: 12px;
-            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-            z-index: 9999; padding: 20px; overflow-y: auto; text-align: left;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(255, 255, 255, 0.99);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 2147483647; padding: 20px; text-align: left;
         }
         .start-content-box {
-            max-width: 450px; width: 100%; display: flex; flex-direction: column; align-items: center; margin: auto 0;
+            max-width: 450px; width: 100%; display: flex; flex-direction: column; align-items: center; margin: auto;
         }
         #startOverlay h2 { color: #b45309; font-size: 22px; margin-bottom: 10px; text-align: center; }
         
@@ -45,7 +46,7 @@
 
         .start-btn {
             background-color: #16a34a; color: white; border: none; border-radius: 12px;
-            padding: 12px 30px; font-size: 20px; font-weight: bold; cursor: pointer;
+            padding: 16px 40px; font-size: 20px; font-weight: bold; cursor: pointer;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2); width: 100%; max-width: 260px; text-align: center; margin-bottom: 10px;
         }
         .start-btn:active { transform: scale(0.95); background-color: #15803d; }
@@ -63,7 +64,6 @@
             align-items: center;
         }
 
-        /* 速度調整群組樣式 (+/-) */
         .speed-control-group {
             display: flex;
             align-items: center;
@@ -103,7 +103,6 @@
 
         .step-banner { background: #fef3c7; color: #92400e; padding: 4px 6px; border-radius: 6px; font-size: 12px; font-weight: bold; width: 100%; line-height: 1.2; flex-shrink: 0; }
 
-        /* 錢包內容清單顯示區 */
         .wallet-display-box {
             width: 100%; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 4px 8px; display: flex; flex-direction: column; gap: 1px; font-size: 12px; font-weight: bold; color: #334155; text-align: left;
             flex-shrink: 0;
@@ -115,7 +114,6 @@
         .tag-10 { background: #eab308; }
         .tag-1 { background: #64748b; }
 
-        /* 四層直式排版區 */
         .vertical-math {
             display: inline-flex; flex-direction: column; align-items: flex-end;
             background: #f8fafc; padding: 4px 10px; border-radius: 10px; border: 2px solid #cbd5e1;
@@ -162,31 +160,31 @@
 </head>
 <body>
 
-    <div id="gameScreen">
-        <!-- 開始畫面遮罩 -->
-        <div id="startOverlay">
-            <div class="start-content-box">
-                <h2>👛 錢包四層直式進位加法 👛</h2>
+    <!-- 開始畫面遮罩：獨立置於最外層 -->
+    <div id="startOverlay">
+        <div class="start-content-box">
+            <h2>👛 錢包四層直式進位加法 👛</h2>
 
-                <div class="intro-card">
-                    <h3>📖 遊戲使用說明</h3>
-                    <ul>
-                        <li><strong>四層直式結構：</strong>分為千元層、百元層、十元層、一元層[cite: 2]。</li>
-                        <li><strong>由下往上問答：</strong>先算 1元 ➔ 10元 ➔ 100元 ➔ 1000元 ➔ 最後加總！[cite: 2]</li>
-                        <li><strong>方塊掉落速度：</strong>上方可隨時點擊 <code style="background:#fef08a; padding:1px 4px;">+</code> / <code style="background:#fef08a; padding:1px 4px;">-</code> 調整速度。</li>
-                        <li><strong>語音功能：</strong>點擊右上角「🔊 聽題目」隨時重新聽提示！</li>
-                    </ul>
-                </div>
-
-                <button class="start-btn" id="startBtn">🎮 開始遊戲</button>
+            <div class="intro-card">
+                <h3>📖 遊戲使用說明</h3>
+                <ul>
+                    <li><strong>四層直式結構：</strong>分為千元層、百元層、十元層、一元層[cite: 2]。</li>
+                    <li><strong>由下往上問答：</strong>先算 1元 ➔ 10元 ➔ 100元 ➔ 1000元 ➔ 最後加總！[cite: 2]</li>
+                    <li><strong>方塊掉落速度：</strong>上方可隨時點擊 <code style="background:#fef08a; padding:1px 4px;">+</code> / <code style="background:#fef08a; padding:1px 4px;">-</code> 調整速度。</li>
+                    <li><strong>語音功能：</strong>點擊右上角「🔊 聽題目」隨時重新聽提示！</li>
+                </ul>
             </div>
-        </div>
 
+            <!-- 💡 直接採用最直接、最不容易卡關的點擊觸發 -->
+            <button class="start-btn" onclick="startGame()">🎮 開始遊戲</button>
+        </div>
+    </div>
+
+    <div id="gameScreen">
         <h1>👛 錢包四層直式進位加法</h1>
         <div class="status-bar">
             <div id="score">已完成: 0 關</div>
             <div class="status-right">
-                <!-- 速度調整按鈕群組 (+/-) -->
                 <div class="speed-control-group">
                     <span>速度</span>
                     <button class="speed-btn" onclick="adjustSpeed(-1)" title="減慢">-</button>
@@ -200,7 +198,6 @@
         
         <div class="step-banner" id="stepBanner">準備開始！</div>
 
-        <!-- 錢包內容清單顯示區 -->
         <div class="wallet-display-box">
             <div class="wallet-row"><span>1000元紙鈔：<b id="txtTh">2</b> 張</span><span class="money-tag tag-1000">千位</span></div>
             <div class="wallet-row"><span>100元紙鈔：<b id="txtH">12</b> 張</span><span class="money-tag tag-100">百位</span></div>
@@ -208,11 +205,9 @@
             <div class="wallet-row"><span>1元硬幣：<b id="txtU">9</b> 個</span><span class="money-tag tag-1">個位</span></div>
         </div>
 
-        <!-- 四層直式排版區 -->
         <div class="vertical-math" id="mathBox">
             <div class="operator">+</div>
 
-            <!-- 第一層：千元金額 -->
             <div class="math-row">
                 <div class="cell answer-cell" id="l1_1">?</div>
                 <div class="cell answer-cell" id="l1_2">?</div>
@@ -220,7 +215,6 @@
                 <div class="cell answer-cell" id="l1_4">?</div>
             </div>
 
-            <!-- 第二層：百元金額 -->
             <div class="math-row">
                 <div class="cell answer-cell" id="l2_1">?</div>
                 <div class="cell answer-cell" id="l2_2">?</div>
@@ -228,7 +222,6 @@
                 <div class="cell answer-cell" id="l2_4">?</div>
             </div>
 
-            <!-- 第三層：十元金額 -->
             <div class="math-row">
                 <div class="cell answer-cell" id="l3_1">?</div>
                 <div class="cell answer-cell" id="l3_2">?</div>
@@ -236,7 +229,6 @@
                 <div class="cell answer-cell" id="l3_4">?</div>
             </div>
 
-            <!-- 第四層：一元金額 -->
             <div class="math-row">
                 <div class="cell answer-cell" id="l4_1">?</div>
                 <div class="cell answer-cell" id="l4_2">?</div>
@@ -246,7 +238,6 @@
             
             <div class="math-line"></div>
 
-            <!-- 總金額答案列 -->
             <div class="math-row">
                 <div class="cell answer-cell" id="ansTh">?</div>
                 <div class="cell answer-cell" id="ansH">?</div>
@@ -257,7 +248,6 @@
 
         <div id="feedback" style="font-size: 13px; color: #d97706; font-weight: bold; min-height: 18px; flex-shrink: 0;"></div>
         
-        <!-- 掉落方塊區域 -->
         <div id="drop-game-container"></div>
     </div>
 
@@ -313,39 +303,17 @@
             }
         }
 
-        // 💡 雙重事件綁定，保證所有品牌手機、平板點擊均可秒速進入遊戲
-        const startBtnEl = document.getElementById('startBtn');
-        
-        startBtnEl.addEventListener('click', (e) => {
-            e.preventDefault();
-            startGame();
-        });
-
-        startBtnEl.addEventListener('pointerdown', (e) => {
-            e.preventDefault();
-            startGame();
-        });
-
+        // 💡 絕對不卡關的開始遊戲邏輯
         function startGame() {
-            // 1. 第一時間強制隱藏首頁遮罩
             const overlay = document.getElementById('startOverlay');
             if (overlay) {
-                overlay.style.display = 'none';
-                overlay.style.visibility = 'hidden';
-                overlay.style.zIndex = '-999';
+                overlay.remove(); // 直接從頁面移除遮罩，絕不阻擋後續互動
             }
 
-            // 2. 安全解鎖語音引擎
-            if ('speechSynthesis' in window) {
-                try {
-                    window.speechSynthesis.cancel();
-                    const dummy = new SpeechSynthesisUtterance("");
-                    window.speechSynthesis.speak(dummy);
-                } catch(e) {}
-            }
-
-            // 3. 初始化題目
-            initQuestion();
+            // 延遲一點點才初始化題目，讓瀏覽器渲染執行緒完全釋放
+            setTimeout(() => {
+                initQuestion();
+            }, 50);
         }
 
         function togglePause() {
@@ -368,27 +336,6 @@
                 if (!isLocked) {
                     setupFalling();
                 }
-            }
-        }
-
-        function renderCoins(elementId, count, type) {
-            const container = document.getElementById(elementId);
-            container.innerHTML = '';
-            for (let i = 0; i < count; i++) {
-                const coin = document.createElement('div');
-                if (type === '1000') {
-                    coin.className = 'coin-1000';
-                    coin.innerText = '千';
-                } else if (type === '100') {
-                    coin.className = 'coin-100';
-                    coin.innerText = '百';
-                } else if (type === '10') {
-                    coin.className = 'coin-10';
-                    coin.innerText = '十';
-                } else {
-                    coin.className = 'coin-1';
-                }
-                container.appendChild(coin);
             }
         }
 
