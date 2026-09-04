@@ -22,10 +22,10 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             overflow: hidden; touch-action: manipulation;
         }
-        h1 { color: #b45309; font-size: 16px; margin: 2px 0; }
+        h1 { color: #b45309; font-size: 15px; margin: 2px 0; }
         
         #gameScreen { 
-            width: 100%; max-width: 500px; height: 100%; max-height: 100dvh;
+            width: 100%; max-width: 520px; height: 100%; max-height: 100dvh;
             display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
             background: #fff; border-radius: 0; border: none; padding: 6px 10px; 
             box-shadow: none; margin: 0 auto;
@@ -68,20 +68,47 @@
         
         .status-bar { 
             display: flex; justify-content: space-between; align-items: center; 
-            width: 100%; font-size: 14px; font-weight: bold; color: #b45309; 
-            border-bottom: 2px solid #fef3c7; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; 
+            width: 100%; font-size: 13px; font-weight: bold; color: #b45309; 
+            border-bottom: 2px solid #fef3c7; padding-bottom: 4px; padding-left: 4px; padding-right: 4px; 
             flex-shrink: 0;
         }
 
         .status-right {
             display: flex;
-            gap: 6px;
+            gap: 5px;
             align-items: center;
         }
 
+        /* 速度調整群組樣式 (+/-) */
+        .speed-control-group {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            background: #f1f5f9;
+            padding: 2px 5px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            font-size: 12px;
+        }
+        .speed-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+        }
+        .speed-btn:active { background: #1d4ed8; transform: scale(0.92); }
+
         .control-btn {
             background-color: #f59e0b; color: white; border: none; border-radius: 8px;
-            padding: 4px 10px; font-size: 13px; font-weight: bold; cursor: pointer;
+            padding: 4px 8px; font-size: 12px; font-weight: bold; cursor: pointer;
             box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
         .control-btn:active { transform: scale(0.95); background-color: #d97706; }
@@ -166,7 +193,8 @@
                     <ul>
                         <li><strong>四位數挑戰：</strong>挑戰包含千位、百位、十位與個位的加法！</li>
                         <li><strong>步驟四階段：</strong>先算個位（一元） ➔ 再算十位（十元） ➔ 再算百位（百元） ➔ 最後算千位（千元）。</li>
-                        <li><strong>語音複習：</strong>點擊右上角「🔊 聽題目」隨時重新聽提示，最適合特教學生學習！</li>
+                        <li><strong>方塊掉落速度：</strong>上方可隨時點擊 <code style="background:#fef08a; padding:1px 4px;">+</code> / <code style="background:#fef08a; padding:1px 4px;">-</code> 調整速度。</li>
+                        <li><strong>語音複習：</strong>點擊右上角「🔊 聽題目」隨時重新聽提示！</li>
                     </ul>
                 </div>
                 <button class="start-btn" id="startBtn">🎮 開始挑戰</button>
@@ -177,6 +205,12 @@
         <div class="status-bar">
             <div id="score">已完成: 0 關</div>
             <div class="status-right">
+                <div class="speed-control-group">
+                    <span>速度</span>
+                    <button class="speed-btn" onclick="adjustSpeed(-1)" title="減慢">-</button>
+                    <span id="speedDisplay" style="min-width: 28px; text-align: center; font-weight: bold; color: #1e293b;">正常</span>
+                    <button class="speed-btn" onclick="adjustSpeed(1)" title="加快">+</button>
+                </div>
                 <button class="control-btn speak-btn" id="speakBtn" onclick="repeatCurrentPrompt()">🔊 聽題目</button>
                 <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
             </div>
@@ -238,9 +272,29 @@
         let lastQuestionIndex = -1;
         let lastSpokenText = "準備開始！";
 
+        // 掉落速度設定：秒數越小掉越快
+        let speedLevel = 2; 
+        const speedDurations = [0, 7.0, 5.0, 3.5, 2.0];
+        const speedNames = ["", "慢速", "正常", "快速", "極速"];
+
+        function adjustSpeed(delta) {
+            speedLevel += delta;
+            if (speedLevel < 1) speedLevel = 1;
+            if (speedLevel > 4) speedLevel = 4;
+
+            document.getElementById('speedDisplay').innerText = speedNames[speedLevel];
+            
+            activeOptions.forEach(el => {
+                el.style.animationDuration = speedDurations[speedLevel] + 's';
+            });
+        }
+
         function speak(text, callback) {
-            if (isPaused || !('speechSynthesis' in window)) return;
             lastSpokenText = text;
+            if (isPaused || !('speechSynthesis' in window)) {
+                if (callback) callback();
+                return;
+            }
             try {
                 window.speechSynthesis.cancel();
                 const msg = new SpeechSynthesisUtterance(text);
@@ -258,7 +312,7 @@
                 msg.onend = triggerCallback;
                 msg.onerror = triggerCallback;
                 
-                // 💡 雙保險計時器：避免部分 Android 手機不觸發 onend 導致卡住
+                // 💡 雙保險計時器：避免部分瀏覽器不觸發 onend 導致卡住
                 setTimeout(triggerCallback, 3500);
 
                 window.speechSynthesis.speak(msg);
@@ -444,7 +498,7 @@
 
             const randomX = Math.random() * (container.clientWidth - 45);
             el.style.left = randomX + 'px';
-            el.style.animationDuration = "5.5s"; 
+            el.style.animationDuration = speedDurations[speedLevel] + 's'; 
 
             let isHandled = false;
             const handleSelect = (e) => {
@@ -512,83 +566,4 @@
                         speak(`再想一想，${t1} 個十元加上 ${t2} 個十元等於多少呢？`);
                         document.getElementById('feedback').innerText = "❌ 十位數不對喔，再數一次！";
                         el.style.opacity = "0";
-                        setTimeout(() => el.remove(), 300);
-                    }
-
-                } else if (currentStep === 'hundreds') {
-                    if (val === targetH) {
-                        isHandled = true;
-                        isLocked = true;
-                        if (gameInterval) clearInterval(gameInterval);
-                        activeOptions.forEach(opt => opt.remove());
-
-                        document.getElementById('ansH').innerText = targetH;
-                        document.getElementById('feedback').innerText = `🎉 百位數算對了！最後算千位數！`;
-                        confetti();
-
-                        speak(`百位數算對了。最後，請算出，${th1} 個千元加上 ${th2} 個千元等於多少呢？`, () => {
-                            setTimeout(() => {
-                                if (isPaused) return;
-                                document.getElementById('feedback').innerText = `最後算千位數！`;
-                                isLocked = false;
-                                currentStep = 'thousands';
-                                document.getElementById('stepBanner').innerText = `步驟四：算千位數，${th1} 個千元加上 ${th2} 個千元等於多少呢？`;
-                                speak(`最後，請算出，${th1} 個千元加上 ${th2} 個千元等於多少呢？`, () => {
-                                    setupFalling();
-                                });
-                            }, 1000);
-                        });
-
-                    } else {
-                        isHandled = true;
-                        speak(`再想一想，${h1} 個百元加上 ${h2} 個百元等於多少呢？`);
-                        document.getElementById('feedback').innerText = "❌ 百位數不對喔，再數一次！";
-                        el.style.opacity = "0";
-                        setTimeout(() => el.remove(), 300);
-                    }
-
-                } else {
-                    if (val === targetTh) {
-                        isHandled = true;
-                        isLocked = true;
-                        if (gameInterval) clearInterval(gameInterval);
-                        activeOptions.forEach(opt => opt.remove());
-
-                        document.getElementById('ansTh').innerText = targetTh;
-
-                        let grandTotal = targetTh * 1000 + targetH * 100 + targetT * 10 + targetU;
-
-                        score++;
-                        document.getElementById('score').innerText = `已完成: ${score} 關`;
-                        document.getElementById('feedback').innerText = `🌟 太棒了！總金額是 ${grandTotal} 元，恭喜過關！`;
-                        confetti();
-
-                        speak(`太棒了，總金額是 ${grandTotal} 元，恭喜過關！`, () => {
-                            if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
-                            nextQuestionTimeout = setTimeout(() => {
-                                if (!isPaused) initQuestion();
-                            }, 2000);
-                        });
-
-                    } else {
-                        isHandled = true;
-                        speak(`再想一想，${th1} 個千元加上 ${th2} 個千元等於多少呢？`);
-                        document.getElementById('feedback').innerText = "❌ 千位數不對喔，再數一次！";
-                        el.style.opacity = "0";
-                        setTimeout(() => el.remove(), 300);
-                    }
-                }
-            };
-
-            el.addEventListener('pointerdown', handleSelect);
-            el.addEventListener('animationend', () => {
-                el.remove();
-                activeOptions = activeOptions.filter(item => item !== el);
-            });
-
-            container.appendChild(el);
-            activeOptions.push(el);
-        }
-    </script>
-</body>
-</html>
+                        setTimeout(() => el.remove(), 300
