@@ -86,28 +86,29 @@
     <ul id="game-list"></ul>
 
     <script>
-        const version = "10"; // 更新版本號以防快取
+        const version = "11"; // 更新版本號以防快取
         const games = [
             { name: "1.火車接力遊戲(10000以內，以10為間隔)", file: "number-train10000-interface10.html" },
             { name: "2.火車接力遊戲(10000以內，以20為間隔)", file: "number-train10000-interface20.html" },
             { name: "3.火車接力遊戲(10000以內，以100為間隔)", file: "number-train10000-interface100.html" },
             { name: "4.火車接力遊戲(10000以內，以200為間隔)", file: "number-train10000-interface200.html" },
-            { name: "5.數到100(直式加法創新遊戲)(兩位數)", file: "coin-counting-2layer.html" },
-            { name: "6.數到1000(直式加法創新遊戲)(三位數)", file: "coin-counting-3layer.html" },
-            { name: "7.數到10000(直式加法創新遊戲)(四位數)", file: "coin-counting-4layer.html" },
-            { name: "8.二位數直式加法遊戲(無進位)", file: "2-digit-addition(basic).html" },
-            { name: "9.二位數直式加法遊戲(有進位)", file: "2-digit-addition.html" },
-            { name: "10.三位數直式加法遊戲(無進位)", file: "3-digit-addition(basic).html" },
-            { name: "11.三位數直式加法遊戲(有進位)", file: "3-digit-addition.html" },
-            { name: "12.四位數直式加法遊戲(無進位)", file: "4-digit-addition(basic).html" },
-            { name: "13.四位數直式加法遊戲(有進位)", file: "4-digit-addition.html" },
-            { name: "14.五位數直式加法遊戲(無進位)", file: "5-digit-addition(basic).html" },
-            { name: "15.五位數直式加法遊戲(有進位)", file: "5-digit-addition.html" },
-            { name: "16.錢幣算算看遊戲(10000以內)", file: "coin-counting.html" },
-            { name: "17.購物付錢遊戲($50、$100、$500、$1000)", file: "payment-10000.html" },
-            { name: "18.乘法基礎遊戲(1-4)", file: "payment-multiplication-basic(1-4).html" },
-            { name: "19.乘法基礎遊戲(5-9)", file: "payment-multiplication-basic(5-9).html" },
-            { name: "20.乘法分拆計算", file: "multiplication-decomposition.html" }
+            { name: "5.火車接力遊戲(10000以內，以1000為間隔)", file: "number-train10000-interface1000.html" },
+            { name: "6.數到100(直式加法創新遊戲)(兩位數)", file: "coin-counting-2layer.html" },
+            { name: "7.數到1000(直式加法創新遊戲)(三位數)", file: "coin-counting-3layer.html" },
+            { name: "8.數到10000(直式加法創新遊戲)(四位數)", file: "coin-counting-4layer.html" },
+            { name: "9.二位數直式加法遊戲(無進位)", file: "2-digit-addition(basic).html" },
+            { name: "10.二位數直式加法遊戲(有進位)", file: "2-digit-addition.html" },
+            { name: "11.三位數直式加法遊戲(無進位)", file: "3-digit-addition(basic).html" },
+            { name: "12.三位數直式加法遊戲(有進位)", file: "3-digit-addition.html" },
+            { name: "13.四位數直式加法遊戲(無進位)", file: "4-digit-addition(basic).html" },
+            { name: "14.四位數直式加法遊戲(有進位)", file: "4-digit-addition.html" },
+            { name: "15.五位數直式加法遊戲(無進位)", file: "5-digit-addition(basic).html" },
+            { name: "16.五位數直式加法遊戲(有進位)", file: "5-digit-addition.html" },
+            { name: "17.錢幣算算看遊戲(10000以內)", file: "coin-counting.html" },
+            { name: "18.購物付錢遊戲($50、$100、$500、$1000)", file: "payment-10000.html" },
+            { name: "19.乘法基礎遊戲(1-4)", file: "payment-multiplication-basic(1-4).html" },
+            { name: "20.乘法基礎遊戲(5-9)", file: "payment-multiplication-basic(5-9).html" },
+            { name: "21.乘法分拆計算", file: "multiplication-decomposition.html" }
         ];
 
         const listElement = document.getElementById('game-list');
