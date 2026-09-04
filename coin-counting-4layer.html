@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>數到10000的有趣遊戲(四層顯示板)</title>
+    <title>錢包四層直式進位加法</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -314,7 +314,7 @@
             }
         }
 
-        // 💡 確保任何手機、平板在首頁點擊都能順利進入遊戲（絕對不卡關）
+        // 💡 確保所有手機、平板在首頁點擊都能瞬間進入遊戲，絕不卡關
         const startBtnEl = document.getElementById('startBtn');
         startBtnEl.addEventListener('pointerdown', (e) => {
             e.preventDefault();
@@ -322,10 +322,13 @@
         });
 
         function startGame() {
+            // 第一步：立刻隱藏遮罩，確保畫面絕對能順利切換到下一頁
             const overlay = document.getElementById('startOverlay');
             if (overlay) {
                 overlay.style.display = 'none';
             }
+
+            // 第二步：非同步解鎖語音引擎
             if ('speechSynthesis' in window) {
                 try {
                     window.speechSynthesis.cancel();
@@ -333,6 +336,7 @@
                     window.speechSynthesis.speak(dummy);
                 } catch(e) {}
             }
+
             initQuestion();
         }
 
