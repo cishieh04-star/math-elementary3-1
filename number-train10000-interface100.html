@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>數學冒險：10000以內火車過山洞篇（間隔100）</title>
+    <title>數學冒險：大數字間隔100練習篇</title>
     <!-- 引入灑花特效庫 -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
@@ -96,7 +96,7 @@
             align-items: center;
         }
 
-        /* 速度控制群組樣式 (+/-) */
+        /* 速度調整群組樣式 (+/-) */
         .speed-control-group {
             display: flex;
             align-items: center;
@@ -143,7 +143,7 @@
             transform: scale(0.95);
         }
         
-        /* 視覺提示區：逼真的火車車廂軌道區 */
+        /* 視覺提示區：火車車廂軌道區 */
         #visual-area { 
             height: 110px; 
             width: 100%; 
@@ -177,7 +177,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 19px;
             font-weight: bold;
             color: #ffffff;
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
@@ -194,7 +194,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px; 
+            font-size: 14px; 
             font-weight: bold;
             color: #1e293b;
         }
@@ -305,16 +305,16 @@
 
 <div class="main-wrapper">
     <div id="home-screen">
-        <h1 style="font-size: 22px; color: #1e293b; margin: 5px 0;">🚂 10000以內：火車過山洞（間隔100）</h1>
-        <p style="color: #0284c7; font-size: 13px; font-weight: bold; margin: 0 0 10px 0;">🌟 遊戲特色：10000以內每次增加100 × 速度調整 × 語音互動學習！</p>
+        <h1 style="font-size: 22px; color: #1e293b; margin: 5px 0;">🚂 數學冒險：大數字間隔100闖關篇</h1>
+        <p style="color: #0284c7; font-size: 13px; font-weight: bold; margin: 0 0 10px 0;">🌟 專屬練習：每次增加或減少 100 的百位數規律（如 4213 類型的數字）！</p>
         
         <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; width: 100%; text-align: left;">
             <p style="margin: 0 0 4px 0; font-size: 13px; font-weight: bold; color: #334155;">📖 操作使用說明：</p>
             <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #64748b; line-height: 1.4;">
-                <li><strong>觀察車廂規律：</strong>注意上方火車車廂的數字，掌握每次增加 100 的排列順序。</li>
-                <li><strong>調整掉落速度：</strong>覺得掉太快或太慢嗎？隨時點擊頂部的 <code style="background:#e2e8f0; padding:1px 4px; border-radius:4px;">+</code> 或 <code style="background:#e2e8f0; padding:1px 4px; border-radius:4px;">-</code> 調整速度！</li>
-                <li><strong>點擊數字球通關：</strong>當畫面上方掉落數字球時，點擊正確的數字即可完成闖關！</li>
-                <li><strong>隨時聽題目：</strong>右上角常駐「🔊 聽題目」按鈕，點擊即可重新朗讀題目！</li>
+                <li><strong>觀察間隔 100 的規律：</strong>注意上方車廂數字，掌握每次增加或減少 100 的百位變化。</li>
+                <li><strong>調整方塊掉落速度：</strong>隨時點擊頂部的 <code style="background:#e2e8f0; padding:1px 4px; border-radius:4px;">+</code> 或 <code style="background:#e2e8f0; padding:1px 4px; border-radius:4px;">-</code> 調整速度！</li>
+                <li><strong>點擊數字球通關：</strong>當畫面上方掉落正確答案時，點擊即可完成闖關！</li>
+                <li><strong>隨時聽題目：</strong>右上角常駐「🔊 聽題目」按鈕，點擊即可重新朗讀！</li>
             </ul>
         </div>
 
@@ -328,7 +328,7 @@
                 <div id="score">闖關: 0</div>
                 <!-- 速度調整按鈕群組 (+/-) -->
                 <div class="speed-control-group">
-                    <span>速度</span>
+                    <span>方塊掉落速度</span>
                     <button class="speed-btn" onclick="adjustSpeed(-1)" title="減慢速度">-</button>
                     <span id="speed-display" style="min-width: 32px; text-align: center; font-weight: bold; color: #1e293b;">正常</span>
                     <button class="speed-btn" onclick="adjustSpeed(1)" title="加快速度">+</button>
@@ -363,7 +363,7 @@
         let trainSequence = [];
         let currentQuestionText = "看看火車車廂，空格的數字是多少呢？";
 
-        // 速度等級設定：數值代表掉落動畫秒數（秒數越小掉越快）
+        // 速度等級設定
         let speedLevel = 2; 
         const speedDurations = [0, 6.0, 4.0, 2.5, 1.5];
         const speedNames = ["", "慢速", "正常", "快速", "極速"];
@@ -426,7 +426,6 @@
             osc.stop(audioCtx.currentTime + 0.3);
         }
 
-        // 確保點擊開始按鈕時能直接、安全地進入遊戲
         function initGame() {
             try {
                 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -438,7 +437,6 @@
                 }
             } catch(e) {}
 
-            // 隱藏首頁，顯示遊戲介面
             document.getElementById('home-screen').style.display = 'none';
             document.getElementById('game-ui').style.display = 'flex';
             
@@ -485,26 +483,39 @@
             }
         }
 
+        // 專門針對「間隔 100」的大數字題型產生器 (涵蓋千、百、十、個位，如 4213 類型)
         function loadQuestion() {
             isAnswered = false;
             if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
 
             if (!isPaused) {
-                document.getElementById('feedback').innerText = "火車車廂少了一個數字，找找看！";
+                document.getElementById('feedback').innerText = "觀察百位數的變化，找出空格數字！";
             }
             
             activeOptions.forEach(el => el.remove());
             activeOptions = [];
             if (gameInterval) clearInterval(gameInterval);
 
+            // 固定間隔為 100
             let step = 100;
-            let maxStart = 9600; 
-            let randomMultiplier = Math.floor(Math.random() * (maxStart / step)) + 1; 
-            let startNum = randomMultiplier * step;
-            
+
+            // 隨機產生千位 (1~8)、百位 (1~7)、十位與個位 (例如 213)
+            let baseTh = Math.floor(Math.random() * 8) + 1; // 1000 ~ 8000
+            let baseH = Math.floor(Math.random() * 6) + 1;   // 100 ~ 600 (預留空間給遞增或遞減)
+            let rest = Math.floor(Math.random() * 90) + 10;  // 十位與個位數 (如 13)
+            let startNum = baseTh * 1000 + baseH * 100 + rest;
+
+            // 隨機決定是「遞增(+100)」還是「遞減(-100)」
+            let isAscending = Math.random() < 0.5;
+            let actualStep = isAscending ? step : -step;
+
             trainSequence = [];
             for (let i = 0; i < 4; i++) {
-                trainSequence.push(startNum + i * step);
+                let val = startNum + (i * actualStep);
+                // 確保數值在 1000 ~ 9999 合理範圍內
+                if (val < 1000) val += 300;
+                if (val > 9800) val -= 300;
+                trainSequence.push(val);
             }
 
             let blankIndex = Math.floor(Math.random() * 4);
@@ -515,13 +526,15 @@
             currentQuestionText = `看看火車車廂，空格的數字是多少呢？`;
             speak(currentQuestionText);
 
+            // 產生豐富的干擾選項（以 100 為單位的錯覺選項）
             let options = new Set([currentAns]);
             while(options.size < 4) {
-                let randMult = Math.floor(Math.random() * (maxStart / step)) + 1;
-                let randStart = randMult * step;
-                let randVal = randStart + Math.floor(Math.random() * 4) * step;
-                if (randVal <= 10000) {
+                let offsetMultiplier = (Math.floor(Math.random() * 5) - 2);
+                let randVal = currentAns + (offsetMultiplier * step);
+                if (randVal > 1000 && randVal <= 9999 && randVal !== currentAns) {
                     options.add(randVal);
+                } else {
+                    options.add(currentAns + 100);
                 }
             }
             optionsArr = Array.from(options).sort(() => Math.random() - 0.5);
