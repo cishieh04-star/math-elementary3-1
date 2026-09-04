@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>10,000以內的數字互動遊戲(間隔20)</title>
+    <!-- 引入灑花特效庫 -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * { 
@@ -325,6 +326,7 @@
             <div class="status-left">
                 <div id="timer">時間: 00:00</div>
                 <div id="score">闖關: 0</div>
+                <!-- 速度調整按鈕群組 (+/-) -->
                 <div class="speed-control-group">
                     <span>方塊掉落速度</span>
                     <button class="speed-btn" onclick="adjustSpeed(-1)" title="減慢速度">-</button>
@@ -361,7 +363,6 @@
         let trainSequence = [];
         let currentQuestionText = "看看火車車廂，空格的數字是多少呢？";
 
-        // 速度等級設定
         let speedLevel = 2; 
         const speedDurations = [0, 6.0, 4.0, 2.5, 1.5];
         const speedNames = ["", "慢速", "正常", "快速", "極速"];
@@ -379,8 +380,8 @@
         }
 
         function speak(text) {
-            if (!('speechSynthesis' in window)) return;
             try {
+                if (!('speechSynthesis' in window)) return;
                 window.speechSynthesis.cancel();
                 const msg = new SpeechSynthesisUtterance(text);
                 msg.lang = 'zh-TW';
@@ -393,37 +394,42 @@
         }
 
         function playSuccessSound() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            let osc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(350, audioCtx.currentTime);
-            osc.frequency.setValueAtTime(523.25, audioCtx.currentTime + 0.15); 
-            osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.3);  
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.5);
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(350, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime + 0.15); 
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.3);  
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            } catch(e) {}
         }
 
         function playErrorSound() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            let osc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.frequency.setValueAtTime(200, audioCtx.currentTime);
-            osc.frequency.setValueAtTime(150, audioCtx.currentTime + 0.15);
-            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.3);
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } catch(e) {}
         }
 
+        // 防卡關的初始化函式：保證畫面一定會切換，不受語音載入影響
         function initGame() {
             try {
                 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -435,6 +441,7 @@
                 }
             } catch(e) {}
 
+            // 強制切換畫面
             document.getElementById('home-screen').style.display = 'none';
             document.getElementById('game-ui').style.display = 'flex';
             
@@ -481,7 +488,7 @@
             }
         }
 
-        // 核心題型產生器：將間隔設定為 20
+        // 間隔 20 題型產生器
         function loadQuestion() {
             isAnswered = false;
             if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
@@ -494,24 +501,18 @@
             activeOptions = [];
             if (gameInterval) clearInterval(gameInterval);
 
-            // 間隔設定為 20
             let step = 20;
 
-            // 隨機產生千位、百位、十位與個位 (個位數保持為 0 或配合 20 的倍數，確保尾數一致)
-            let baseTh = Math.floor(Math.random() * 8) + 1; // 1000 ~ 8000
-            let baseH = Math.floor(Math.random() * 9) + 1;   // 100 ~ 900
-            let baseT = Math.floor(Math.random() * 4) * 2;   // 確保十位為雙數或配合 20 變化的基底
-            let baseU = 0; // 尾數固定為 0 或一致，以符合間隔 20
+            let baseTh = Math.floor(Math.random() * 8) + 1; 
+            let baseH = Math.floor(Math.random() * 9) + 1;   
             let startNum = baseTh * 1000 + baseH * 100 + Math.floor(Math.random() * 45) * 20 + 10;
 
-            // 隨機決定是「遞增(+20)」還是「遞減(-20)」
             let isAscending = Math.random() < 0.5;
             let actualStep = isAscending ? step : -step;
 
             trainSequence = [];
             for (let i = 0; i < 4; i++) {
                 let val = startNum + (i * actualStep);
-                // 確保數值在合理範圍內
                 if (val < 1000) val += 100;
                 if (val > 9900) val -= 100;
                 trainSequence.push(val);
@@ -525,7 +526,6 @@
             currentQuestionText = `看看火車車廂，空格的數字是多少呢？`;
             speak(currentQuestionText);
 
-            // 產生豐富的干擾選項（以 20 為單位的錯覺選項）
             let options = new Set([currentAns]);
             while(options.size < 4) {
                 let offsetMultiplier = (Math.floor(Math.random() * 5) - 2);
@@ -563,4 +563,103 @@
                 box.className = 'train-box';
                 
                 let windowDiv = document.createElement('div');
-                windowDiv.className =
+                windowDiv.className = 'train-window';
+
+                if (idx === blankIdx) {
+                    box.classList.add('target');
+                    windowDiv.innerText = '?';
+                    windowDiv.id = 'trainTarget';
+                } else {
+                    windowDiv.innerText = num;
+                }
+                box.appendChild(windowDiv);
+                carriage.appendChild(box);
+
+                let wheels = document.createElement('div');
+                wheels.className = 'train-wheels';
+                wheels.innerHTML = '<div class="wheel"></div><div class="wheel"></div>';
+                carriage.appendChild(wheels);
+
+                area.appendChild(carriage);
+
+                if (idx < seq.length - 1) {
+                    let connector = document.createElement('div');
+                    connector.className = 'train-connector';
+                    area.appendChild(connector);
+                }
+            });
+        }
+
+        function spawnFallingOption(val) {
+            if (isAnswered) return;
+            const container = document.getElementById('drop-game-container');
+            const el = document.createElement('div');
+            el.className = 'falling-option';
+            el.innerText = val;
+
+            const randomX = Math.random() * (container.clientWidth - 64);
+            el.style.left = randomX + 'px';
+            
+            el.style.animationDuration = speedDurations[speedLevel] + 's';
+
+            if (isPaused) el.style.animationPlayState = 'paused';
+
+            let isHandled = false;
+            const handleSelect = function(e) {
+                if (e.cancelable) e.preventDefault();
+                e.stopPropagation();
+                if (isAnswered || isPaused || isHandled) return;
+                isHandled = true;
+
+                if (val === currentAns) {
+                    isAnswered = true;
+                    score++;
+                    document.getElementById('score').innerText = `闖關: ${score}`;
+                    
+                    playSuccessSound();
+                    confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+
+                    let targetBox = document.getElementById('trainTarget');
+                    if (targetBox) {
+                        targetBox.innerText = currentAns;
+                        targetBox.style.background = '#86efac';
+                        targetBox.style.borderColor = '#16a34a';
+                        targetBox.style.color = '#166534';
+                        targetBox.parentElement.style.background = '#22c55e';
+                        targetBox.parentElement.style.borderColor = '#15803d';
+                    }
+
+                    document.getElementById('feedback').innerText = "🎉 太棒了！火車順利開走了！";
+                    currentQuestionText = `答對了，就是${currentAns}！`;
+                    speak(currentQuestionText);
+
+                    clearInterval(gameInterval);
+                    activeOptions.forEach(opt => opt.remove());
+                    activeOptions = [];
+
+                    nextQuestionTimeout = setTimeout(() => {
+                        if (!isPaused) loadQuestion();
+                    }, 3000);
+                } else {
+                    playErrorSound();
+                    currentQuestionText = "再算算看喔！";
+                    speak(currentQuestionText);
+                    document.getElementById('feedback').innerText = "❌ 數字不對喔，再試一次！";
+                    el.style.opacity = "0";
+                    setTimeout(() => el.remove(), 300);
+                }
+            };
+
+            el.addEventListener('pointerdown', handleSelect);
+
+            el.addEventListener('animationend', () => {
+                el.remove();
+                activeOptions = activeOptions.filter(item => item !== el);
+            });
+
+            container.appendChild(el);
+            activeOptions.push(el);
+        }
+    </script>
+</body>
+</html>
