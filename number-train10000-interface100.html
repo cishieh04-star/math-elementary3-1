@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>數學冒險：10000以內火車過山洞篇（間隔100）</title>
+    <!-- 引入灑花特效庫 -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * { 
@@ -81,7 +82,7 @@
             justify-content: space-between; 
             align-items: center;
             width: 100%; 
-            font-size: 18px; 
+            font-size: 15px; 
             font-weight: bold; 
             color: #2c3e50; 
             border-bottom: 2px solid #e2e8f0; 
@@ -91,26 +92,54 @@
 
         .status-left {
             display: flex;
-            gap: 15px;
+            gap: 10px;
+            align-items: center;
         }
+
+        /* 速度控制群組樣式 (+/-) */
+        .speed-control-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-size: 13px;
+        }
+        .speed-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .speed-btn:active { background: #1d4ed8; transform: scale(0.92); }
 
         /* 聽題目按鈕樣式 */
         #repeat-audio-btn {
-            background: #3b82f6;
+            background: #0ea5e9;
             color: white;
             border: none;
             border-radius: 8px;
             padding: 4px 10px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 2px 5px rgba(59,130,246,0.3);
+            box-shadow: 0 2px 5px rgba(14,165,233,0.3);
             display: flex;
             align-items: center;
             gap: 4px;
         }
         #repeat-audio-btn:active {
-            background: #2563eb;
+            background: #0284c7;
             transform: scale(0.95);
         }
         
@@ -277,20 +306,19 @@
 <div class="main-wrapper">
     <div id="home-screen">
         <h1 style="font-size: 22px; color: #1e293b; margin: 5px 0;">🚂 10000以內：火車過山洞（間隔100）</h1>
-        <p style="color: #0284c7; font-size: 13px; font-weight: bold; margin: 0 0 10px 0;">🌟 遊戲特色：10000以內每次增加100 × 趣味掉落球 × 語音互動學習！</p>
+        <p style="color: #0284c7; font-size: 13px; font-weight: bold; margin: 0 0 10px 0;">🌟 遊戲特色：10000以內每次增加100 × 速度調整 × 語音互動學習！</p>
         
         <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; width: 100%; text-align: left;">
             <p style="margin: 0 0 4px 0; font-size: 13px; font-weight: bold; color: #334155;">📖 操作使用說明：</p>
             <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #64748b; line-height: 1.4;">
                 <li><strong>觀察車廂規律：</strong>注意上方火車車廂的數字，掌握每次增加 100 的排列順序。</li>
-                <li><strong>找出空格答案：</strong>思考被問號 <code style="background:#e2e8f0; padding:1px 4px; border-radius:4px;">?</code> 遮住的車廂應該填入什麼數字。</li>
+                <li><strong>調整掉落速度：</strong>覺得掉太快或太慢嗎？隨時點擊頂部的 <code style="background:#e2e8f0; padding:1px 4px; border-radius:4px;">+</code> 或 <code style="background:#e2e8f0; padding:1px 4px; border-radius:4px;">-</code> 調整速度！</li>
                 <li><strong>點擊數字球通關：</strong>當畫面上方掉落數字球時，點擊正確的數字即可完成闖關！</li>
-                <li><strong>貼心暫停功能：</strong>遊戲過程中如果需要休息，可隨時點擊「暫停遊戲」按鈕。</li>
                 <li><strong>隨時聽題目：</strong>右上角常駐「🔊 聽題目」按鈕，點擊即可重新朗讀題目！</li>
             </ul>
         </div>
 
-        <button id="start-btn">開始玩遊戲</button>
+        <button id="start-btn" onclick="initGame()">開始玩遊戲</button>
     </div>
 
     <div id="game-ui">
@@ -298,6 +326,13 @@
             <div class="status-left">
                 <div id="timer">時間: 00:00</div>
                 <div id="score">闖關: 0</div>
+                <!-- 速度調整按鈕群組 (+/-) -->
+                <div class="speed-control-group">
+                    <span>速度</span>
+                    <button class="speed-btn" onclick="adjustSpeed(-1)" title="減慢速度">-</button>
+                    <span id="speed-display" style="min-width: 32px; text-align: center; font-weight: bold; color: #1e293b;">正常</span>
+                    <button class="speed-btn" onclick="adjustSpeed(1)" title="加快速度">+</button>
+                </div>
             </div>
             <button id="repeat-audio-btn" onclick="repeatCurrentQuestion()">🔊 聽題目</button>
         </div>
@@ -328,28 +363,34 @@
         let trainSequence = [];
         let currentQuestionText = "看看火車車廂，空格的數字是多少呢？";
 
+        // 速度等級設定：數值代表掉落動畫秒數（秒數越小掉越快）
+        let speedLevel = 2; 
+        const speedDurations = [0, 6.0, 4.0, 2.5, 1.5];
+        const speedNames = ["", "慢速", "正常", "快速", "極速"];
+
+        function adjustSpeed(delta) {
+            speedLevel += delta;
+            if (speedLevel < 1) speedLevel = 1;
+            if (speedLevel > 4) speedLevel = 4;
+
+            document.getElementById('speed-display').innerText = speedNames[speedLevel];
+            
+            activeOptions.forEach(el => {
+                el.style.animationDuration = speedDurations[speedLevel] + 's';
+            });
+        }
+
         function speak(text) {
             if (!('speechSynthesis' in window)) return;
             try {
                 window.speechSynthesis.cancel();
                 const msg = new SpeechSynthesisUtterance(text);
                 msg.lang = 'zh-TW';
-                
-                const voices = window.speechSynthesis.getVoices();
-                const femaleVoice = voices.find(v => v.lang.includes('zh-TW') && (v.name.includes('Mei-Jia') || v.name.toLowerCase().includes('female')));
-                if (femaleVoice) msg.voice = femaleVoice;
-                
                 window.speechSynthesis.speak(msg);
             } catch(e) {}
         }
 
         function repeatCurrentQuestion() {
-            try {
-                if ('speechSynthesis' in window && window.speechSynthesis.paused) {
-                    window.speechSynthesis.resume();
-                    return;
-                }
-            } catch(e) {}
             speak(currentQuestionText);
         }
 
@@ -385,12 +426,7 @@
             osc.stop(audioCtx.currentTime + 0.3);
         }
 
-        const startBtnEl = document.getElementById('start-btn');
-        startBtnEl.addEventListener('pointerdown', (e) => {
-            e.preventDefault();
-            initGame();
-        });
-
+        // 確保點擊開始按鈕時能直接、安全地進入遊戲
         function initGame() {
             try {
                 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -402,16 +438,10 @@
                 }
             } catch(e) {}
 
-            if ('speechSynthesis' in window) {
-                try {
-                    window.speechSynthesis.cancel();
-                    let unlockSpeech = new SpeechSynthesisUtterance('');
-                    window.speechSynthesis.speak(unlockSpeech);
-                } catch(e) {}
-            }
-
+            // 隱藏首頁，顯示遊戲介面
             document.getElementById('home-screen').style.display = 'none';
             document.getElementById('game-ui').style.display = 'flex';
+            
             score = 0;
             totalSeconds = 0;
             isPaused = false;
@@ -557,8 +587,8 @@
 
             const randomX = Math.random() * (container.clientWidth - 64);
             el.style.left = randomX + 'px';
-            const duration = 4 + Math.random();
-            el.style.animationDuration = duration + 's';
+            
+            el.style.animationDuration = speedDurations[speedLevel] + 's';
 
             if (isPaused) el.style.animationPlayState = 'paused';
 
