@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>數學冒險：10000以內火車過山洞篇（間隔20）</title>
-    <!-- 引入灑花特效庫 -->
+    <title>10,000以內的數字互動遊戲(間隔20)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * { 
@@ -79,18 +78,71 @@
         
         #status-bar { 
             display: flex; 
-            justify-content: space-around; 
+            justify-content: space-between; 
             align-items: center;
             width: 100%; 
-            font-size: 16px; 
+            font-size: 15px; 
             font-weight: bold; 
             color: #2c3e50; 
             border-bottom: 2px solid #e2e8f0; 
             padding-bottom: 4px; 
             flex-shrink: 0;
         }
+
+        .status-left {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* 速度調整群組樣式 (+/-) */
+        .speed-control-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-size: 13px;
+        }
+        .speed-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .speed-btn:active { background: #1d4ed8; transform: scale(0.92); }
+
+        /* 聽題目按鈕樣式 */
+        #repeat-audio-btn {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(14,165,233,0.3);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        #repeat-audio-btn:active {
+            background: #0284c7;
+            transform: scale(0.95);
+        }
         
-        /* 視覺提示區：逼真的火車車廂軌道區 */
+        /* 視覺提示區：火車車廂軌道區 */
         #visual-area { 
             height: 110px; 
             width: 100%; 
@@ -124,7 +176,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 19px;
             font-weight: bold;
             color: #ffffff;
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
@@ -141,7 +193,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px; 
+            font-size: 14px; 
             font-weight: bold;
             color: #1e293b;
         }
@@ -229,12 +281,12 @@
         }
 
         button#start-btn, .control-btn { 
-            padding: 10px 20px; 
-            font-size: 16px; 
+            padding: 12px 35px; 
+            font-size: 18px; 
             background: #3b82f6; 
             color: white; 
             border: none; 
-            border-radius: 10px; 
+            border-radius: 12px; 
             cursor: pointer; 
             box-shadow: 0 4px 10px rgba(59,130,246,0.3);
             font-weight: bold;
@@ -243,13 +295,6 @@
         }
         button#start-btn:active, .control-btn:active { background: #2563eb; transform: scale(0.95); }
         
-        .speak-bar-btn {
-            background: #0ea5e9;
-            padding: 6px 12px;
-            font-size: 14px;
-        }
-        .speak-bar-btn:active { background: #0284c7; }
-
         #pause-btn {
             background: #d97706;
         }
@@ -258,41 +303,44 @@
 <body>
 
 <div class="main-wrapper">
-    <!-- 首頁畫面 -->
     <div id="home-screen">
-        <h1 style="font-size: 22px; color: #1e293b; margin: 5px 0;">🚂 10000以內：火車過山洞（間隔20）</h1>
-        <p style="color: #0284c7; font-size: 13px; font-weight: bold; margin: 0 0 10px 0;">🌟 遊戲特色：10000以內每次增加20 × 趣味掉落球 × 語音互動學習！</p>
+        <h1 style="font-size: 22px; color: #1e293b; margin: 5px 0;">🚂 10,000以內的數字互動遊戲(間隔20)</h1>
+        <p style="color: #0284c7; font-size: 13px; font-weight: bold; margin: 0 0 10px 0;">🌟 專屬練習：每次增加或減少 20 的規律！</p>
         
         <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; width: 100%; text-align: left;">
             <p style="margin: 0 0 4px 0; font-size: 13px; font-weight: bold; color: #334155;">📖 操作使用說明：</p>
             <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #64748b; line-height: 1.4;">
-                <li><strong>觀察車廂規律：</strong>注意上方火車車廂的數字，掌握每次增加 20 的排列順序。</li>
-                <li><strong>找出空格答案：</strong>思考被問號 <code style="background:#e2e8f0; padding:1px 4px; border-radius:4px;">?</code> 遮住的車廂應該填入什麼數字。</li>
-                <li><strong>🔊 聽題目按鈕：</strong>若手機聽不到聲音，隨時點擊右上角「🔊 聽題目」按鈕即可重新朗讀！</li>
-                <li><strong>點擊數字球通關：</strong>當畫面上方掉落數字球時，點擊正確的數字即可完成闖關！</li>
+                <li><strong>觀察間隔 20 的規律：</strong>注意上方車廂數字，掌握每次增加或減少 20 的變化。</li>
+                <li><strong>調整方塊掉落速度：</strong>隨時點擊頂部的 <code style="background:#e2e8f0; padding:1px 4px; border-radius:4px;">+</code> 或 <code style="background:#e2e8f0; padding:1px 4px; border-radius:4px;">-</code> 調整速度！</li>
+                <li><strong>點擊數字球通關：</strong>當畫面上方掉落正確答案時，點擊即可完成闖關！</li>
+                <li><strong>隨時聽題目：</strong>右上角常駐「🔊 聽題目」按鈕，點擊即可重新朗讀！</li>
             </ul>
         </div>
 
-        <button id="start-btn" style="padding: 12px 35px; font-size: 18px;">開始玩遊戲</button>
+        <button id="start-btn" onclick="initGame()">開始玩遊戲</button>
     </div>
 
-    <!-- 遊戲中畫面 -->
     <div id="game-ui">
         <div id="status-bar">
-            <div id="timer">時間: 00:00</div>
-            <div id="score">闖關: 0</div>
-            <button class="control-btn speak-bar-btn" onclick="manualSpeak()">🔊 聽題目</button>
+            <div class="status-left">
+                <div id="timer">時間: 00:00</div>
+                <div id="score">闖關: 0</div>
+                <div class="speed-control-group">
+                    <span>方塊掉落速度</span>
+                    <button class="speed-btn" onclick="adjustSpeed(-1)" title="減慢速度">-</button>
+                    <span id="speed-display" style="min-width: 32px; text-align: center; font-weight: bold; color: #1e293b;">正常</span>
+                    <button class="speed-btn" onclick="adjustSpeed(1)" title="加快速度">+</button>
+                </div>
+            </div>
+            <button id="repeat-audio-btn" onclick="repeatCurrentQuestion()">🔊 聽題目</button>
         </div>
         
-        <!-- 火車車廂視覺區 -->
         <div id="visual-area"></div>
         <div id="question">火車空格是多少呢？</div>
         <div id="feedback">注意看！數字掉下來囉！</div>
         
-        <!-- 掉落答案區域 -->
         <div id="drop-game-container"></div>
 
-        <!-- 暫停按鈕區 -->
         <div class="btn-group">
             <button id="pause-btn" class="control-btn" onclick="togglePause()">暫停遊戲</button>
         </div>
@@ -311,33 +359,37 @@
         let audioCtx = null;
         let optionsArr = [];
         let trainSequence = [];
-        let currentUtterance = null; // 全域常駐語音變數，防止 iPhone 記憶體回收
-        let lastSpokenText = "";
+        let currentQuestionText = "看看火車車廂，空格的數字是多少呢？";
+
+        // 速度等級設定
+        let speedLevel = 2; 
+        const speedDurations = [0, 6.0, 4.0, 2.5, 1.5];
+        const speedNames = ["", "慢速", "正常", "快速", "極速"];
+
+        function adjustSpeed(delta) {
+            speedLevel += delta;
+            if (speedLevel < 1) speedLevel = 1;
+            if (speedLevel > 4) speedLevel = 4;
+
+            document.getElementById('speed-display').innerText = speedNames[speedLevel];
+            
+            activeOptions.forEach(el => {
+                el.style.animationDuration = speedDurations[speedLevel] + 's';
+            });
+        }
 
         function speak(text) {
-            lastSpokenText = text;
             if (!('speechSynthesis' in window)) return;
             try {
                 window.speechSynthesis.cancel();
-                currentUtterance = new SpeechSynthesisUtterance(text);
-                currentUtterance.lang = 'zh-TW';
-                currentUtterance.rate = 0.85;
-                currentUtterance.volume = 1.0;
-                
-                const voices = window.speechSynthesis.getVoices();
-                const femaleVoice = voices.find(v => v.lang.includes('zh-TW') && (v.name.includes('Mei-Jia') || v.name.toLowerCase().includes('female')));
-                if (femaleVoice) currentUtterance.voice = femaleVoice;
-                
-                window.speechSynthesis.speak(currentUtterance);
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'zh-TW';
+                window.speechSynthesis.speak(msg);
             } catch(e) {}
         }
 
-        function manualSpeak() {
-            if (lastSpokenText) {
-                speak(lastSpokenText);
-            } else {
-                speak("看看火車車廂，空格的數字是多少呢？");
-            }
+        function repeatCurrentQuestion() {
+            speak(currentQuestionText);
         }
 
         function playSuccessSound() {
@@ -372,12 +424,6 @@
             osc.stop(audioCtx.currentTime + 0.3);
         }
 
-        const startBtnEl = document.getElementById('start-btn');
-        startBtnEl.addEventListener('pointerdown', (e) => {
-            e.preventDefault();
-            initGame();
-        });
-
         function initGame() {
             try {
                 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -389,18 +435,9 @@
                 }
             } catch(e) {}
 
-            // 【iPhone 專用強制解鎖語音通道】
-            if ('speechSynthesis' in window) {
-                try {
-                    window.speechSynthesis.cancel();
-                    let unlockSpeech = new SpeechSynthesisUtterance("遊戲開始");
-                    unlockSpeech.volume = 0.01;
-                    window.speechSynthesis.speak(unlockSpeech);
-                } catch(e) {}
-            }
-
             document.getElementById('home-screen').style.display = 'none';
             document.getElementById('game-ui').style.display = 'flex';
+            
             score = 0;
             totalSeconds = 0;
             isPaused = false;
@@ -444,41 +481,59 @@
             }
         }
 
+        // 核心題型產生器：將間隔設定為 20
         function loadQuestion() {
             isAnswered = false;
             if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
 
             if (!isPaused) {
-                document.getElementById('feedback').innerText = "火車車廂少了一個數字，找找看！";
+                document.getElementById('feedback').innerText = "觀察數字的變化，找出空格數字！";
             }
             
             activeOptions.forEach(el => el.remove());
             activeOptions = [];
             if (gameInterval) clearInterval(gameInterval);
 
+            // 間隔設定為 20
             let step = 20;
-            let maxStart = 9920; 
-            let randomMultiplier = Math.floor(Math.random() * (maxStart / step)) + 1; 
-            let startNum = randomMultiplier * step;
-            
+
+            // 隨機產生千位、百位、十位與個位 (個位數保持為 0 或配合 20 的倍數，確保尾數一致)
+            let baseTh = Math.floor(Math.random() * 8) + 1; // 1000 ~ 8000
+            let baseH = Math.floor(Math.random() * 9) + 1;   // 100 ~ 900
+            let baseT = Math.floor(Math.random() * 4) * 2;   // 確保十位為雙數或配合 20 變化的基底
+            let baseU = 0; // 尾數固定為 0 或一致，以符合間隔 20
+            let startNum = baseTh * 1000 + baseH * 100 + Math.floor(Math.random() * 45) * 20 + 10;
+
+            // 隨機決定是「遞增(+20)」還是「遞減(-20)」
+            let isAscending = Math.random() < 0.5;
+            let actualStep = isAscending ? step : -step;
+
             trainSequence = [];
             for (let i = 0; i < 4; i++) {
-                trainSequence.push(startNum + i * step);
+                let val = startNum + (i * actualStep);
+                // 確保數值在合理範圍內
+                if (val < 1000) val += 100;
+                if (val > 9900) val -= 100;
+                trainSequence.push(val);
             }
 
             let blankIndex = Math.floor(Math.random() * 4);
             currentAns = trainSequence[blankIndex];
 
             renderTrain(trainSequence, blankIndex);
-            speak(`看看火車車廂，空格的數字是多少呢？`);
+            
+            currentQuestionText = `看看火車車廂，空格的數字是多少呢？`;
+            speak(currentQuestionText);
 
+            // 產生豐富的干擾選項（以 20 為單位的錯覺選項）
             let options = new Set([currentAns]);
             while(options.size < 4) {
-                let randMult = Math.floor(Math.random() * (maxStart / step)) + 1;
-                let randStart = randMult * step;
-                let randVal = randStart + Math.floor(Math.random() * 4) * step;
-                if (randVal <= 10000) {
+                let offsetMultiplier = (Math.floor(Math.random() * 5) - 2);
+                let randVal = currentAns + (offsetMultiplier * step);
+                if (randVal > 1000 && randVal <= 9999 && randVal !== currentAns) {
                     options.add(randVal);
+                } else {
+                    options.add(currentAns + 20);
                 }
             }
             optionsArr = Array.from(options).sort(() => Math.random() - 0.5);
@@ -508,102 +563,4 @@
                 box.className = 'train-box';
                 
                 let windowDiv = document.createElement('div');
-                windowDiv.className = 'train-window';
-
-                if (idx === blankIdx) {
-                    box.classList.add('target');
-                    windowDiv.innerText = '?';
-                    windowDiv.id = 'trainTarget';
-                } else {
-                    windowDiv.innerText = num;
-                }
-                box.appendChild(windowDiv);
-                carriage.appendChild(box);
-
-                let wheels = document.createElement('div');
-                wheels.className = 'train-wheels';
-                wheels.innerHTML = '<div class="wheel"></div><div class="wheel"></div>';
-                carriage.appendChild(wheels);
-
-                area.appendChild(carriage);
-
-                if (idx < seq.length - 1) {
-                    let connector = document.createElement('div');
-                    connector.className = 'train-connector';
-                    area.appendChild(connector);
-                }
-            });
-        }
-
-        function spawnFallingOption(val) {
-            if (isAnswered) return;
-            const container = document.getElementById('drop-game-container');
-            const el = document.createElement('div');
-            el.className = 'falling-option';
-            el.innerText = val;
-
-            const randomX = Math.random() * (container.clientWidth - 64);
-            el.style.left = randomX + 'px';
-            const duration = 4 + Math.random();
-            el.style.animationDuration = duration + 's';
-
-            if (isPaused) el.style.animationPlayState = 'paused';
-
-            let isHandled = false;
-            const handleSelect = function(e) {
-                if (e.cancelable) e.preventDefault();
-                e.stopPropagation();
-                if (isAnswered || isPaused || isHandled) return;
-                isHandled = true;
-
-                if (val === currentAns) {
-                    isAnswered = true;
-                    score++;
-                    document.getElementById('score').innerText = `闖關: ${score}`;
-                    
-                    playSuccessSound();
-                    confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
-
-                    let targetBox = document.getElementById('trainTarget');
-                    if (targetBox) {
-                        targetBox.innerText = currentAns;
-                        targetBox.style.background = '#86efac';
-                        targetBox.style.borderColor = '#16a34a';
-                        targetBox.style.color = '#166534';
-                        targetBox.parentElement.style.background = '#22c55e';
-                        targetBox.parentElement.style.borderColor = '#15803d';
-                    }
-
-                    document.getElementById('feedback').innerText = "🎉 太棒了！火車順利開走了！";
-                    speak(`答對了，就是${currentAns}！`);
-
-                    clearInterval(gameInterval);
-                    activeOptions.forEach(opt => opt.remove());
-                    activeOptions = [];
-
-                    nextQuestionTimeout = setTimeout(() => {
-                        if (!isPaused) loadQuestion();
-                    }, 3000);
-                } else {
-                    playErrorSound();
-                    speak("再算算看喔！");
-                    document.getElementById('feedback').innerText = "❌ 數字不對喔，再試一次！";
-                    el.style.transition = "opacity 0.3s";
-                    el.style.opacity = "0";
-                    setTimeout(() => el.remove(), 300);
-                }
-            };
-
-            el.addEventListener('pointerdown', handleSelect);
-
-            el.addEventListener('animationend', () => {
-                el.remove();
-                activeOptions = activeOptions.filter(item => item !== el);
-            });
-
-            container.appendChild(el);
-            activeOptions.push(el);
-        }
-    </script>
-</body>
-</html>
+                windowDiv.className =
