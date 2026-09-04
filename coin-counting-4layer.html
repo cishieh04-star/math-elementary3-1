@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>四位數錢幣加法趣味遊戲</title>
+    <title>四位數錢幣加法遊戲(隨機進位版)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * { 
@@ -191,7 +191,7 @@
                 <div class="intro-card">
                     <h3>📖 學習引導說明</h3>
                     <ul>
-                        <li><strong>四位數挑戰：</strong>挑戰包含千位、百位、十位與個位的加法！</li>
+                        <li><strong>無限隨機挑戰：</strong>每次通關或重新整理都會自動產生全新題目！</li>
                         <li><strong>步驟四階段：</strong>先算個位（一元） ➔ 再算十位（十元） ➔ 再算百位（百元） ➔ 最後算千位（千元）。</li>
                         <li><strong>方塊掉落速度：</strong>上方可隨時點擊 <code style="background:#fef08a; padding:1px 4px;">+</code> / <code style="background:#fef08a; padding:1px 4px;">-</code> 調整速度。</li>
                         <li><strong>語音複習：</strong>點擊右上角「🔊 聽題目」隨時重新聽提示！</li>
@@ -269,7 +269,6 @@
         let isLocked = false;
         let isPaused = false;
         let nextQuestionTimeout = null;
-        let lastQuestionIndex = -1;
         let lastSpokenText = "準備開始！";
 
         // 掉落速度設定：秒數越小掉越快
@@ -312,7 +311,6 @@
                 msg.onend = triggerCallback;
                 msg.onerror = triggerCallback;
                 
-                // 💡 雙保險計時器：避免部分瀏覽器不觸發 onend 導致卡住
                 setTimeout(triggerCallback, 3500);
 
                 window.speechSynthesis.speak(msg);
@@ -395,6 +393,7 @@
             }
         }
 
+        // 💡 隨機出題函式：動態產生千、百、十、個位數
         function initQuestion() {
             if (isPaused) return;
             isLocked = false;
@@ -404,23 +403,16 @@
             document.getElementById('ansH').innerText = "?";
             document.getElementById('ansTh').innerText = "?";
 
-            const questions = [
-                {th1: 2, h1: 3, t1: 2, u1: 3, th2: 1, h2: 4, t2: 3, u2: 5}, 
-                {th1: 1, h1: 2, t1: 4, u1: 2, th2: 3, h2: 2, t2: 1, u2: 3}, 
-                {th1: 3, h1: 1, t1: 5, u1: 2, th2: 2, h2: 3, t2: 2, u2: 1}, 
-                {th1: 4, h1: 2, t1: 1, u1: 4, th2: 2, h2: 1, t2: 3, u2: 2}, 
-                {th1: 2, h1: 4, t1: 3, u1: 1, th2: 5, h2: 1, t2: 2, u2: 6}  
-            ];
+            // 隨機產生千位 (1~7)、百位 (0~8)、十位 (0~8)、個位 (0~8)
+            th1 = Math.floor(Math.random() * 6) + 1;
+            h1 = Math.floor(Math.random() * 9);
+            t1 = Math.floor(Math.random() * 9);
+            u1 = Math.floor(Math.random() * 9);
 
-            let qIndex;
-            do {
-                qIndex = Math.floor(Math.random() * questions.length);
-            } while (qIndex === lastQuestionIndex && questions.length > 1);
-            lastQuestionIndex = qIndex;
-
-            let q = questions[qIndex];
-            th1 = q.th1; h1 = q.h1; t1 = q.t1; u1 = q.u1; 
-            th2 = q.th2; h2 = q.h2; t2 = q.t2; u2 = q.u2;
+            th2 = Math.floor(Math.random() * 3) + 1;
+            h2 = Math.floor(Math.random() * 9);
+            t2 = Math.floor(Math.random() * 9);
+            u2 = Math.floor(Math.random() * 9);
             
             targetU = u1 + u2;
             targetT = t1 + t2;
@@ -475,7 +467,8 @@
 
             let options = [currentTarget];
             while (options.length < 4) {
-                let r = Math.floor(Math.random() * 10);
+                // 為了讓低年級小朋友練習直式，單一位數加總選項範圍設定在 0 ~ 18 之間
+                let r = Math.floor(Math.random() * 19);
                 if (!options.includes(r)) options.push(r);
             }
             options.sort(() => Math.random() - 0.5);
@@ -510,139 +503,4 @@
                         isHandled = true;
                         isLocked = true;
                         if (gameInterval) clearInterval(gameInterval);
-                        activeOptions.forEach(opt => opt.remove());
-
-                        document.getElementById('ansU').innerText = targetU;
-                        document.getElementById('feedback').innerText = `🎉 個位數算對了！個位數是 ${targetU}。`;
-                        confetti();
-
-                        speak(`個位數算對了，個位數是 ${targetU}。`, () => {
-                            setTimeout(() => {
-                                if (isPaused) return;
-                                document.getElementById('feedback').innerText = `接下來算十位數！`;
-                                isLocked = false;
-                                currentStep = 'tens';
-                                document.getElementById('stepBanner').innerText = `步驟二：算十位數，${t1} 個十元加上 ${t2} 個十元等於多少呢？`;
-                                speak(`接下來，請算出，${t1} 個十元加上 ${t2} 個十元等於多少呢？`, () => {
-                                    setupFalling();
-                                });
-                            }, 1000);
-                        });
-
-                    } else {
-                        isHandled = true;
-                        speak(`再想一想，${u1} 個一元加上 ${u2} 個一元等於多少呢？`);
-                        document.getElementById('feedback').innerText = "❌ 個位數不對喔，再數一次！";
-                        el.style.opacity = "0";
-                        setTimeout(() => el.remove(), 300);
-                    }
-
-                } else if (currentStep === 'tens') {
-                    if (val === targetT) {
-                        isHandled = true;
-                        isLocked = true;
-                        if (gameInterval) clearInterval(gameInterval);
-                        activeOptions.forEach(opt => opt.remove());
-
-                        document.getElementById('ansT').innerText = targetT;
-                        document.getElementById('feedback').innerText = `🎉 十位數算對了！接下來算百位數！`;
-                        confetti();
-
-                        speak(`十位數算對了。接下來，請算出，${h1} 個百元加上 ${h2} 個百元等於多少呢？`, () => {
-                            setTimeout(() => {
-                                if (isPaused) return;
-                                document.getElementById('feedback').innerText = `接下來算百位數！`;
-                                isLocked = false;
-                                currentStep = 'hundreds';
-                                document.getElementById('stepBanner').innerText = `步驟三：算百位數，${h1} 個百元加上 ${h2} 個百元等於多少呢？`;
-                                speak(`接下來，請算出，${h1} 個百元加上 ${h2} 個百元等於多少呢？`, () => {
-                                    setupFalling();
-                                });
-                            }, 1000);
-                        });
-
-                    } else {
-                        isHandled = true;
-                        speak(`再想一想，${t1} 個十元加上 ${t2} 個十元等於多少呢？`);
-                        document.getElementById('feedback').innerText = "❌ 十位數不對喔，再數一次！";
-                        el.style.opacity = "0";
-                        setTimeout(() => el.remove(), 300);
-                    }
-
-                } else if (currentStep === 'hundreds') {
-                    if (val === targetH) {
-                        isHandled = true;
-                        isLocked = true;
-                        if (gameInterval) clearInterval(gameInterval);
-                        activeOptions.forEach(opt => opt.remove());
-
-                        document.getElementById('ansH').innerText = targetH;
-                        document.getElementById('feedback').innerText = `🎉 百位數算對了！最後算千位數！`;
-                        confetti();
-
-                        speak(`百位數算對了。最後，請算出，${th1} 個千元加上 ${th2} 個千元等於多少呢？`, () => {
-                            setTimeout(() => {
-                                if (isPaused) return;
-                                document.getElementById('feedback').innerText = `最後算千位數！`;
-                                isLocked = false;
-                                currentStep = 'thousands';
-                                document.getElementById('stepBanner').innerText = `步驟四：算千位數，${th1} 個千元加上 ${th2} 個千元等於多少呢？`;
-                                speak(`最後，請算出，${th1} 個千元加上 ${th2} 個千元等於多少呢？`, () => {
-                                    setupFalling();
-                                });
-                            }, 1000);
-                        });
-
-                    } else {
-                        isHandled = true;
-                        speak(`再想一想，${h1} 個百元加上 ${h2} 個百元等於多少呢？`);
-                        document.getElementById('feedback').innerText = "❌ 百位數不對喔，再數一次！";
-                        el.style.opacity = "0";
-                        setTimeout(() => el.remove(), 300);
-                    }
-
-                } else {
-                    if (val === targetTh) {
-                        isHandled = true;
-                        isLocked = true;
-                        if (gameInterval) clearInterval(gameInterval);
-                        activeOptions.forEach(opt => opt.remove());
-
-                        document.getElementById('ansTh').innerText = targetTh;
-
-                        let grandTotal = targetTh * 1000 + targetH * 100 + targetT * 10 + targetU;
-
-                        score++;
-                        document.getElementById('score').innerText = `已完成: ${score} 關`;
-                        document.getElementById('feedback').innerText = `🌟 太棒了！總金額是 ${grandTotal} 元，恭喜過關！`;
-                        confetti();
-
-                        speak(`太棒了，總金額是 ${grandTotal} 元，恭喜過關！`, () => {
-                            if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
-                            nextQuestionTimeout = setTimeout(() => {
-                                if (!isPaused) initQuestion();
-                            }, 2000);
-                        });
-
-                    } else {
-                        isHandled = true;
-                        speak(`再想一想，${th1} 個千元加上 ${th2} 個千元等於多少呢？`);
-                        document.getElementById('feedback').innerText = "❌ 千位數不對喔，再數一次！";
-                        el.style.opacity = "0";
-                        setTimeout(() => el.remove(), 300);
-                    }
-                }
-            };
-
-            el.addEventListener('pointerdown', handleSelect);
-            el.addEventListener('animationend', () => {
-                el.remove();
-                activeOptions = activeOptions.filter(item => item !== el);
-            });
-
-            container.appendChild(el);
-            activeOptions.push(el);
-        }
-    </script>
-</body>
-</html>
+                        activeOptions.forEach
