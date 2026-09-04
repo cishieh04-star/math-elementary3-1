@@ -273,7 +273,6 @@
         let lastQuestionIndex = -1;
         let lastSpokenText = "準備開始！";
 
-        // 掉落速度設定：秒數越小掉越快
         let speedLevel = 2; 
         const speedDurations = [0, 7.0, 5.0, 3.5, 2.0];
         const speedNames = ["", "慢速", "正常", "快速", "極速"];
@@ -314,21 +313,29 @@
             }
         }
 
-        // 💡 確保所有手機、平板在首頁點擊都能瞬間進入遊戲，絕不卡關
+        // 💡 雙重事件綁定，保證所有品牌手機、平板點擊均可秒速進入遊戲
         const startBtnEl = document.getElementById('startBtn');
+        
+        startBtnEl.addEventListener('click', (e) => {
+            e.preventDefault();
+            startGame();
+        });
+
         startBtnEl.addEventListener('pointerdown', (e) => {
             e.preventDefault();
             startGame();
         });
 
         function startGame() {
-            // 第一步：立刻隱藏遮罩，確保畫面絕對能順利切換到下一頁
+            // 1. 第一時間強制隱藏首頁遮罩
             const overlay = document.getElementById('startOverlay');
             if (overlay) {
                 overlay.style.display = 'none';
+                overlay.style.visibility = 'hidden';
+                overlay.style.zIndex = '-999';
             }
 
-            // 第二步：非同步解鎖語音引擎
+            // 2. 安全解鎖語音引擎
             if ('speechSynthesis' in window) {
                 try {
                     window.speechSynthesis.cancel();
@@ -337,6 +344,7 @@
                 } catch(e) {}
             }
 
+            // 3. 初始化題目
             initQuestion();
         }
 
