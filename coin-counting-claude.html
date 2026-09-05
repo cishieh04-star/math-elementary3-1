@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>錢包認識位數遊戲</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        * { 
+            box-sizing: border-box; 
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        } 
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            text-align: center; background-color: #fef3c7; 
+            margin: 0; padding: env(safe-area-inset-top, 5px) env(safe-area-inset-right, 5px) env(safe-area-inset-bottom, 5px) env(safe-area-inset-left, 5px); 
+            min-height: 100vh; min-height: calc(100vh - env(safe-area-inset-bottom));
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            overflow: hidden; touch-action: manipulation; 
+        }
+        h1 { color: #b45309; font-size: 16px; margin: 2px 0; }
+        
+        #gameScreen { 
+            width: 100%; max-width: 500px; height: 100%; max-height: 100dvh;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
+            background: #fff; border-radius: 0; border: none; padding: 6px 10px; 
+            box-shadow: none; margin: 0 auto;
+            position: relative;
+            overflow-y: auto;
+        }
+        @media (min-width: 520px) {
+            #gameScreen {
+                border-radius: 16px; border: 3px solid #f59e0b; max-height: 96vh; height: auto;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: auto;
+            }
+        }
+
+        #startOverlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.98); border-radius: 13px;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            z-index: 9999; padding: 16px 15px; overflow-y: auto; -webkit-overflow-scrolling: touch; text-align: left;
+        }
+        .start-content-box {
+            max-width: 450px; width: 100%; display: flex; flex-direction: column; align-items: center; margin: auto;
+        }
+        #startOverlay h2 { color: #b45309; font-size: 20px; margin-bottom: 10px; text-align: center; }
+        
+        .intro-card {
+            background: #fffbeb; border: 2px solid #fde68a;
+            border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; width: 100%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .intro-card h3 { margin: 0 0 4px 0; font-size: 14px; color: #b45309; }
+        .intro-card ul { margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.5; color: #78350f; }
+        .intro-card li { margin-bottom: 4px; }
+
+        .level-pick-title { font-size: 14px; font-weight: bold; color: #b45309; margin: 6px 0 8px 0; }
+        .level-btn {
+            width: 100%; text-align: left; background: #fff; border: 2px solid #fde68a;
+            border-radius: 12px; padding: 10px 14px; margin-bottom: 10px; cursor: pointer;
+            display: flex; flex-direction: column; gap: 2px;
+        }
+        .level-btn:active { transform: scale(0.98); background: #fffbeb; }
+        .level-btn .lv-name { font-size: 15px; font-weight: bold; color: #b45309; }
+        .level-btn .lv-desc { font-size: 12px; color: #78350f; }
+
+        .status-bar { 
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; row-gap: 4px;
+            width: 100%; font-size: 14px; font-weight: bold; color: #b45309; 
+            border-bottom: 2px solid #fef3c7; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; 
+            flex-shrink: 0;
+        }
+
+        .status-left { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.3; }
+        .status-left .level-label { font-size: 12px; color: #92400e; }
+
+        .status-right {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+            row-gap: 4px;
+        }
+
+        .control-btn {
+            background-color: #f59e0b; color: white; border: none; border-radius: 8px;
+            padding: 4px 10px; font-size: 13px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+        .control-btn:active { transform: scale(0.95); background-color: #d97706; }
+
+        .speak-btn { background-color: #0ea5e9; }
+        .speak-btn:active { background-color: #0284c7; }
+        .hint-btn { background-color: #16a34a; }
+        .hint-btn:active { background-color: #15803d; }
+        .switch-btn { background-color: #64748b; }
+        .switch-btn:active { background-color: #475569; }
+
+        .speed-row { display: flex; justify-content: center; gap: 4px; width: 100%; flex-shrink: 0; padding: 2px 0; }
+        .speed-btn {
+            flex: 1; max-width: 100px; background: #fef3c7; color: #78350f; border: 2px solid #fde68a;
+            border-radius: 6px; padding: 3px 2px; font-size: 12px; font-weight: bold; cursor: pointer;
+        }
+        .speed-btn.active { background: #f59e0b; color: #fff; border-color: #d97706; }
+        .speed-btn:active { transform: scale(0.95); }
+
+        .step-banner { 
+            background: #fef3c7; color: #92400e; padding: 5px 10px; border-radius: 8px; 
+            font-size: 13px; font-weight: bold; width: 100%; line-height: 1.3; text-align: center;
+            flex-shrink: 0; min-height: 34px; display: flex; align-items: center; justify-content: center;
+        }
+
+        /* 錢包總金額提示看板：拆成一格一格的數字，方便標記強調 */
+        .wallet-question-box {
+            width: 100%; background: #f8fafc; border: 2px solid #cbd5e1; border-radius: 12px; padding: 8px; font-size: 15px; font-weight: bold; color: #334155; text-align: center;
+            flex-shrink: 0;
+        }
+        .total-digits { display: inline-flex; gap: 2px; font-family: monospace; font-size: 22px; font-weight: bold; margin-left: 4px; }
+        .total-digit { color: #d97706; padding: 0 2px; border-radius: 4px; transition: all 0.2s; }
+        .total-digit.highlight {
+            background: #fef08a; color: #92400e; box-shadow: 0 0 0 3px #fde047;
+            animation: digitPulse 1s infinite;
+        }
+        @keyframes digitPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        /* 橫向直式排版區：最多支援到萬位（5欄），依關卡動態顯示/隱藏 */
+        .vertical-math {
+            display: flex; flex-direction: column; align-items: center;
+            background: #f8fafc; padding: 8px 10px; border-radius: 12px; border: 2px solid #cbd5e1;
+            position: relative; width: 100%; max-width: 380px;
+            flex-shrink: 0;
+        }
+        .place-header {
+            display: flex; gap: 6px; width: 100%; justify-content: center; font-weight: bold; font-size: 12px; color: #64748b; margin-bottom: 4px;
+        }
+        .place-col { width: 50px; text-align: center; }
+        .math-row { display: flex; gap: 6px; width: 100%; justify-content: center; align-items: center; }
+        
+        .cell { width: 50px; height: 46px; text-align: center; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; font-family: monospace; background: #fff; border: 2px dashed #94a3b8; border-radius: 8px; color: #cbd5e1; }
+        .cell.active { border: 3px solid #f59e0b; background: #fef08a; color: #b45309; animation: pulse 1s infinite; }
+        .cell.filled { border: 2px solid #16a34a; background: #dcfce7; color: #166534; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        #drop-game-container {
+            position: relative; width: 100%; height: 95px;
+            background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 10px;
+            overflow: hidden; touch-action: manipulation;
+            flex-shrink: 0;
+        }
+
+        .falling-option {
+            position: absolute; width: 48px; height: 48px;
+            background: radial-gradient(circle, #fcd34d 60%, #f59e0b 100%);
+            border: 3px solid #d97706; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; font-weight: bold; color: #78350f;
+            cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            animation: fall linear forwards; z-index: 999;
+        }
+        .falling-option:active { transform: scale(0.9); }
+        .falling-option.hint-glow {
+            box-shadow: 0 0 0 4px #16a34a, 0 3px 8px rgba(0,0,0,0.3);
+            animation: fall linear forwards, glowPulse 1s ease-in-out infinite;
+        }
+        @keyframes glowPulse {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+
+        @keyframes fall {
+            0% { top: -48px; }
+            100% { top: 47px; }
+        }
+
+        #completeOverlay {
+            display: none;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.97); border-radius: 13px;
+            flex-direction: column; align-items: center; justify-content: center;
+            gap: 10px; z-index: 5000; text-align: center; padding: 16px;
+        }
+        #completeOverlay .equation {
+            font-family: monospace; font-size: 20px; font-weight: bold; color: #b45309;
+            background: #fffbeb; border: 3px solid #fde68a; border-radius: 10px; padding: 12px 16px;
+            line-height: 1.6;
+        }
+        #completeOverlay .cheer { font-size: 16px; font-weight: bold; color: #92400e; }
+    </style>
+</head>
+<body>
+
+    <div id="gameScreen">
+        <!-- 開始畫面遮罩 -->
+        <div id="startOverlay">
+            <div class="start-content-box">
+                <h2>👛 錢包位值拆解遊戲 👛</h2>
+
+                <div class="intro-card">
+                    <h3>📖 遊戲使用說明</h3>
+                    <ul>
+                        <li><strong>由左到右引導：</strong>從最大的位開始問，再依序往右問到「個位」，跟看板上數字的排列方向一致。</li>
+                        <li><strong>看板會發光提示：</strong>問到哪一位，總金額看板上對應的數字就會發光標記，方便對照。</li>
+                        <li><strong>數字對應填入：</strong>選對正確的數字方塊後，會自動填入直式的對應格子中。</li>
+                        <li><strong>卡住了嗎：</strong>按「💡提示」會給你線索！</li>
+                        <li><strong>🔊 聽題目按鈕：</strong>若需要重新聽提示，隨時點擊「🔊 聽題目」按鈕。</li>
+                    </ul>
+                </div>
+
+                <div class="level-pick-title">請選擇關卡：</div>
+                <div id="levelList" style="width:100%;"></div>
+            </div>
+        </div>
+
+        <h1>👛 錢包位值拆解遊戲</h1>
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="level-label" id="levelLabel">尚未選擇關卡</span>
+                <span id="score">已完成: 0 關</span>
+            </div>
+            <div class="status-right">
+                <button class="control-btn hint-btn" onclick="useHint()">💡提示</button>
+                <button class="control-btn speak-btn" id="speakBtn" onclick="repeatCurrentPrompt()">🔊聽題目</button>
+                <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
+                <button class="control-btn switch-btn" onclick="showLevelSelect()">🔄換關卡</button>
+            </div>
+        </div>
+
+        <div class="speed-row">
+            <button class="speed-btn" id="speedSlow" onclick="setSpeed('slow')">🐢慢速</button>
+            <button class="speed-btn active" id="speedNormal" onclick="setSpeed('normal')">🚶正常</button>
+            <button class="speed-btn" id="speedFast" onclick="setSpeed('fast')">🐇快速</button>
+        </div>
+        
+        <div class="step-banner" id="stepBanner">準備開始！</div>
+
+        <!-- 錢包總金額看板：每個數字都是獨立的 span，方便標記強調 -->
+        <div class="wallet-question-box">
+            錢包內有 <span class="total-digits" id="totalDigits"></span> 元
+        </div>
+
+        <!-- 橫向直式排版區 -->
+        <div class="vertical-math" id="mathBox">
+            <div class="place-header" id="placeHeader">
+                <div class="place-col" id="lblTth" style="display:none;">萬位</div>
+                <div class="place-col" id="lblTh">千位</div>
+                <div class="place-col" id="lblH">百位</div>
+                <div class="place-col" id="lblT">十位</div>
+                <div class="place-col">個位</div>
+            </div>
+
+            <div class="math-row">
+                <div class="cell" id="boxTth" style="display:none;">?</div>
+                <div class="cell" id="boxTh">?</div>
+                <div class="cell" id="boxH">?</div>
+                <div class="cell" id="boxT">?</div>
+                <div class="cell" id="boxU">?</div>
+            </div>
+        </div>
+
+        <div id="feedback" style="font-size: 13px; color: #d97706; font-weight: bold; min-height: 18px; flex-shrink: 0;"></div>
+        
+        <div id="drop-game-container"></div>
+
+        <div id="completeOverlay">
+            <div class="equation" id="completeEquation">2000 + 500 + 30 + 2 = 2532</div>
+            <div class="cheer">🌟 太棒了，拆解完成！</div>
+        </div>
+    </div>
+
+    <script>
+        /* ========================================================
+           位值定義：從個位往外到萬位。每一關依「位數(digitCount)」
+           決定要用到哪幾個位，並且用「由大到小」的順序出題
+           （萬→千→百→十→個），跟看板上數字的排列方向一致。
+           ======================================================== */
+        const PLACE_KEYS   = ['u', 't', 'h', 'th', 'tth'];
+        const PLACE_LABEL  = { u: '個位', t: '十位', h: '百位', th: '千位', tth: '萬位' };
+        const PLACE_VALUE  = { u: 1, t: 10, h: 100, th: 1000, tth: 10000 };
+        const PLACE_CELLID = { u: 'boxU', t: 'boxT', h: 'boxH', th: 'boxTh', tth: 'boxTth' };
+        const PLACE_LBLID  = { t: 'lblT', h: 'lblH', th: 'lblTh', tth: 'lblTth' };
+
+        const LEVELS = [
+            { id: 1, name: '第一關：三位數', desc: '練習百位、十位、個位，先熟悉拆解的方式。', digitCount: 3, forceZero: false, min: 100, max: 999 },
+            { id: 2, name: '第二關：四位數', desc: '進階到千位，練習四個位值。', digitCount: 4, forceZero: false, min: 1000, max: 9999 },
+            { id: 3, name: '第三關：認識 0', desc: '數字中間會出現 0，練習「0 也要算一位」的概念。', digitCount: 4, forceZero: true, min: 1000, max: 9999 },
+            { id: 4, name: '第四關：五位數挑戰', desc: '挑戰最大的萬位，五個位值一次拆解！', digitCount: 5, forceZero: false, min: 10000, max: 99999 }
+        ];
+
+        let currentLevel = null;
+        let score = 0;
+        let currentTotal = 0;
+        let digits = {};
+        let stepOrder = [];   // 這一題的出題順序（由大到小的位）
+        let stepIndex = 0;
+        let gameInterval = null;
+        let activeOptions = [];
+        let isLocked = false;
+        let isPaused = false;
+        let nextQuestionTimeout = null;
+        let actionTransitionTimeout = null;
+        let pendingAdvance = false;
+        let pendingNextQuestion = false;
+        let lastQuestionValue = null;
+        let lastSpokenText = "準備開始！";
+        let hintLevel = 0;
+        let hintActiveValue = null;
+        let speedMode = 'normal';
+        let questionToken = 0; // 每次出題都遞增，避免重複觸發出題時舊的那一次還搶著念題目
+        const SPEED_SETTINGS = {
+            slow:   { fallDuration: 8,   spawnInterval: 2800 },
+            normal: { fallDuration: 5.5, spawnInterval: 2000 },
+            fast:   { fallDuration: 3.5, spawnInterval: 1400 }
+        };
+
+        function speak(text, onEnd) {
+            if (isPaused) { if (onEnd) onEnd(); return; }
+            lastSpokenText = text;
+            if (!('speechSynthesis' in window)) { if (onEnd) onEnd(); return; }
+            try {
+                window.speechSynthesis.cancel();
+                // 瀏覽器語音系統有個常見小毛病：剛取消舊語音、馬上念新語音，
+                // 兩個動作太緊接會互相打架，導致新語音還沒念完就誤觸發「講完了」。
+                // 加一個很短的延遲，讓取消動作先真正生效。
+                setTimeout(() => {
+                    if (isPaused) { if (onEnd) onEnd(); return; }
+                    try {
+                        const msg = new SpeechSynthesisUtterance(text);
+                        msg.lang = 'zh-TW';
+                        msg.rate = 0.85;
+                        if (onEnd) { msg.onend = onEnd; msg.onerror = onEnd; }
+                        window.speechSynthesis.speak(msg);
+                    } catch(e) { if (onEnd) onEnd(); }
+                }, 60);
+            } catch(e) { if (onEnd) onEnd(); }
+        }
+
+        function repeatCurrentPrompt() { speak(lastSpokenText); }
+        function boom() { try { confetti(); } catch(e) {} }
+
+        /* ========================================================
+           關卡選擇
+           ======================================================== */
+        function renderLevelList() {
+            const container = document.getElementById('levelList');
+            container.innerHTML = '';
+            LEVELS.forEach(lv => {
+                const btn = document.createElement('div');
+                btn.className = 'level-btn';
+                btn.innerHTML = `<span class="lv-name">${lv.name}</span><span class="lv-desc">${lv.desc}</span>`;
+                btn.onclick = () => startGame(lv.id);
+                container.appendChild(btn);
+            });
+        }
+
+        function showLevelSelect() {
+            isPaused = false;
+            pendingAdvance = false;
+            pendingNextQuestion = false;
+            if (gameInterval) clearInterval(gameInterval);
+            if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+            if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+            activeOptions.forEach(el => el.remove());
+            activeOptions = [];
+            hideCompletionScreen();
+            try { window.speechSynthesis.cancel(); } catch(e) {}
+            document.getElementById('startOverlay').style.display = 'flex';
+        }
+
+        function startGame(levelId) {
+            const overlay = document.getElementById('startOverlay');
+            if (overlay.style.display === 'none') return; // 已經開始了，避免連點兩下重複觸發
+            currentLevel = LEVELS.find(l => l.id === levelId);
+            lastQuestionValue = null;
+            document.getElementById('levelLabel').innerText = currentLevel.name;
+
+            if ('speechSynthesis' in window) {
+                try {
+                    window.speechSynthesis.cancel();
+                    window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+                } catch(e) {}
+            }
+
+            overlay.style.display = 'none';
+            initQuestion();
+        }
+
+        /* ========================================================
+           速度 / 暫停
+           ======================================================== */
+        function setSpeed(mode) {
+            speedMode = mode;
+            ['slow','normal','fast'].forEach(m => {
+                document.getElementById('speed' + m.charAt(0).toUpperCase() + m.slice(1))
+                    .classList.toggle('active', m === mode);
+            });
+            if (!isPaused && !isLocked && currentLevel) setupFalling();
+        }
+
+        function togglePause() {
+            if (!currentLevel) return;
+            isPaused = !isPaused;
+            const pauseBtn = document.getElementById('pauseBtn');
+            const options = document.querySelectorAll('.falling-option');
+
+            if (isPaused) {
+                pauseBtn.innerText = "繼續";
+                pauseBtn.style.backgroundColor = "#16a34a";
+                if (gameInterval) clearInterval(gameInterval);
+                if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+                try { window.speechSynthesis.cancel(); } catch(e) {}
+                options.forEach(el => el.style.animationPlayState = 'paused');
+                document.getElementById('feedback').innerText = "⏸️ 遊戲已暫停";
+            } else {
+                pauseBtn.innerText = "暫停";
+                pauseBtn.style.backgroundColor = "#f59e0b";
+                options.forEach(el => el.style.animationPlayState = 'running');
+                document.getElementById('feedback').innerText = "";
+                if (pendingNextQuestion) {
+                    pendingNextQuestion = false;
+                    hideCompletionScreen();
+                    initQuestion();
+                } else if (pendingAdvance) {
+                    pendingAdvance = false;
+                    runStep();
+                } else if (!isLocked) {
+                    setupFalling();
+                }
+            }
+        }
+
+        /* ========================================================
+           出題
+           ======================================================== */
+        function generateNumber(level) {
+            let val;
+            let attempts = 0;
+            do {
+                attempts++;
+                if (level.forceZero) {
+                    // 強制中間至少有一位是 0（不含最高位，確保仍是正確的位數）
+                    let strDigits = [];
+                    let placesForLevel = PLACE_KEYS.slice(0, level.digitCount).reverse(); // 由大到小
+                    let zeroPos = 1 + Math.floor(Math.random() * (level.digitCount - 1)); // 不選最高位
+                    for (let i = 0; i < level.digitCount; i++) {
+                        if (i === 0) strDigits.push(1 + Math.floor(Math.random() * 9)); // 最高位 1~9
+                        else if (i === zeroPos) strDigits.push(0);
+                        else strDigits.push(Math.floor(Math.random() * 10));
+                    }
+                    val = parseInt(strDigits.join(''), 10);
+                } else {
+                    val = level.min + Math.floor(Math.random() * (level.max - level.min + 1));
+                }
+            } while (val === lastQuestionValue && attempts < 30);
+            return val;
+        }
+
+        function initQuestion() {
+            if (isPaused || !currentLevel) return;
+            hideCompletionScreen();
+            isLocked = false;
+            hintLevel = 0;
+            hintActiveValue = null;
+            questionToken++;
+            const myToken = questionToken;
+
+            currentTotal = generateNumber(currentLevel);
+            lastQuestionValue = currentTotal;
+
+            const str = String(currentTotal);
+            const placesForLevel = PLACE_KEYS.slice(0, currentLevel.digitCount).reverse(); // 由大到小，如 ['th','h','t','u']
+            digits = {};
+            placesForLevel.forEach((key, idx) => {
+                digits[key] = parseInt(str[idx], 10);
+            });
+            stepOrder = placesForLevel.slice(); // 由大到小出題，跟畫面排列方向一致
+            stepIndex = 0;
+
+            // 顯示/隱藏「萬位」欄位
+            const showTth = currentLevel.digitCount === 5;
+            document.getElementById('lblTth').style.display = showTth ? 'block' : 'none';
+            document.getElementById('boxTth').style.display = showTth ? 'flex' : 'none';
+            // th(千位) 在 3 位數關卡不需要顯示
+            const showTh = currentLevel.digitCount >= 4;
+            document.getElementById('lblTh').style.display = showTh ? 'block' : 'none';
+            document.getElementById('boxTh').style.display = showTh ? 'flex' : 'none';
+
+            ['boxTth', 'boxTh', 'boxH', 'boxT', 'boxU'].forEach(id => {
+                let el = document.getElementById(id);
+                el.innerText = '?';
+                el.className = 'cell';
+            });
+
+            // 把總金額拆成一格一格的 span，方便之後標記強調
+            const totalDigitsEl = document.getElementById('totalDigits');
+            totalDigitsEl.innerHTML = '';
+            str.split('').forEach((d, idx) => {
+                const span = document.createElement('span');
+                span.className = 'total-digit';
+                span.id = 'totalDigit_' + idx;
+                span.innerText = d;
+                totalDigitsEl.appendChild(span);
+            });
+
+            document.getElementById('stepBanner').innerText = `錢包裡有 ${currentTotal} 元，準備開始拆解！`;
+            speak(`錢包裡有 ${currentTotal} 元。`, () => {
+                if (myToken !== questionToken) return; // 已經有更新的一題取代了這一次，不要再往下執行
+                runStep();
+            });
+        }
+
+        function highlightTotalDigit(stepIdx) {
+            document.querySelectorAll('.total-digit').forEach(el => el.classList.remove('highlight'));
+            const el = document.getElementById('totalDigit_' + stepIdx);
+            if (el) el.classList.add('highlight');
+        }
+
+        function runStep() {
+            if (isPaused || !currentLevel) return;
+            const place = stepOrder[stepIndex];
+            if (!place) return;
+            const cellEl = document.getElementById(PLACE_CELLID[place]);
+            if (cellEl.classList.contains('active')) return; // 這一步已經在問了，避免重複觸發時問兩次
+            isLocked = false;
+            hintLevel = 0;
+            hintActiveValue = null;
+
+            cellEl.classList.add('active');
+            highlightTotalDigit(stepIndex);
+
+            const label = PLACE_LABEL[place];
+            document.getElementById('stepBanner').innerText = `請問「${label}」應該是多少呢？`;
+            speak(`請問${label}應該是多少呢？`);
+            setupFalling();
+        }
+
+        function setupFalling() {
+            if (isPaused || !currentLevel) return;
+            activeOptions.forEach(el => el.remove());
+            activeOptions = [];
+            if (gameInterval) clearInterval(gameInterval);
+
+            const place = stepOrder[stepIndex];
+            if (!place) return;
+            const target = digits[place];
+
+            let options = [target];
+            while (options.length < 4) {
+                const r = Math.floor(Math.random() * 10);
+                if (!options.includes(r)) options.push(r);
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            let index = 0;
+            const spawn = () => {
+                if (isLocked || isPaused) return;
+                if (index >= options.length) index = 0;
+                spawnFallingOption(options[index]);
+                index++;
+            };
+            spawn();
+            gameInterval = setInterval(spawn, SPEED_SETTINGS[speedMode].spawnInterval);
+        }
+
+        /* ========================================================
+           提示（兩段式）
+           ======================================================== */
+        function useHint() {
+            if (isPaused || isLocked || !currentLevel) return;
+            const place = stepOrder[stepIndex];
+            if (!place) return;
+            hintLevel++;
+            const target = digits[place];
+
+            if (hintLevel === 1) {
+                const text = `🔍 提示：看看看板上發光的那個數字，就是「${PLACE_LABEL[place]}」的答案喔！`;
+                document.getElementById('feedback').innerText = text;
+                speak(`看看看板上發光的那個數字，就是答案喔！`);
+                highlightTotalDigit(stepIndex);
+            } else {
+                const text = `💡 答案是 ${target}！在畫面上找找看這個數字！`;
+                document.getElementById('feedback').innerText = text;
+                speak(`答案是 ${target}，找找看畫面上的這個數字！`);
+                hintActiveValue = target;
+                activeOptions.forEach(opt => {
+                    if (opt.innerText.trim() === String(target)) opt.classList.add('hint-glow');
+                });
+            }
+        }
+
+        /* ========================================================
+           完成畫面
+           ======================================================== */
+        function showCompletionScreen() {
+            const parts = stepOrder.map(p => `${digits[p] * PLACE_VALUE[p]}`);
+            document.getElementById('completeEquation').innerText = `${parts.join(' + ')} = ${currentTotal}`;
+            const overlay = document.getElementById('completeOverlay');
+            overlay.style.display = 'flex';
+            const screen = document.getElementById('gameScreen');
+            if (screen) screen.scrollTop = 0;
+        }
+        function hideCompletionScreen() {
+            document.getElementById('completeOverlay').style.display = 'none';
+        }
+
+        /* ========================================================
+           掉落數字遊戲
+           ======================================================== */
+        function spawnFallingOption(val) {
+            if (isLocked || isPaused) return;
+            const container = document.getElementById('drop-game-container');
+            const el = document.createElement('div');
+            el.className = 'falling-option';
+            el.innerText = val;
+            if (hintActiveValue !== null && val === hintActiveValue) el.classList.add('hint-glow');
+
+            const randomX = Math.random() * (container.clientWidth - 48);
+            el.style.left = randomX + 'px';
+            el.style.animationDuration = SPEED_SETTINGS[speedMode].fallDuration + 's';
+            if (isPaused) el.style.animationPlayState = 'paused';
+
+            let isHandled = false;
+            const handleSelect = (e) => {
+                if (e) { e.preventDefault(); e.stopPropagation(); }
+                if (isLocked || isHandled || isPaused) return;
+
+                const place = stepOrder[stepIndex];
+                if (!place) return;
+                const target = digits[place];
+
+                if (val === target) {
+                    isHandled = true;
+                    isLocked = true;
+                    if (gameInterval) clearInterval(gameInterval);
+                    activeOptions.forEach(opt => opt.remove());
+                    activeOptions = [];
+                    handleCorrect(place, val);
+                } else {
+                    isHandled = true;
+                    speak(`再想一想，${PLACE_LABEL[place]}是多少呢？`);
+                    document.getElementById('feedback').innerText = `❌ ${PLACE_LABEL[place]}不對喔，再試一次！`;
+                    el.style.opacity = "0";
+                    setTimeout(() => el.remove(), 300);
+                }
+            };
+
+            el.addEventListener('pointerdown', handleSelect);
+            el.addEventListener('animationend', () => {
+                el.remove();
+                activeOptions = activeOptions.filter(item => item !== el);
+            });
+
+            container.appendChild(el);
+            activeOptions.push(el);
+        }
+
+        function handleCorrect(place, val) {
+            const cell = document.getElementById(PLACE_CELLID[place]);
+            cell.innerText = val;
+            cell.classList.remove('active');
+            cell.classList.add('filled');
+            boom();
+
+            const value = val * PLACE_VALUE[place];
+            const isLast = stepIndex === stepOrder.length - 1;
+
+            if (isLast) {
+                score++;
+                document.getElementById('score').innerText = `已完成: ${score} 關`;
+                document.getElementById('feedback').innerText =
+                    `🌟 太棒了！${currentTotal} 元全部拆解完成，恭喜過關！`;
+
+                showCompletionScreen();
+                pendingNextQuestion = true;
+
+                const goNext = () => {
+                    if (!pendingNextQuestion) return;
+                    if (isPaused) return;
+                    if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+                    pendingNextQuestion = false;
+                    initQuestion();
+                };
+                speak(`${PLACE_LABEL[place]}是 ${val}，代表 ${value} 元。太棒了，${currentTotal} 元全部拆解完成，恭喜過關！`, () => {
+                    if (!pendingNextQuestion) return;
+                    if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+                    nextQuestionTimeout = setTimeout(goNext, 1000);
+                });
+                if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+                nextQuestionTimeout = setTimeout(goNext, 6000);
+            } else {
+                document.getElementById('feedback').innerText =
+                    `🎉 ${PLACE_LABEL[place]}算對了！是 ${val}，代表 ${value} 元。`;
+                const nextPlace = stepOrder[stepIndex + 1];
+                stepIndex++;
+                pendingAdvance = true;
+
+                const goToNextStep = () => {
+                    if (!pendingAdvance) return;
+                    if (isPaused) return; // 暫停中，交給暫停鍵的邏輯接手
+                    if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                    pendingAdvance = false;
+                    runStep();
+                };
+
+                // 語音講完之後再多停留 0.6 秒，才進到下一位數
+                speak(`${PLACE_LABEL[place]}算對了，是 ${val}，代表 ${value} 元。接下來，請問${PLACE_LABEL[nextPlace]}應該是多少呢？`, () => {
+                    if (!pendingAdvance) return;
+                    if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                    actionTransitionTimeout = setTimeout(goToNextStep, 600);
+                });
+                // 保險：語音若無法播放，最多等 5 秒還是會自動進下一位數
+                if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                actionTransitionTimeout = setTimeout(goToNextStep, 5000);
+            }
+        }
+
+        renderLevelList();
+    </script>
+</body>
+</html>
