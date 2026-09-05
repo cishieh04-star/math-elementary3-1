@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>基礎乘法遊戲(1-4)</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+  * { 
+    box-sizing: border-box; 
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  } 
+  
+  body, button, .money-item, .falling-option, .lantern-option {
+    cursor: pointer !important;
+  }
+
+  html, body {
+    margin: 0; padding: 0; 
+    height: 100vh; height: 100dvh; 
+    width: 100vw;
+    overflow: hidden; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    background-color: #f4f4f4;
+    touch-action: manipulation;
+  }
+
+  #gameContainer {
+    display: flex; flex-direction: column; 
+    height: 100vh; height: 100dvh; 
+    width: 100%;
+    max-width: 600px; margin: 0 auto; 
+    position: relative;
+    overflow: hidden;
+  }
+
+  #startScreen {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: #e0f2fe; color: #1e293b; z-index: 9999;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 15px; text-align: left;
+  }
+  .start-content-box {
+    max-width: 500px; width: 100%; display: flex; flex-direction: column; align-items: center; margin: auto;
+  }
+  #startScreen h1 { font-size: 22px; color: #0284c7; margin: 0 0 10px 0; text-align: center; }
+  
+  .intro-card {
+    background: #ffffff; border: 2px solid #cbd5e1;
+    border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; width: 100%;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  }
+  .intro-card h3 { margin: 0 0 4px 0; font-size: 14px; color: #0f172a; }
+  .intro-card ul { margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.4; color: #334155; }
+  .intro-card li { margin-bottom: 3px; }
+
+  .start-btn { 
+    font-size: 20px; font-weight: bold; margin-top: 5px; padding: 12px 30px; 
+    background: #2563eb; color: #fff; border: none; border-radius: 15px; 
+    cursor: pointer; box-shadow: 0 4px 15px rgba(37,99,235,0.3);
+    width: 100%; max-width: 280px; text-align: center;
+  }
+  .start-btn:active { transform: scale(0.95); }
+
+  #quizScreen, #quizScreen3 {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.9); color: #fff; z-index: 8888;
+    display: none; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; padding: 10px;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .quiz-box {
+    background: #ffffff; color: #1e293b; width: 100%; max-width: 480px;
+    border-radius: 16px; padding: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    max-height: 95vh; display: flex; flex-direction: column; align-items: center;
+  }
+  .quiz-box-header { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+  .quiz-box h2 { color: #2563eb; margin: 0; font-size: 18px; }
+  .quiz-box p { font-size: 15px; font-weight: bold; margin: 6px 0; }
+
+  .mini-pause-btn {
+    font-size: 12px; font-weight: bold; padding: 5px 8px;
+    background: #f59e0b; color: white; border: none; border-radius: 6px;
+    cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); flex-shrink: 0;
+  }
+  .mini-pause-btn:active { transform: scale(0.95); }
+  
+  .hammer-tool-bar {
+    display: flex; align-items: center; gap: 8px; margin: 4px 0;
+    background: #fef3c7; border: 2px dashed #f59e0b; padding: 4px 10px; border-radius: 10px;
+  }
+  .hammer-icon { font-size: 20px; animation: bounceHammer 1s infinite alternate; }
+  @keyframes bounceHammer {
+    0% { transform: rotate(-15deg); }
+    100% { transform: rotate(15deg); }
+  }
+
+  .tetris-drop-area {
+    width: 100%; height: 210px; background: #f8fafc; border: 3px dashed #94a3b8;
+    border-radius: 12px; position: relative; overflow: hidden; margin: 6px 0;
+    flex-shrink: 0;
+  }
+  
+  .falling-option {
+    position: absolute; 
+    width: 21%; height: 46px; 
+    background: #f59e0b; color: #fff;
+    font-size: 13px; font-weight: bold; 
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    transform: translateX(-50%);
+    animation: dropDown linear forwards;
+    padding: 2px;
+    text-align: center;
+    z-index: 999;
+  }
+  .falling-option:active { transform: translateX(-50%) scale(0.9); background-color: #dc2626; }
+
+  @keyframes dropDown {
+    0% { top: -50px; }
+    100% { top: 110px; }
+  }
+
+  .lantern-option {
+    position: absolute; width: 20%; max-width: 75px; min-width: 54px; height: 45px; background: #dc2626; color: #fef08a;
+    font-size: 15px; font-weight: bold; display: flex; align-items: center; justify-content: center;
+    border-radius: 50% 50% 40% 40%; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    border: 2px solid #b91c1c;
+    transform: translateX(-50%);
+    animation: dropDownLantern linear forwards;
+    padding: 2px;
+    z-index: 999;
+  }
+  .lantern-option::before {
+    content: '🏮';
+    position: absolute; top: -12px; font-size: 14px;
+  }
+  .lantern-option:active { transform: scale(0.9); background-color: #b91c1c; }
+
+  @keyframes dropDownLantern {
+    0% { top: -50px; }
+    100% { top: 110px; }
+  }
+
+  .header {
+    padding: 6px 10px; text-align: center; background: #fff;
+    flex: 0 0 auto; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .header-left { display: flex; align-items: center; gap: 6px; }
+  .box-icon { font-size: 22px; line-height: 1; }
+  .target-display { font-size: 16px; font-weight: bold; color: #d32f2f; }
+  
+  .header-right { display: flex; align-items: center; gap: 6px; }
+  .score-display { font-size: 12px; font-weight: bold; color: #334155; background: #f1f5f9; padding: 4px 6px; border-radius: 6px; }
+
+  .control-group { 
+    display: flex; flex-direction: column; align-items: center; 
+    background: #f8fafc; padding: 3px 6px; border-radius: 8px; border: 1px solid #cbd5e1; 
+  }
+  .control-row { display: flex; align-items: center; gap: 4px; margin-top: 1px; }
+  .control-tip { font-size: 10px; font-weight: bold; color: #6d28d9; line-height: 1.1; }
+  
+  .speed-slider { 
+    width: 60px; 
+    accent-color: #7c3aed; 
+    cursor: pointer; 
+  }
+  .speed-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #7c3aed;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+  .speed-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #7c3aed;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+
+  .speed-label { font-size: 10px; font-weight: bold; color: #6d28d9; width: 30px; text-align: center; }
+
+  .btn-container { display: flex; gap: 4px; }
+  .speak-btn {
+    font-size: 12px; font-weight: bold; padding: 4px 8px;
+    color: white; background: #0ea5e9; border: none; border-radius: 6px;
+    cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .pause-btn {
+    font-size: 12px; font-weight: bold; padding: 4px 6px;
+    color: white; background: #f59e0b; border: none; border-radius: 6px;
+    cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+
+  #warningMsg { font-size: 11px; font-weight: bold; color: #e65100; min-height: 14px; background: #fff; text-align: center; flex-shrink: 0; }
+
+  .drop-field {
+    flex: 1 1 auto; 
+    min-height: 160px;
+    margin: 4px 10px; padding: 6px;
+    border: 3px dashed #aaa; background: #eef; border-radius: 15px;
+    position: relative; overflow: hidden; touch-action: manipulation; 
+  }
+
+  .drop-field .money-item {
+    position: absolute;
+    width: 70px; height: 45px; 
+    background: #0ea5e9; color: #fff; border: 2px solid #0369a1; border-radius: 8px;
+    font-size: 16px; font-weight: bold; z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 1px 3px 5px rgba(0,0,0,0.3);
+    transform: translateX(-50%);
+  }
+  .drop-field .money-item.reject {
+    animation-name: fall, shakeCoin !important;
+    animation-duration: inherit, 0.3s !important;
+    filter: grayscale(0.7);
+  }
+  .drop-field .money-item.hint-glow {
+    box-shadow: 0 0 0 4px #16a34a, 1px 3px 8px rgba(0,0,0,0.3);
+  }
+
+  @keyframes fall {
+    0% { top: -50px; }
+    100% { top: 170px; }
+  }
+  @keyframes shakeCoin {
+    0%, 100% { margin-left: 0; }
+    25% { margin-left: -6px; }
+    75% { margin-left: 6px; }
+  }
+
+  .tray {
+    height: 85px; flex: 0 0 auto; 
+    margin: 0 10px 4px 10px; padding: 6px;
+    border: 2px solid #cbd5e1; background: #ffffff; border-radius: 12px;
+    display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .tray .money-item { 
+    width: 56px; height: 40px; 
+    font-size: 16px; font-weight: bold; 
+    border-radius: 8px; 
+    background: #0ea5e9; color: #fff; 
+    border: 2px solid #0369a1;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .wallet {
+    flex: 0 0 auto; 
+    display: flex; justify-content: center; align-items: center;
+    background: #cfd8dc; box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom)) 10px; 
+    font-size: 15px; font-weight: bold; color: #334155;
+  }
+
+  .tap-hammer-effect {
+    position: absolute; font-size: 38px; pointer-events: none; z-index: 99999;
+    animation: hammerTapAnim 0.4s ease-out forwards;
+  }
+  @keyframes hammerTapAnim {
+    0% { transform: scale(0.5) rotate(-30deg); opacity: 1; }
+    50% { transform: scale(1.4) rotate(15deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 0; }
+  }
+
+  /* 💡 超大明顯的強制過關/進入下一關按鈕，專門用來解決少數裝置語音回呼失效造成的卡關問題 */
+  #skipBtnContainer {
+    display: none; position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%); z-index: 10000;
+    width: 90%; max-width: 320px; text-align: center;
+  }
+  #skipBtn {
+    font-size: 18px; font-weight: bold; padding: 14px 20px;
+    background: #10b981; color: white; border: 3px solid #047857; border-radius: 25px;
+    cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    width: 100%;
+    animation: pulseBtn 0.8s infinite alternate;
+  }
+  @keyframes pulseBtn {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.05); }
+  }
+</style>
+</head>
+<body>
+
+  <div id="startScreen">
+    <div class="start-content-box">
+      <h1>🪙 基礎乘法遊戲(1-4)</h1>
+
+      <div class="intro-card">
+        <h3>📖 操作說明</h3>
+        <ul>
+          <li><strong>第一頁 (付錢)：</strong>點擊掉落的數字方塊來湊出金額（敲擊時會出現特效！）！</li>
+          <li><strong>第二頁 (選算式)：</strong>點擊選出正確的乘法算式方塊（左右分散掉落，絕不黏在一起）！</li>
+          <li><strong>第三頁 (接小燈籠)：</strong>看著算式，點選掉落的正確答案小燈籠！</li>
+          <li><strong>選錯也沒關係：</strong>會超過目標的方塊只會被退回，已經收集的金額不會不見！</li>
+          <li><strong>三個畫面都可以暫停：</strong>右上角（或題目框內）都有暫停鍵，隨時可以休息一下。</li>
+          <li><strong>🔊 聽題目按鈕：</strong>若手機聽不到聲音，隨時點擊畫面上的「🔊 聽題目」按鈕即可朗讀！</li>
+          <li><strong>🎚️ 調整速度拉霸：</strong>右上角可自由左右滑動來控制方塊掉落快慢！</li>
+        </ul>
+      </div>
+
+      <button class="start-btn" id="startBtn">▶ 點擊開始遊戲</button>
+    </div>
+  </div>
+
+  <!-- 第二畫面：選算式 -->
+  <div id="quizScreen">
+    <div class="quiz-box">
+      <div class="quiz-box-header">
+        <h2>🧩 選乘法算式</h2>
+        <button class="mini-pause-btn" id="pauseBtn2">⏸暫停</button>
+      </div>
+      <div class="hammer-tool-bar">
+        <span class="hammer-icon">🔨</span>
+        <span style="font-size: 13px; font-weight: bold; color: #b45309;">請點擊正確的乘法算式方塊（框內掉落）！</span>
+      </div>
+      <p id="quizQuestionText">請選擇正確的乘法橫式：</p>
+      <div class="tetris-drop-area" id="tetrisDropArea"></div>
+      <div id="quizFeedback" style="font-size: 14px; font-weight: bold; color: #dc2626; min-height: 18px;"></div>
+    </div>
+  </div>
+
+  <!-- 第三畫面：看算式，小燈籠掉落選總額 -->
+  <div id="quizScreen3">
+    <div class="quiz-box">
+      <div class="quiz-box-header">
+        <h2>🏮 小燈籠乘法計算總額</h2>
+        <button class="mini-pause-btn" id="pauseBtn3">⏸暫停</button>
+      </div>
+      <div class="hammer-tool-bar">
+        <span class="hammer-icon">🏮</span>
+        <span style="font-size: 13px; font-weight: bold; color: #b45309;">下方算式等於多少？請點擊正確的小燈籠！</span>
+      </div>
+      <p id="quizQuestionText3" style="font-size: 20px; color: #dc2626; margin: 8px 0; font-weight: bold;">下方算式：?</p>
+      <div class="tetris-drop-area" id="tetrisDropArea3"></div>
+      <div id="quizFeedback3" style="font-size: 13px; font-weight: bold; color: #dc2626; min-height: 18px;"></div>
+    </div>
+  </div>
+
+  <div id="gameContainer">
+    <div class="header">
+      <div class="header-left">
+        <div class="box-icon">🎁</div>
+        <div class="target-display">要付 <span id="displayTarget">?</span> 元</div>
+      </div>
+      <div class="header-right">
+        <div class="score-display">已完成: <span id="successCount">0</span> 關</div>
+        <div class="control-group">
+          <div class="control-tip">調整速度拉霸</div>
+          <div class="control-row">
+            <input type="range" id="speedSlider" class="speed-slider" min="1" max="10" value="5" step="1">
+            <span id="speedLabel" class="speed-label">速度5</span>
+            <div class="btn-container">
+              <button class="speak-btn" id="speakBtn">🔊 聽題目</button>
+              <button class="pause-btn" id="pauseBtn">⏸ 暫停</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="hammer-tool-bar" style="margin: 3px 10px 0 10px; justify-content: center; padding: 3px;">
+      <span class="hammer-icon" style="font-size: 14px;">🔨</span>
+      <span style="font-size: 11px; font-weight: bold; color: #b45309;">第一頁 : 點擊掉落方塊來付錢！</span>
+    </div>
+    <div id="warningMsg"></div>
+    
+    <div class="drop-field" id="dropField"></div>
+    <div class="tray" id="trayCoins"></div>
+
+    <div class="wallet" id="wallet">
+      已支付金額：<span id="currentAmount">0</span> 元
+    </div>
+    
+    <!-- 強制過關按鈕：極少數裝置若語音事件被系統攔截卡住，點擊此按鈕即可無條件直接進入下一關 -->
+    <div id="skipBtnContainer">
+      <button id="skipBtn">➡️ 點擊這裡進入下一關</button>
+    </div>
+  </div>
+
+<script>
+  let collectedCount = 0;   
+  let currentTarget = 0;
+  let currentCoinValue = 1; 
+  let requiredCount = 0;    
+  let successCount = 0; 
+  let audioUnlocked = false; 
+  let isAnswering = false;
+  let isPaused = false;
+  let dropInterval = null;
+  let activeCoins = [];
+
+  let isTransitioning = false;
+  let transitionCallback = null;
+  let currentSpeechTimeout = null;
+  let lastSpokenText = "";
+  let runningTotalSpeakTimeout = null;
+
+  const displayTarget = document.getElementById('displayTarget');
+  const successCountSpan = document.getElementById('successCount');
+  const trayCoins = document.getElementById('trayCoins');
+  const dropField = document.getElementById('dropField');
+  const startScreen = document.getElementById('startScreen');
+  const quizScreen = document.getElementById('quizScreen');
+  const quizScreen3 = document.getElementById('quizScreen3');
+  const tetrisDropArea = document.getElementById('tetrisDropArea');
+  const tetrisDropArea3 = document.getElementById('tetrisDropArea3');
+  const quizQuestionText = document.getElementById('quizQuestionText');
+  const quizQuestionText3 = document.getElementById('quizQuestionText3');
+  const quizFeedback = document.getElementById('quizFeedback');
+  const quizFeedback3 = document.getElementById('quizFeedback3');
+  const currentAmountSpan = document.getElementById('currentAmount');
+  const warningMsg = document.getElementById('warningMsg');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const pauseBtn2 = document.getElementById('pauseBtn2');
+  const pauseBtn3 = document.getElementById('pauseBtn3');
+  const speedSlider = document.getElementById('speedSlider');
+  const speedLabel = document.getElementById('speedLabel');
+  const startBtnEl = document.getElementById('startBtn');
+  const speakBtn = document.getElementById('speakBtn');
+  const skipBtn = document.getElementById('skipBtn');
+  const skipBtnContainer = document.getElementById('skipBtnContainer');
+  
+  let audioCtx = null;
+
+  function initAudio() {
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass && !audioCtx) {
+        audioCtx = new AudioContextClass();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    } catch (e) {}
+  }
+
+  function playTone(freq, type, duration, vol = 0.5) {
+    if (!audioCtx) return;
+    try {
+      const osc = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      osc.type = type; 
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+      osc.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    } catch(e) {}
+  }
+
+  function playHammerSound() { playTone(600, 'sawtooth', 0.12, 0.4); }
+  function playPickupSound() { playTone(800, 'sine', 0.1, 0.3); }
+  function playRejectSound() { playTone(220, 'sine', 0.15, 0.3); }
+  function playErrorSound() {
+    playTone(150, 'sawtooth', 0.2, 0.4);
+    setTimeout(() => playTone(100, 'sawtooth', 0.3, 0.4), 150);
+  }
+  function playCheerSound() {
+    playTone(523.25, 'sine', 0.2, 0.5); 
+    setTimeout(() => playTone(659.25, 'sine', 0.2, 0.5), 150); 
+    setTimeout(() => playTone(783.99, 'sine', 0.3, 0.5), 300); 
+    setTimeout(() => playTone(1046.50, 'square', 0.5, 0.4), 450); 
+  }
+
+  // 強化版雙保險語音防呆機制：確保即使在少數裝置上 onend 被系統阻擋，也能自動計時解鎖繼續
+  function speakText(text, speedRate, onFinished = null) {
+    lastSpokenText = text;
+    if (!('speechSynthesis' in window)) {
+      if (onFinished) onFinished();
+      return;
+    }
+    try {
+      window.speechSynthesis.cancel(); 
+      if (currentSpeechTimeout) clearTimeout(currentSpeechTimeout);
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'zh-TW';
+      utterance.rate = speedRate; 
+      utterance.volume = 1.0;
+
+      let finishedCalled = false;
+      const triggerEnd = () => {
+        if (!finishedCalled) {
+          finishedCalled = true;
+          if (currentSpeechTimeout) clearTimeout(currentSpeechTimeout);
+          if (onFinished) onFinished();
+        }
+      };
+
+      utterance.onend = triggerEnd;
+      utterance.onerror = triggerEnd;
+
+      let fallbackTime = Math.max(1500, text.length * 280 / speedRate);
+      currentSpeechTimeout = setTimeout(triggerEnd, fallbackTime);
+
+      window.speechSynthesis.speak(utterance);
+    } catch(e) {
+      if (onFinished) onFinished();
+    }
+  }
+
+  function manualSpeak() {
+    if (lastSpokenText) {
+      speakText(lastSpokenText, 0.85);
+    } else {
+      speakText(`要付，${currentTarget} 元`, 0.85);
+    }
+  }
+  speakBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); manualSpeak(); });
+
+  function showHammerEffect(x, y) {
+    const hammer = document.createElement('div');
+    hammer.className = 'tap-hammer-effect';
+    hammer.innerText = '🏀';
+    hammer.style.left = (x - 20) + 'px';
+    hammer.style.top = (y - 30) + 'px';
+    document.body.appendChild(hammer);
+    setTimeout(() => hammer.remove(), 400);
+  }
+
+  function getSpeedConfig() {
+    let val = parseInt(speedSlider.value);
+    speedLabel.innerText = "速度" + val;
+    let fallDuration = 24.0 - (val * 2.0); 
+    let interval = 6500 - (val * 500);
+    return { fallDuration, interval };
+  }
+
+  speedSlider.addEventListener('input', () => {
+    let cfg = getSpeedConfig();
+    if (!isAnswering && !isPaused && !isTransitioning) {
+      if (dropInterval) clearInterval(dropInterval);
+      dropInterval = setInterval(() => {
+        if (!isAnswering && !isPaused && !isTransitioning) spawnFallingCoin();
+      }, cfg.interval);
+    }
+  });
+
+  function startTransition(callback) {
+    isTransitioning = true;
+    transitionCallback = callback;
+    skipBtnContainer.style.display = 'block';
+  }
+
+  function endTransition() {
+    if (isTransitioning) {
+      isTransitioning = false;
+      skipBtnContainer.style.display = 'none';
+      window.speechSynthesis.cancel();
+      if (currentSpeechTimeout) clearTimeout(currentSpeechTimeout);
+      
+      let cb = transitionCallback;
+      transitionCallback = null;
+      if (cb) cb();
+    }
+  }
+
+  skipBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); endTransition(); });
+
+  startBtnEl.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (startScreen.style.display === 'none') return; // 避免連點兩下重複觸發
+    startGame();
+  });
+
+  pauseBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); togglePause(); });
+  pauseBtn2.addEventListener('pointerdown', (e) => { e.preventDefault(); togglePause(); });
+  pauseBtn3.addEventListener('pointerdown', (e) => { e.preventDefault(); togglePause(); });
+
+  function startGame() {
+    initAudio();
+    audioUnlocked = true;
+
+    if ('speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+        let unlockUtterance = new SpeechSynthesisUtterance("遊戲開始");
+        unlockUtterance.volume = 0.01;
+        window.speechSynthesis.speak(unlockUtterance);
+      } catch(e) {}
+    }
+
+    startScreen.style.display = 'none';
+    successCount = 0; 
+    successCountSpan.innerText = successCount;
+    nextQuestion();
+  }
+
+  function nextQuestion() {
+    isAnswering = false;
+    isPaused = false;
+    isTransitioning = false;
+    transitionCallback = null;
+    skipBtnContainer.style.display = 'none';
+    
+    quizScreen.style.display = 'none';
+    quizScreen3.style.display = 'none';
+    pauseBtn.innerText = "⏸ 暫停";
+    
+    // 數字範圍精準維持 1, 2, 3, 4
+    const possibleValues = [1, 2, 3, 4];
+    currentCoinValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
+    requiredCount = Math.floor(Math.random() * 4) + 2; 
+    currentTarget = currentCoinValue * requiredCount;
+
+    displayTarget.innerText = currentTarget;
+    
+    collectedCount = 0;
+    warningMsg.innerText = "";
+    renderTray(); 
+    
+    let cfg = getSpeedConfig();
+    if (dropInterval) clearInterval(dropInterval);
+    activeCoins.forEach(c => c.remove());
+    activeCoins = [];
+
+    dropInterval = setInterval(() => {
+      if (!isAnswering && !isPaused && !isTransitioning) spawnFallingCoin();
+    }, cfg.interval);
+
+    speakText(`要付，${currentTarget} 元`, 0.85);
+  }
+
+  /* ========================================================
+     暫停：現在三個畫面（付錢／選算式／接燈籠）都能使用同一套
+     暫停邏輯。只在「自動轉場中」（isTransitioning，已經有強制
+     過關按鈕當保險）時才不能暫停，其餘時間都可以。
+     ======================================================== */
+  function togglePause() {
+    if (isTransitioning) return;
+    isPaused = !isPaused;
+
+    const allFalling = document.querySelectorAll('.money-item, .falling-option, .lantern-option');
+
+    if (isPaused) {
+      pauseBtn.innerText = "▶ 繼續";
+      pauseBtn.style.background = "#16a34a";
+      warningMsg.innerText = "⏸️ 遊戲已暫停，可以慢慢思考喔！";
+      quizFeedback.innerText = "⏸️ 遊戲已暫停";
+      quizFeedback3.innerText = "⏸️ 遊戲已暫停";
+      allFalling.forEach(c => c.style.animationPlayState = 'paused');
+      try { window.speechSynthesis.cancel(); } catch(e) {}
+      if (runningTotalSpeakTimeout) clearTimeout(runningTotalSpeakTimeout);
+    } else {
+      pauseBtn.innerText = "⏸ 暫停";
+      pauseBtn.style.background = "#f59e0b";
+      warningMsg.innerText = "";
+      if (quizFeedback.innerText === "⏸️ 遊戲已暫停") quizFeedback.innerText = "";
+      if (quizFeedback3.innerText === "⏸️ 遊戲已暫停") quizFeedback3.innerText = "";
+      allFalling.forEach(c => c.style.animationPlayState = 'running');
+    }
+  }
+
+  function spawnFallingCoin() {
+    if (isPaused || isTransitioning) return;
+    
+    const coinEl = document.createElement('div');
+    coinEl.className = 'money-item money-custom';
+    coinEl.innerText = `$${currentCoinValue}`;
+
+    const maxAllowedWidth = Math.max(20, dropField.clientWidth - 90);
+    const randomX = Math.random() * maxAllowedWidth + 10;
+    coinEl.style.left = randomX + 'px';
+    
+    let cfg = getSpeedConfig();
+    const duration = cfg.fallDuration + Math.random() * 1.5;
+    coinEl.style.animationDuration = duration + 's';
+    coinEl.style.animationName = 'fall';
+    coinEl.style.animationTimingFunction = 'linear';
+    coinEl.style.animationFillMode = 'forwards';
+
+    // 同一枚方塊只處理一次：避免部分裝置的 pointerdown 之後又補發 click，
+    // 造成同一次點擊被誤判成收集了兩枚，湊出永遠對不上的金額。
+    let isHandled = false;
+    const handleCoinTouch = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isAnswering || isPaused || isTransitioning || isHandled) return;
+      isHandled = true;
+
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX) || window.innerWidth / 2;
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY) || window.innerHeight / 2;
+      showHammerEffect(clientX, clientY);
+      playHammerSound();
+
+      let totalAmount = collectedCount * currentCoinValue;
+
+      if (totalAmount + currentCoinValue > currentTarget) {
+        // 溫和處理：只退回這一枚方塊，已收集的金額完全不受影響
+        playRejectSound();
+        warningMsg.innerText = `❌ 這樣會超過 ${currentTarget} 元喔，再試試看！`;
+        coinEl.classList.add('reject');
+        coinEl.style.pointerEvents = 'none';
+        setTimeout(() => {
+          coinEl.remove();
+          activeCoins = activeCoins.filter(item => item !== coinEl);
+        }, 300);
+        return;
+      }
+
+      warningMsg.innerText = "";
+      collectedCount++;
+      renderTray();
+      coinEl.remove();
+      activeCoins = activeCoins.filter(item => item !== coinEl);
+    };
+
+    coinEl.addEventListener('pointerdown', handleCoinTouch);
+
+    coinEl.addEventListener('animationend', () => {
+      coinEl.remove();
+      activeCoins = activeCoins.filter(item => item !== coinEl);
+    });
+
+    dropField.appendChild(coinEl);
+    activeCoins.push(coinEl);
+  }
+
+  function removeCoin() {
+    if (isAnswering || isPaused || isTransitioning) return;
+    if (collectedCount > 0) collectedCount--;
+    
+    warningMsg.innerText = "";
+    playPickupSound();
+    renderTray(); 
+  }
+
+  function renderTray() {
+    let totalAmount = collectedCount * currentCoinValue;
+    trayCoins.innerHTML = ''; 
+    currentAmountSpan.innerText = totalAmount;
+
+    for(let i=0; i<collectedCount; i++) {
+      let c = document.createElement('div');
+      c.className = 'money-item money-custom';
+      c.innerText = `${currentCoinValue}`;
+      let handled = false;
+      let act = (e) => {
+        if (e) e.preventDefault();
+        if (handled) return;
+        handled = true;
+        removeCoin();
+      };
+      c.addEventListener('pointerdown', act);
+      trayCoins.appendChild(c);
+    }
+
+    if (totalAmount === currentTarget && currentTarget > 0 && !isAnswering) {
+      isAnswering = true; 
+      if (dropInterval) clearInterval(dropInterval);
+      if (runningTotalSpeakTimeout) clearTimeout(runningTotalSpeakTimeout);
+      activeCoins.forEach(c => c.remove());
+      activeCoins = [];
+
+      playCheerSound();
+      
+      startTransition(() => {
+        triggerTetrisQuiz();
+      });
+
+      speakText(`${totalAmount} 元，支付完成！請進入第二個畫面選算式`, 0.85, () => {
+        endTransition();
+      });
+
+    } else if (totalAmount < currentTarget && totalAmount > 0 && !isTransitioning) {
+      // 防抖動：連續快速收集時，只會念最後一次的金額，不會每加一枚就講一次、互相打斷。
+      if (runningTotalSpeakTimeout) clearTimeout(runningTotalSpeakTimeout);
+      runningTotalSpeakTimeout = setTimeout(() => {
+        speakText(`${totalAmount} 元`, 1.3);
+      }, 450);
+    }
+  }
+
+  // 第二畫面：選算式
+  function triggerTetrisQuiz() {
+    isTransitioning = false;
+    skipBtnContainer.style.display = 'none';
+
+    quizScreen.style.display = 'flex';
+    tetrisDropArea.innerHTML = '';
+    quizFeedback.innerText = '';
+
+    let correctStr = `${currentCoinValue} × ${collectedCount} = ${currentTarget}`;
+
+    let options = [correctStr];
+    let attempts = 0;
+    while (options.length < 4 && attempts < 100) {
+      attempts++;
+      let rndVal1 = Math.floor(Math.random() * 4) + 1;
+      let rndVal2 = Math.floor(Math.random() * 4) + 2;
+      let wrongAns = rndVal1 * rndVal2;
+      let wrongStr = `${rndVal1} × ${rndVal2} = ${wrongAns}`;
+      if (!options.includes(wrongStr) && wrongAns !== currentTarget) {
+        options.push(wrongStr);
+      }
+    }
+    // 保險：極端情況下還是湊不滿4個，用簡單遞增算式補滿，確保一定能開始作答
+    let fillerBase = 5;
+    while (options.length < 4) {
+      let wrongStr = `1 × ${fillerBase} = ${fillerBase}`;
+      if (!options.includes(wrongStr) && fillerBase !== currentTarget) options.push(wrongStr);
+      fillerBase++;
+    }
+    options.sort(() => Math.random() - 0.5);
+
+    quizQuestionText.innerHTML = `總金額 ${currentTarget} 元（${collectedCount} 個 ${currentCoinValue} 元），哪一個是正確的乘法橫式？`;
+    speakText(`總金額 ${currentTarget} 元，請選擇正確的乘法算式方塊！`, 0.85);
+
+    let cfg = getSpeedConfig();
+    let quizDuration = cfg.fallDuration + 3.0;
+
+    let leftPositions = [15, 38, 62, 85]; 
+
+    options.forEach((optStr, index) => {
+      let optionEl = document.createElement('div');
+      optionEl.className = 'falling-option';
+      optionEl.innerText = optStr;
+      
+      optionEl.style.left = leftPositions[index] + '%';
+      let startTop = -60 - (index * 50);
+      optionEl.style.top = startTop + 'px';
+      optionEl.style.animationDuration = quizDuration + 's';
+      optionEl.style.animationDelay = (index * 1.8) + 's';
+      optionEl.style.animationIterationCount = 'infinite';
+
+      let isHandled = false;
+      const selectOption = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (isTransitioning || isPaused || isHandled) return;
+        isHandled = true;
+        
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX) || window.innerWidth / 2;
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY) || window.innerHeight / 2;
+        showHammerEffect(clientX, clientY);
+
+        playHammerSound();
+
+        if (optStr === correctStr) {
+          document.querySelectorAll('.falling-option').forEach(el => {
+            if (el !== optionEl) el.remove();
+          });
+
+          let computedLeft = window.getComputedStyle(optionEl).left;
+          let computedTop = window.getComputedStyle(optionEl).top;
+          optionEl.style.animation = 'none';
+          optionEl.style.left = computedLeft;
+          optionEl.style.top = computedTop;
+          optionEl.style.backgroundColor = '#16a34a'; 
+          optionEl.style.transform = 'scale(1.05)';
+          optionEl.style.zIndex = '99';
+          optionEl.innerText = `🎉 ${correctStr}`;
+
+          quizFeedback.style.color = '#16a34a';
+          quizFeedback.innerText = `🎉 答對了！ ${correctStr}！準備進入第三個畫面！`;
+          playCheerSound();
+          
+          confetti({
+            particleCount: 120, spread: 70, origin: { y: 0.6 },
+            colors: ['#FFD700', '#ff0000', '#00ff00', '#0000ff']
+          });
+
+          startTransition(() => {
+            quizScreen.style.display = 'none';
+            triggerQuizScreen3(`${currentCoinValue} × ${collectedCount} =`);
+          });
+
+          speakText(`答對了！${currentCoinValue} 乘以 ${collectedCount} 等於 ${currentTarget}！接下來進入第三個畫面！`, 0.85, () => {
+            endTransition();
+          });
+
+        } else {
+          playErrorSound();
+          quizFeedback.style.color = '#dc2626';
+          quizFeedback.innerText = `❌ ${optStr} 不對喔，方塊飛走了！`;
+          speakText("再想一下喔", 1.0);
+          optionEl.remove();
+        }
+      };
+
+      optionEl.addEventListener('pointerdown', selectOption);
+      tetrisDropArea.appendChild(optionEl);
+    });
+  }
+
+  // 第三畫面：維持燈籠型態
+  function triggerQuizScreen3(equationWithoutAns) {
+    isTransitioning = false;
+    skipBtnContainer.style.display = 'none';
+
+    quizScreen3.style.display = 'flex';
+    tetrisDropArea3.innerHTML = '';
+    quizFeedback3.innerText = '';
+
+    quizQuestionText3.innerHTML = `${equationWithoutAns} ?`;
+    
+    // 拿掉字串裡的「=」符號再拿去念，避免語音系統把「=」念成「等於」，
+    // 跟後面手動加的「等於」重複、聽起來像講了兩次。
+    let cleanEquationSpeech = equationWithoutAns.replace('×', '乘以').replace('=', '').trim();
+    speakText(`請看算式，${cleanEquationSpeech} 等於多少呢？請接住掉落的小燈籠！`, 0.85);
+
+    let correctAnsVal = currentTarget;
+    let options = [correctAnsVal];
+    let attempts = 0;
+    while (options.length < 4 && attempts < 100) {
+      attempts++;
+      let offset = (Math.floor(Math.random() * 4) - 2) * currentCoinValue;
+      if (offset === 0) offset = currentCoinValue;
+      let wrongVal = correctAnsVal + offset;
+      if (wrongVal <= 0) wrongVal = correctAnsVal + 5 + attempts;
+      if (!options.includes(wrongVal)) {
+        options.push(wrongVal);
+      }
+    }
+    // 保險：極端情況下還是湊不滿4個，直接用鄰近的正整數補滿
+    let fillerOffset = 1;
+    while (options.length < 4) {
+      let wrongVal = correctAnsVal + fillerOffset;
+      if (wrongVal > 0 && !options.includes(wrongVal)) options.push(wrongVal);
+      fillerOffset++;
+    }
+    options.sort(() => Math.random() - 0.5);
+
+    let leftPositions = [15, 38, 62, 85]; 
+    let cfg = getSpeedConfig();
+    let lanternDuration = cfg.fallDuration + 4.0;
+
+    options.forEach((val, index) => {
+      let optionEl = document.createElement('div');
+      optionEl.className = 'lantern-option'; 
+      optionEl.innerText = val;
+      
+      optionEl.style.left = leftPositions[index] + '%';
+      let startTop = -60 - (index * 50);
+      optionEl.style.top = startTop + 'px';
+      
+      optionEl.style.animationDuration = lanternDuration + 's';
+      optionEl.style.animationDelay = (index * 3.5) + 's';
+      optionEl.style.animationIterationCount = 'infinite';
+
+      let isHandled = false;
+      const selectOption3 = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (isTransitioning || isPaused || isHandled) return;
+        isHandled = true;
+        
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX) || window.innerWidth / 2;
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY) || window.innerHeight / 2;
+        showHammerEffect(clientX, clientY);
+
+        playHammerSound();
+
+        if (val === correctAnsVal) {
+          document.querySelectorAll('#quizScreen3 .lantern-option').forEach(el => {
+            if (el !== optionEl) el.remove();
+          });
+
+          let computedLeft = window.getComputedStyle(optionEl).left;
+          let computedTop = window.getComputedStyle(optionEl).top;
+          optionEl.style.animation = 'none';
+          optionEl.style.left = computedLeft;
+          optionEl.style.top = computedTop;
+          optionEl.style.backgroundColor = '#16a34a'; 
+          optionEl.style.borderColor = '#15803d';
+          optionEl.style.transform = 'scale(1.05)';
+          optionEl.style.zIndex = '99';
+          optionEl.innerText = `🏮 ${currentTarget}`;
+
+          quizFeedback3.style.color = '#16a34a';
+          quizFeedback3.innerText = `🎉 答對了！ ${equationWithoutAns} ${currentTarget}！`;
+          playCheerSound();
+          
+          confetti({
+            particleCount: 150, spread: 80, origin: { y: 0.6 },
+            colors: ['#FFD700', '#ff0000', '#00ff00', '#0000ff']
+          });
+
+          successCount++;
+          successCountSpan.innerText = successCount;
+
+          startTransition(() => {
+            quizScreen3.style.display = 'none';
+            nextQuestion();
+          });
+
+          speakText(`太棒了！${cleanEquationSpeech} 等於 ${currentTarget}！恭喜完成所有挑戰！`, 0.85, () => {
+            endTransition();
+          });
+
+        } else {
+          playErrorSound();
+          quizFeedback3.style.color = '#dc2626';
+          quizFeedback3.innerText = `❌ ${val} 不對喔，小燈籠飛走了！再想一想！`;
+          speakText("再想一下喔", 1.0);
+          optionEl.remove();
+        }
+      };
+
+      optionEl.addEventListener('pointerdown', selectOption3);
+      tetrisDropArea3.appendChild(optionEl);
+    });
+  }
+</script>
+</body>
+</html>
