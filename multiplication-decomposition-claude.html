@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>直式乘法遊戲(兩位數×一位數)</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+        html, body {
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh; height: 100dvh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #fef3c7;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            overflow: hidden; touch-action: manipulation;
+        }
+        h1 { color: #b45309; font-size: 15px; margin: 2px 0; }
+
+        #gameScreen {
+            width: 100%; max-width: 440px; height: 100%; max-height: 100dvh;
+            background: #fff; border-radius: 0; border: none; padding: 6px 10px;
+            box-shadow: none; margin: 0 auto;
+            position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px;
+            overflow-y: auto;
+        }
+        @media (min-width: 480px) {
+            #gameScreen {
+                border-radius: 12px; border: 3px solid #f59e0b; max-height: 96vh; height: auto;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: auto;
+            }
+        }
+
+        #startOverlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.98); border-radius: 10px;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            z-index: 9999; padding: 16px; overflow-y: auto; -webkit-overflow-scrolling: touch; text-align: left;
+        }
+        .start-content-box { max-width: 400px; width: 100%; display: flex; flex-direction: column; align-items: center; }
+        #startOverlay h2 { color: #b45309; font-size: 18px; margin-bottom: 8px; text-align: center; }
+
+        .intro-card {
+            background: #fffbeb; border: 2px solid #fde68a;
+            border-radius: 8px; padding: 8px 10px; margin-bottom: 10px; width: 100%;
+        }
+        .intro-card h3 { margin: 0 0 4px 0; font-size: 13px; color: #b45309; }
+        .intro-card ul { margin: 0; padding-left: 16px; font-size: 11px; line-height: 1.5; color: #78350f; }
+        .intro-card li { margin-bottom: 3px; }
+
+        .level-pick-title { font-size: 14px; font-weight: bold; color: #b45309; margin: 6px 0 8px 0; }
+        .level-btn {
+            width: 100%; text-align: left; background: #fff; border: 2px solid #fde68a;
+            border-radius: 10px; padding: 9px 12px; margin-bottom: 8px; cursor: pointer;
+            display: flex; flex-direction: column; gap: 2px;
+        }
+        .level-btn:active { transform: scale(0.98); background: #fffbeb; }
+        .level-btn .lv-name { font-size: 14px; font-weight: bold; color: #b45309; }
+        .level-btn .lv-desc { font-size: 11px; color: #78350f; }
+
+        .status-bar {
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; row-gap: 4px;
+            width: 100%; font-size: 12px; font-weight: bold; color: #b45309;
+            border-bottom: 2px solid #fef3c7; padding-bottom: 2px; padding-left: 4px; padding-right: 4px;
+            flex-shrink: 0;
+        }
+        .status-left { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
+        .status-left .level-label { font-size: 10px; color: #92400e; }
+
+        .btn-group { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; row-gap: 4px; }
+        .control-btn {
+            background-color: #f59e0b; color: white; border: none; border-radius: 6px;
+            padding: 3px 7px; font-size: 11px; font-weight: bold; cursor: pointer;
+        }
+        .control-btn:active { transform: scale(0.95); background-color: #d97706; }
+        .hint-btn { background-color: #16a34a; }
+        .hint-btn:active { background-color: #15803d; }
+        .switch-btn { background-color: #64748b; }
+        .switch-btn:active { background-color: #475569; }
+
+        .step-banner {
+            background: #fef3c7; color: #92400e; padding: 6px 8px; border-radius: 6px;
+            font-size: 12px; font-weight: bold; width: 100%; line-height: 1.3; text-align: center;
+            flex-shrink: 0; min-height: 32px; display: flex; align-items: center; justify-content: center;
+        }
+
+        .wallet-display-box {
+            width: 100%; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px;
+            font-size: 12px; font-weight: bold; color: #334155; text-align: center; flex-shrink: 0;
+        }
+
+        /* 統一的直式排版：乘數列 + 個位乘積列 + 十位乘積列 + 總和列，一次呈現、逐步往下展開 */
+        .vertical-math {
+            display: inline-flex; flex-direction: column; align-items: flex-end;
+            background: #f8fafc; padding: 6px 12px; border-radius: 8px; border: 2px solid #cbd5e1;
+            font-family: monospace; font-size: 17px; font-weight: bold; flex-shrink: 0;
+        }
+        .math-row { display: flex; gap: 5px; width: 100%; justify-content: flex-end; margin: 2px 0; align-items: center; }
+        .math-line { width: 100%; height: 2px; background: #333; margin: 3px 0; }
+        .operator-cell { width: 18px; text-align: center; font-size: 15px; color: #333; flex-shrink: 0; }
+
+        .cell {
+            width: 30px; height: 28px; text-align: center; display: flex; align-items: center; justify-content: center;
+            background: #fff; border: 2px solid #cbd5e1; border-radius: 4px; color: #1e293b; font-size: 15px;
+            flex-shrink: 0; transition: all 0.2s;
+        }
+        .cell.answer-cell { border: 2px dashed #94a3b8; color: #cbd5e1; }
+        .cell.answer-cell.active { border: 2px solid #f59e0b; background: #fef08a; color: #b45309; animation: pulse 1s infinite; }
+        .cell.answer-cell.filled { border: 2px solid #16a34a; background: #dcfce7; color: #166534; }
+        .cell.row-active { box-shadow: 0 0 0 3px #f59e0b; }
+
+        /* 加總分欄時的「這裡正在看」提示，獨立出來是因為這時候格子通常
+           已經是 filled（綠色）狀態，直接用 active 樣式會被蓋掉看不出來。 */
+        .cell.highlight-col {
+            box-shadow: 0 0 0 3px #f59e0b, 0 0 10px rgba(245,158,11,0.6);
+            animation: colPulse 1.1s infinite;
+        }
+        .cell.answer-cell.filled.highlight-col { background: #fef9c3; border-color: #f59e0b; }
+        @keyframes colPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        .carry-cell {
+            width: 30px; height: 20px; text-align: center; display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; font-size: 11px; font-weight: bold; color: #ef4444;
+            background: #fee2e2; border: 2px dashed #ef4444; border-radius: 5px;
+            opacity: 0; transform: scale(0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .carry-cell.placeholder { visibility: hidden; }
+        .carry-cell.show { opacity: 1; transform: scale(1); background: #bbf7d0; border-color: #16a34a; color: #166534; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .hidden { display: none !important; }
+        #feedback { font-size: 12px; color: #d97706; font-weight: bold; min-height: 16px; flex-shrink: 0; }
+
+        #drop-game-container {
+            position: relative; width: 100%; height: 100px; min-height: 100px;
+            background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 8px;
+            overflow: hidden; touch-action: manipulation; flex-shrink: 0;
+            flex-grow: 1; max-height: 220px;
+        }
+        .falling-option {
+            position: absolute; width: 64px; height: 44px;
+            background: radial-gradient(circle, #fcd34d 60%, #f59e0b 100%);
+            border: 2px solid #d97706; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px; font-weight: bold; color: #78350f;
+            cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            animation: fall linear forwards; z-index: 999;
+        }
+        .falling-option:active { transform: scale(0.9); }
+        .falling-option.hint-glow {
+            box-shadow: 0 0 0 4px #16a34a, 0 3px 8px rgba(0,0,0,0.3);
+            animation: fall linear forwards, glowPulse 1s ease-in-out infinite;
+        }
+        @keyframes glowPulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
+
+        @keyframes fall { 0% { top: -45px; } 100% { top: 55px; } }
+
+        #completeOverlay {
+            display: none;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.97);
+            flex-direction: column; align-items: center; justify-content: center;
+            gap: 10px; z-index: 5000; text-align: center; padding: 16px;
+        }
+        #completeOverlay .equation {
+            font-family: monospace; font-size: 20px; font-weight: bold; color: #b45309;
+            background: #fffbeb; border: 3px solid #fde68a; border-radius: 10px; padding: 10px 16px;
+        }
+        #completeOverlay .cheer { font-size: 15px; font-weight: bold; color: #92400e; }
+    </style>
+</head>
+<body>
+
+    <div id="gameScreen">
+        <div id="startOverlay">
+            <div class="start-content-box">
+                <h2>👛 直式乘法遊戲 👛</h2>
+
+                <div class="intro-card">
+                    <h3>📖 遊戲使用說明</h3>
+                    <ul>
+                        <li><strong>先算個位：</strong>看直式，把個位數字乘起來，填入第一層。</li>
+                        <li><strong>再算十位：</strong>接著把十位數字乘起來，填入第二層。</li>
+                        <li><strong>最後加總：</strong>把兩層加起來，就是答案！全部都在同一張直式上，不用切換畫面。</li>
+                        <li><strong>卡住了嗎：</strong>按「💡提示」會給你線索！</li>
+                    </ul>
+                </div>
+
+                <div class="level-pick-title">請選擇關卡：</div>
+                <div id="levelList" style="width:100%;"></div>
+            </div>
+        </div>
+
+        <h1>👛 直式乘法遊戲</h1>
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="level-label" id="levelLabel">尚未選擇關卡</span>
+                <span id="score">已完成: 0 關</span>
+            </div>
+            <div class="btn-group">
+                <button class="control-btn hint-btn" onclick="useHint()">💡提示</button>
+                <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
+                <button class="control-btn switch-btn" onclick="showLevelSelect()">🔄換關卡</button>
+            </div>
+        </div>
+
+        <div class="step-banner" id="stepBanner">請先選擇關卡！</div>
+
+        <div class="wallet-display-box" id="questDesc">每包有 31 元，買 3 包，總共有多少錢呢？</div>
+
+        <!-- 統一直式：乘數列 + 個位乘積列 + 十位乘積列 + 總和列 -->
+        <div class="vertical-math" id="mathBox">
+            <div class="math-row">
+                <div class="operator-cell"></div>
+                <div class="cell" id="numTens">3</div>
+                <div class="cell" id="numOnes">1</div>
+            </div>
+            <div class="math-row">
+                <div class="operator-cell">×</div>
+                <div class="cell" style="border:none; background:transparent;"></div>
+                <div class="cell" id="numMult">3</div>
+            </div>
+            <div class="math-line"></div>
+
+            <div class="math-row">
+                <div class="operator-cell"></div>
+                <div class="cell answer-cell" id="onesS1">?</div>
+                <div class="cell answer-cell" id="onesS2">?</div>
+            </div>
+            <div class="math-row hidden" id="rowTensProduct">
+                <div class="operator-cell"></div>
+                <div class="cell answer-cell" id="tensS1">?</div>
+                <div class="cell answer-cell" id="tensS2">?</div>
+            </div>
+
+            <div class="math-line hidden" id="sumLine"></div>
+
+            <div class="math-row hidden" id="carryRow">
+                <div class="operator-cell"></div>
+                <div class="carry-cell placeholder" id="carryHundred">1</div>
+                <div class="carry-cell placeholder"></div>
+                <div class="carry-cell placeholder"></div>
+            </div>
+
+            <div class="math-row hidden" id="rowSum">
+                <div class="operator-cell"></div>
+                <div class="cell answer-cell" id="ans1">?</div>
+                <div class="cell answer-cell" id="ans2">?</div>
+                <div class="cell answer-cell" id="ans3">?</div>
+            </div>
+        </div>
+
+        <div id="feedback"></div>
+
+        <div id="drop-game-container"></div>
+
+        <div id="completeOverlay">
+            <div class="equation" id="completeEquation">31 × 3 = 93</div>
+            <div class="cheer">🌟 太棒了，算完了！</div>
+        </div>
+    </div>
+
+    <script>
+        /* ========================================================
+           關卡設定：乘數與十位數字的範圍，並保證 tens×multiplier ≤ 9，
+           確保「十位乘積」換算成錢後最多兩位數字，剛好對齊畫面上的
+           兩個格子，不會有數字被截斷、顯示錯誤的風險。
+           ======================================================== */
+        const LEVELS = [
+            { id: 1, name: '第一關：基礎練習', desc: '數字比較小，先熟悉個位→十位→加總的流程。', multRange: [2, 3], onesRange: [1, 4] },
+            { id: 2, name: '第二關：進階練習', desc: '數字變大一點，總金額常常會變成三位數。', multRange: [3, 4], onesRange: [3, 7] },
+            { id: 3, name: '第三關：挑戰關卡', desc: '數字更大，個位乘積也常常需要進位！', multRange: [4, 6], onesRange: [5, 9] }
+        ];
+
+        let currentLevel = null;
+        let score = 0;
+        let currentStage = 'ones'; // 'ones' -> 'tens' -> 'sum'
+        let gameInterval = null;
+        let activeOptions = [];
+        let isLocked = false;
+        let isPaused = false;
+        let nextQuestionTimeout = null;
+        let actionTransitionTimeout = null;
+        let pendingAdvance = false;
+        let pendingNextQuestion = false;
+        let qData = {};
+        let hintLevel = 0;
+        let hintActiveValue = null;
+
+        // 加總分欄用的狀態：跟前面加法遊戲一樣，個位先算，有進位才問百位
+        let sumCols = {};      // {ones:{digit}, tens:{digit,carryOut}, hundred:{digit}}
+        let sumSteps = [];     // 依序要問的欄位，如 ['ones','tens'] 或 ['ones','tens','hundred']
+        let sumStepIndex = 0;
+        const SUM_ANSID = { ones: 'ans3', tens: 'ans2', hundred: 'ans1' };
+        const SUM_LABEL = { ones: '個位', tens: '十位', hundred: '百位' };
+
+        function computeSumColumns(onesProduct, tensProduct) {
+            const onesPad = String(onesProduct).padStart(2, '0'); // [十位, 個位]
+            const tensPad = String(tensProduct).padStart(2, '0'); // [十位, 個位]（個位固定是0）
+            const onesSum = parseInt(onesPad[1], 10) + parseInt(tensPad[1], 10);
+            const onesDigit = onesSum % 10;
+            const carry1 = Math.floor(onesSum / 10);
+            const tensSum = parseInt(onesPad[0], 10) + parseInt(tensPad[0], 10) + carry1;
+            const tensDigit = tensSum % 10;
+            const carry2 = Math.floor(tensSum / 10);
+            return {
+                ones: { digit: onesDigit, carryOut: carry1, contributions: [parseInt(onesPad[1], 10), parseInt(tensPad[1], 10)] },
+                tens: { digit: tensDigit, carryOut: carry2, carryIn: carry1, contributions: [parseInt(onesPad[0], 10), parseInt(tensPad[0], 10)] },
+                hundred: { digit: carry2, carryOut: 0, carryIn: carry2, contributions: [] }
+            };
+        }
+
+        /* ========================================================
+           自動挑選比較自然、偏女聲、音質較好的中文語音，
+           而不是完全交給系統隨便選（常常會選到很生硬的機器音）。
+           ======================================================== */
+        let cachedVoice = null;
+        function loadVoices() {
+            if (!('speechSynthesis' in window)) return;
+            const voices = window.speechSynthesis.getVoices();
+            if (!voices || voices.length === 0) return;
+            const zhVoices = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith('zh'));
+            if (zhVoices.length === 0) return;
+
+            const scoreVoice = (v) => {
+                let score = 0;
+                const lang = v.lang.toLowerCase();
+                if (lang === 'zh-tw') score += 30;
+                else if (lang.includes('hant') || lang === 'zh-hk') score += 20;
+                else if (lang.startsWith('zh')) score += 10;
+                const name = v.name.toLowerCase();
+                if (/female|女|meijia|mei-jia|yating|ya-ting|tingting|xiaoxiao|xiaoyi|hanhan|sinji|zhiyu|xiaoshuang/.test(name)) score += 15;
+                if (!v.localService) score += 8; // 雲端語音通常音質較好
+                return score;
+            };
+            zhVoices.sort((a, b) => scoreVoice(b) - scoreVoice(a));
+            cachedVoice = zhVoices[0];
+        }
+        if ('speechSynthesis' in window) {
+            loadVoices();
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+        }
+
+        /* ========================================================
+           語音：講完才繼續（onend + onerror 雙保險 + 逾時保險），
+           並且句子盡量簡短、避免同一句塞太多逗號子句——
+           部分手機（例如小米）在「取消舊語音、馬上念新語音」銜接
+           太快、或句子太長太複雜時，語音引擎有機會念出奇怪的贅字，
+           所以額外加了一個短暫延遲，並把每句話拆短。
+           ======================================================== */
+        function speak(text, onEnd) {
+            if (isPaused) { if (onEnd) onEnd(); return; }
+            if (!('speechSynthesis' in window)) { if (onEnd) onEnd(); return; }
+            try {
+                window.speechSynthesis.cancel();
+                let finished = false;
+                const trigger = () => { if (finished) return; finished = true; if (onEnd) onEnd(); };
+                setTimeout(() => {
+                    if (isPaused) { trigger(); return; }
+                    try {
+                        const utter = new SpeechSynthesisUtterance(text);
+                        utter.lang = 'zh-TW';
+                        if (cachedVoice) utter.voice = cachedVoice;
+                        utter.rate = 0.92;
+                        utter.pitch = 1.12;
+                        utter.volume = 1.0;
+                        utter.onend = trigger;
+                        utter.onerror = trigger;
+                        window.speechSynthesis.speak(utter);
+                        setTimeout(trigger, Math.max(1500, text.length * 280 / 0.88));
+                    } catch (e) { trigger(); }
+                }, 80);
+            } catch (e) { if (onEnd) onEnd(); }
+        }
+        function boom() { try { confetti(); } catch (e) {} }
+
+        function renderLevelList() {
+            const container = document.getElementById('levelList');
+            container.innerHTML = '';
+            LEVELS.forEach(lv => {
+                const btn = document.createElement('div');
+                btn.className = 'level-btn';
+                btn.innerHTML = `<span class="lv-name">${lv.name}</span><span class="lv-desc">${lv.desc}</span>`;
+                btn.addEventListener('pointerdown', (e) => { e.preventDefault(); startGame(lv.id); });
+                container.appendChild(btn);
+            });
+        }
+
+        function showLevelSelect() {
+            isPaused = false;
+            pendingAdvance = false;
+            pendingNextQuestion = false;
+            if (gameInterval) clearInterval(gameInterval);
+            if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+            if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+            activeOptions.forEach(el => el.remove());
+            activeOptions = [];
+            hideCompletionScreen();
+            try { window.speechSynthesis.cancel(); } catch (e) {}
+            document.getElementById('startOverlay').style.display = 'flex';
+        }
+
+        function startGame(levelId) {
+            const overlay = document.getElementById('startOverlay');
+            if (overlay.style.display === 'none') return;
+            currentLevel = LEVELS.find(l => l.id === levelId);
+            document.getElementById('levelLabel').innerText = currentLevel.name;
+
+            if ('speechSynthesis' in window) {
+                try {
+                    window.speechSynthesis.cancel();
+                    window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+                } catch (e) {}
+            }
+            score = 0;
+            document.getElementById('score').innerText = `已完成: ${score} 關`;
+            overlay.style.display = 'none';
+            initQuestion();
+        }
+
+        function togglePause() {
+            if (!currentLevel) return;
+            isPaused = !isPaused;
+            const pauseBtn = document.getElementById('pauseBtn');
+            const options = document.querySelectorAll('.falling-option');
+
+            if (isPaused) {
+                pauseBtn.innerText = "繼續";
+                pauseBtn.style.backgroundColor = "#16a34a";
+                if (gameInterval) clearInterval(gameInterval);
+                if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+                try { window.speechSynthesis.cancel(); } catch (e) {}
+                options.forEach(el => el.style.animationPlayState = 'paused');
+                document.getElementById('feedback').innerText = "⏸️ 遊戲已暫停";
+            } else {
+                pauseBtn.innerText = "暫停";
+                pauseBtn.style.backgroundColor = "#f59e0b";
+                options.forEach(el => el.style.animationPlayState = 'running');
+                document.getElementById('feedback').innerText = "";
+                if (pendingNextQuestion) {
+                    pendingNextQuestion = false;
+                    hideCompletionScreen();
+                    initQuestion();
+                } else if (pendingAdvance) {
+                    pendingAdvance = false;
+                    runStage();
+                } else if (!isLocked) {
+                    setupFalling();
+                }
+            }
+        }
+
+        /* ========================================================
+           出題：隨機產生，並保證 tens × multiplier ≤ 9，
+           確保十位乘積換算成錢一定剛好是兩位數，不會溢出畫面格子。
+           ======================================================== */
+        function generateQuestion(level) {
+            const multiplier = level.multRange[0] + Math.floor(Math.random() * (level.multRange[1] - level.multRange[0] + 1));
+            const maxTens = Math.max(1, Math.floor(9 / multiplier));
+            const tens = 1 + Math.floor(Math.random() * maxTens);
+            const ones = level.onesRange[0] + Math.floor(Math.random() * (level.onesRange[1] - level.onesRange[0] + 1));
+            return { tens, ones, multiplier };
+        }
+
+        function initQuestion() {
+            if (isPaused || !currentLevel) return;
+            hideCompletionScreen();
+            isLocked = false;
+            hintLevel = 0;
+            hintActiveValue = null;
+            currentStage = 'ones';
+
+            qData = generateQuestion(currentLevel);
+            window.ansOnes = qData.ones * qData.multiplier;
+            window.ansTens = qData.tens * 10 * qData.multiplier;
+            window.totalVal = (qData.tens * 10 + qData.ones) * qData.multiplier;
+
+            document.getElementById('numTens').innerText = qData.tens;
+            document.getElementById('numOnes').innerText = qData.ones;
+            document.getElementById('numMult').innerText = qData.multiplier;
+            document.getElementById('questDesc').innerText =
+                `每包有 ${qData.tens * 10 + qData.ones} 元，買 ${qData.multiplier} 包，總共有多少錢呢？`;
+
+            ['onesS1', 'onesS2'].forEach(id => {
+                const el = document.getElementById(id);
+                el.innerText = '?'; el.className = 'cell answer-cell';
+            });
+            ['tensS1', 'tensS2'].forEach(id => {
+                const el = document.getElementById(id);
+                el.innerText = '?'; el.className = 'cell answer-cell';
+            });
+            ['ans1', 'ans2', 'ans3'].forEach(id => {
+                const el = document.getElementById(id);
+                el.innerText = '?'; el.className = 'cell answer-cell'; el.style.display = 'flex';
+            });
+            document.getElementById('rowTensProduct').classList.add('hidden');
+            document.getElementById('sumLine').classList.add('hidden');
+            document.getElementById('carryRow').classList.add('hidden');
+            document.getElementById('carryHundred').classList.remove('show');
+            document.getElementById('rowSum').classList.add('hidden');
+            sumCols = {}; sumSteps = []; sumStepIndex = 0;
+            document.getElementById('feedback').innerText = '';
+
+            speak(`每包 ${qData.tens * 10 + qData.ones} 元，買 ${qData.multiplier} 包。`, () => {
+                runStage();
+            });
+        }
+
+        function runStage() {
+            if (isPaused || !currentLevel) return;
+            isLocked = false;
+            hintLevel = 0;
+            hintActiveValue = null;
+
+            document.querySelectorAll('.cell').forEach(el => el.classList.remove('active', 'row-active', 'highlight-col'));
+
+            if (currentStage === 'ones') {
+                document.getElementById('onesS1').classList.add('active');
+                document.getElementById('onesS2').classList.add('active');
+                document.getElementById('stepBanner').innerText = `請算個位：${qData.ones} × ${qData.multiplier}，等於多少？`;
+                speak(`請算個位，${qData.ones} 乘以 ${qData.multiplier}。`);
+            } else if (currentStage === 'tens') {
+                document.getElementById('tensS1').classList.add('active');
+                document.getElementById('tensS2').classList.add('active');
+                document.getElementById('stepBanner').innerText = `請算十位：${qData.tens}0 × ${qData.multiplier}，等於多少？`;
+                speak(`請算十位，${qData.tens} 十乘以 ${qData.multiplier}。`);
+            } else {
+                // 加總分欄：個位先算，有進位才問百位。跟前面加法遊戲一樣，
+                // 正在算的那一欄（兩層的對應數字 + 答案格）會整欄一起發光提醒。
+                const col = sumSteps[sumStepIndex];
+                if (col === 'ones') {
+                    document.getElementById('onesS2').classList.add('highlight-col');
+                    document.getElementById('tensS2').classList.add('highlight-col');
+                } else if (col === 'tens') {
+                    document.getElementById('onesS1').classList.add('highlight-col');
+                    document.getElementById('tensS1').classList.add('highlight-col');
+                }
+                document.getElementById(SUM_ANSID[col]).classList.add('active');
+
+                const info = sumCols[col];
+                const parts = info.contributions.length
+                    ? info.contributions.join(' + ') + (info.carryIn ? ` + ${info.carryIn}` : '')
+                    : `進位的 ${info.carryIn}`;
+                document.getElementById('stepBanner').innerText = `請算「${SUM_LABEL[col]}」：${parts}，等於多少？`;
+                speak(`請算${SUM_LABEL[col]}，${parts}，等於多少呢？`);
+            }
+            setupFalling();
+        }
+
+        function useHint() {
+            if (isPaused || isLocked || !currentLevel) return;
+            hintLevel++;
+            let target, hintText;
+            if (currentStage === 'ones') {
+                target = window.ansOnes;
+                hintText = hintLevel === 1
+                    ? `🔍 提示：${qData.ones} 乘以 ${qData.multiplier}，可以用手指數數看！`
+                    : `💡 答案是 ${target}！找找看畫面上的這個數字！`;
+            } else if (currentStage === 'tens') {
+                target = window.ansTens;
+                hintText = hintLevel === 1
+                    ? `🔍 提示：${qData.tens} 十乘以 ${qData.multiplier}，也就是 ${qData.tens} 乘以 ${qData.multiplier} 再乘以 10！`
+                    : `💡 答案是 ${target}！找找看畫面上的這個數字！`;
+            } else {
+                const col = sumSteps[sumStepIndex];
+                const info = sumCols[col];
+                target = info.digit;
+                hintText = hintLevel === 1
+                    ? `🔍 提示：${SUM_LABEL[col]}是 ${info.contributions.length ? info.contributions.join(' 加 ') : ''}${info.carryIn ? (info.contributions.length ? ' 加 ' : '') + '進位' + info.carryIn : ''}，等於多少？`
+                    : `💡 答案是 ${target}！找找看畫面上的這個數字！`;
+            }
+            document.getElementById('feedback').innerText = hintText;
+            speak(hintText.replace(/^[🔍💡] ?(提示：|)/, ''));
+            if (hintLevel >= 2) {
+                hintActiveValue = target;
+                activeOptions.forEach(opt => { if (opt.dataset.val === String(target)) opt.classList.add('hint-glow'); });
+            }
+        }
+
+        function setupFalling() {
+            if (isPaused || !currentLevel) return;
+            activeOptions.forEach(el => el.remove());
+            activeOptions = [];
+            if (gameInterval) clearInterval(gameInterval);
+
+            let currentTarget;
+            if (currentStage === 'ones') currentTarget = window.ansOnes;
+            else if (currentStage === 'tens') currentTarget = window.ansTens;
+            else currentTarget = sumCols[sumSteps[sumStepIndex]].digit;
+
+            let options = [currentTarget];
+            let attempts = 0;
+            while (options.length < 4 && attempts < 100) {
+                attempts++;
+                if (currentStage === 'sum') {
+                    // 加總分欄時目標是單一數字(0~9)，干擾選項就是隨機的個位數字（0也合法）
+                    const r = Math.floor(Math.random() * 10);
+                    if (!options.includes(r)) options.push(r);
+                } else {
+                    const step = currentStage === 'tens' ? 10 : 1;
+                    const r = currentTarget + (Math.floor(Math.random() * 6) - 3) * step;
+                    if (r > 0 && !options.includes(r)) options.push(r);
+                }
+            }
+            let fallback = 1;
+            while (options.length < 4) {
+                const candidate = currentStage === 'sum' ? (currentTarget + fallback) % 10 : currentTarget + fallback;
+                if ((currentStage === 'sum' || candidate > 0) && !options.includes(candidate)) options.push(candidate);
+                fallback++;
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            let idx = 0;
+            const spawn = () => {
+                if (isLocked || isPaused) return;
+                if (idx >= options.length) idx = 0;
+                spawnFallingOption(options[idx]);
+                idx++;
+            };
+            spawn();
+            gameInterval = setInterval(spawn, 2200);
+        }
+
+        function showCompletionScreen() {
+            document.getElementById('completeEquation').innerText =
+                `${qData.tens * 10 + qData.ones} × ${qData.multiplier} = ${window.totalVal}`;
+            document.getElementById('completeOverlay').style.display = 'flex';
+            const screen = document.getElementById('gameScreen');
+            if (screen) screen.scrollTop = 0;
+        }
+        function hideCompletionScreen() {
+            document.getElementById('completeOverlay').style.display = 'none';
+        }
+
+        function spawnFallingOption(val) {
+            if (isLocked || isPaused) return;
+            const container = document.getElementById('drop-game-container');
+            const el = document.createElement('div');
+            el.className = 'falling-option';
+            el.innerText = currentStage === 'sum' ? `${val}` : `${val}元`;
+            el.dataset.val = String(val);
+            if (hintActiveValue !== null && val === hintActiveValue) el.classList.add('hint-glow');
+
+            const randomX = Math.random() * (container.clientWidth - 64);
+            el.style.left = randomX + 'px';
+            el.style.animationDuration = "5.5s";
+            if (isPaused) el.style.animationPlayState = 'paused';
+
+            let isHandled = false;
+            const handleSelect = (e) => {
+                if (e) { e.preventDefault(); e.stopPropagation(); }
+                if (isLocked || isHandled || isPaused) return;
+
+                let target;
+                if (currentStage === 'ones') target = window.ansOnes;
+                else if (currentStage === 'tens') target = window.ansTens;
+                else target = sumCols[sumSteps[sumStepIndex]].digit;
+
+                if (val === target) {
+                    isHandled = true;
+                    isLocked = true;
+                    if (gameInterval) clearInterval(gameInterval);
+                    activeOptions.forEach(opt => opt.remove());
+                    activeOptions = [];
+                    handleCorrect(val);
+                } else {
+                    isHandled = true;
+                    speak("再算算看。");
+                    document.getElementById('feedback').innerText = "❌ 不對喔，再試一次！";
+                    el.style.opacity = "0";
+                    setTimeout(() => el.remove(), 300);
+                }
+            };
+            el.addEventListener('pointerdown', handleSelect);
+            el.addEventListener('animationend', () => {
+                el.remove();
+                activeOptions = activeOptions.filter(item => item !== el);
+            });
+            container.appendChild(el);
+            activeOptions.push(el);
+        }
+
+        function handleCorrect(val) {
+            boom();
+
+            if (currentStage === 'ones') {
+                const strU = String(val).padStart(2, '0');
+                document.getElementById('onesS1').innerText = strU[0] === '0' ? '－' : strU[0];
+                document.getElementById('onesS2').innerText = strU[1];
+                document.getElementById('onesS1').className = 'cell answer-cell filled';
+                document.getElementById('onesS2').className = 'cell answer-cell filled';
+                document.getElementById('feedback').innerText = `🎉 個位算對了！${val} 元。`;
+
+                document.getElementById('rowTensProduct').classList.remove('hidden');
+                currentStage = 'tens';
+                pendingAdvance = true;
+                const goToNext = () => {
+                    if (!pendingAdvance) return;
+                    if (isPaused) return;
+                    if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                    pendingAdvance = false;
+                    runStage();
+                };
+                speak(`個位算對了，${val} 元。接下來算十位。`, () => {
+                    if (!pendingAdvance) return;
+                    if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                    actionTransitionTimeout = setTimeout(goToNext, 500);
+                });
+                if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                actionTransitionTimeout = setTimeout(goToNext, 5000);
+
+            } else if (currentStage === 'tens') {
+                const strT = String(val).padStart(2, '0');
+                document.getElementById('tensS1').innerText = strT[0];
+                document.getElementById('tensS2').innerText = strT[1];
+                document.getElementById('tensS1').className = 'cell answer-cell filled';
+                document.getElementById('tensS2').className = 'cell answer-cell filled';
+                document.getElementById('feedback').innerText = `🎉 十位算對了！${val} 元。`;
+
+                document.getElementById('sumLine').classList.remove('hidden');
+                document.getElementById('carryRow').classList.remove('hidden');
+                document.getElementById('rowSum').classList.remove('hidden');
+
+                // 準備加總分欄：個位先算，只有真的有進位才問百位
+                sumCols = computeSumColumns(window.ansOnes, window.ansTens);
+                sumSteps = sumCols.hundred.digit > 0 ? ['ones', 'tens', 'hundred'] : ['ones', 'tens'];
+                sumStepIndex = 0;
+                document.getElementById('carryHundred').classList.remove('show');
+                const strTotal = String(window.totalVal);
+                if (strTotal.length === 2) document.getElementById('ans1').style.display = 'none';
+
+                currentStage = 'sum';
+                pendingAdvance = true;
+                const goToNext = () => {
+                    if (!pendingAdvance) return;
+                    if (isPaused) return;
+                    if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                    pendingAdvance = false;
+                    runStage();
+                };
+                speak(`十位算對了，${val} 元。最後把兩層加起來，從個位開始，一欄一欄算。`, () => {
+                    if (!pendingAdvance) return;
+                    if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                    actionTransitionTimeout = setTimeout(goToNext, 500);
+                });
+                if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                actionTransitionTimeout = setTimeout(goToNext, 5000);
+
+            } else {
+                // 加總分欄：填入這一欄的答案
+                const col = sumSteps[sumStepIndex];
+                const ansEl = document.getElementById(SUM_ANSID[col]);
+                ansEl.innerText = val;
+                ansEl.classList.remove('active');
+                ansEl.classList.add('filled');
+
+                const isLastSumStep = sumStepIndex === sumSteps.length - 1;
+
+                if (isLastSumStep) {
+                    score++;
+                    document.getElementById('score').innerText = `已完成: ${score} 關`;
+                    document.getElementById('feedback').innerText = `🌟 太棒了！總金額是 ${window.totalVal} 元，恭喜過關！`;
+
+                    showCompletionScreen();
+                    pendingNextQuestion = true;
+                    const goNext = () => {
+                        if (!pendingNextQuestion) return;
+                        if (isPaused) return;
+                        if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+                        pendingNextQuestion = false;
+                        initQuestion();
+                    };
+                    speak(`太棒了，總金額是 ${window.totalVal} 元，恭喜過關！`, () => {
+                        if (!pendingNextQuestion) return;
+                        if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+                        nextQuestionTimeout = setTimeout(goNext, 1000);
+                    });
+                    if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+                    nextQuestionTimeout = setTimeout(goNext, 6000);
+                } else {
+                    const colInfo = sumCols[col];
+                    sumStepIndex++;
+                    const nextCol = sumSteps[sumStepIndex];
+                    let carryMsg = '';
+                    if (colInfo.carryOut > 0 && nextCol === 'hundred') {
+                        const carryEl = document.getElementById('carryHundred');
+                        carryEl.innerText = colInfo.carryOut;
+                        carryEl.classList.add('show');
+                        carryMsg = `，向${SUM_LABEL[nextCol]}進 ${colInfo.carryOut}`;
+                    }
+                    document.getElementById('feedback').innerText = `🎉 ${SUM_LABEL[col]}算對了！${colInfo.carryOut > 0 ? '要向下一位進位囉！' : ''}`;
+
+                    pendingAdvance = true;
+                    const goToNext = () => {
+                        if (!pendingAdvance) return;
+                        if (isPaused) return;
+                        if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                        pendingAdvance = false;
+                        runStage();
+                    };
+                    speak(`${SUM_LABEL[col]}算對了${carryMsg}。接下來，請算${SUM_LABEL[nextCol]}。`, () => {
+                        if (!pendingAdvance) return;
+                        if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                        actionTransitionTimeout = setTimeout(goToNext, 500);
+                    });
+                    if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                    actionTransitionTimeout = setTimeout(goToNext, 5000);
+                }
+            }
+        }
+
+        renderLevelList();
+    </script>
+</body>
+</html>
