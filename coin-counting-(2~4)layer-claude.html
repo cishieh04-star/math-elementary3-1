@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>錢包直式進位加法(2/3/4層)</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        * { 
+            box-sizing: border-box; 
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            text-align: center; background-color: #fef3c7; 
+            margin: 0; padding: env(safe-area-inset-top, 2px) env(safe-area-inset-right, 2px) env(safe-area-inset-bottom, 2px) env(safe-area-inset-left, 2px); 
+            min-height: 100vh; min-height: calc(100vh - env(safe-area-inset-bottom));
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            overflow: hidden; touch-action: manipulation; 
+        }
+        h1 { color: #b45309; font-size: 15px; margin: 2px 0; }
+        
+        #gameScreen { 
+            width: 100%; max-width: 500px; height: 98vh; max-height: 820px;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
+            background: #fff; border-radius: 14px; border: 3px solid #f59e0b; padding: 6px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: auto;
+            position: relative; overflow-y: auto;
+        }
+
+        #startOverlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.98); border-radius: 12px;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            z-index: 9999; padding: 16px; overflow-y: auto; text-align: left;
+        }
+        .start-content-box {
+            max-width: 450px; width: 100%; display: flex; flex-direction: column; align-items: center; margin: auto 0;
+        }
+        #startOverlay h2 { color: #b45309; font-size: 20px; margin-bottom: 8px; text-align: center; }
+        
+        .intro-card {
+            background: #fffbeb; border: 2px solid #fde68a;
+            border-radius: 10px; padding: 8px 12px; margin-bottom: 10px; width: 100%;
+        }
+        .intro-card h3 { margin: 0 0 4px 0; font-size: 13px; color: #b45309; }
+        .intro-card ul { margin: 0; padding-left: 16px; font-size: 11px; line-height: 1.5; color: #78350f; }
+        .intro-card li { margin-bottom: 3px; }
+
+        .level-pick-title { font-size: 14px; font-weight: bold; color: #b45309; margin: 6px 0 8px 0; }
+        .level-btn {
+            width: 100%; text-align: left; background: #fff; border: 2px solid #fde68a;
+            border-radius: 12px; padding: 10px 14px; margin-bottom: 10px; cursor: pointer;
+            display: flex; flex-direction: column; gap: 2px;
+        }
+        .level-btn:active { transform: scale(0.98); background: #fffbeb; }
+        .level-btn .lv-name { font-size: 15px; font-weight: bold; color: #b45309; }
+        .level-btn .lv-desc { font-size: 12px; color: #78350f; }
+        
+        .status-bar { 
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; row-gap: 4px;
+            width: 100%; font-size: 13px; font-weight: bold; color: #b45309; 
+            border-bottom: 2px solid #fef3c7; padding-bottom: 2px; padding-left: 4px; padding-right: 4px; 
+        }
+        .status-left { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
+        .status-left .level-label { font-size: 11px; color: #92400e; }
+
+        .btn-group { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; row-gap: 4px; }
+        .control-btn {
+            background-color: #f59e0b; color: white; border: none; border-radius: 6px;
+            padding: 3px 8px; font-size: 11px; font-weight: bold; cursor: pointer;
+        }
+        .control-btn:active { transform: scale(0.95); background-color: #d97706; }
+        .hint-btn { background-color: #16a34a; }
+        .hint-btn:active { background-color: #15803d; }
+        .switch-btn { background-color: #64748b; }
+        .switch-btn:active { background-color: #475569; }
+
+        .speed-row { display: flex; gap: 3px; width: 100%; justify-content: center; }
+        .speed-btn {
+            flex: 1; max-width: 90px; background: #fef3c7; color: #78350f; border: 2px solid #fde68a;
+            border-radius: 6px; padding: 2px 4px; font-size: 11px; font-weight: bold; cursor: pointer;
+        }
+        .speed-btn.active { background: #f59e0b; color: #fff; border-color: #d97706; }
+        .speed-btn:active { transform: scale(0.95); }
+
+        .step-banner { background: #fef3c7; color: #92400e; padding: 4px 6px; border-radius: 6px; font-size: 12px; font-weight: bold; width: 100%; line-height: 1.25; min-height: 30px; display: flex; align-items: center; justify-content: center; }
+
+        /* 錢包內容清單顯示區 */
+        .wallet-display-box {
+            width: 100%; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 4px 8px; display: flex; flex-direction: column; gap: 1px; font-size: 12px; font-weight: bold; color: #334155; text-align: left;
+        }
+        .wallet-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #e2e8f0; padding: 1px 0; transition: all 0.2s; }
+        .wallet-row.row-active { background: #fef9c3; }
+        .money-tag { padding: 1px 4px; border-radius: 3px; font-size: 10px; color: #fff; }
+        .tag-1000 { background: #7c3aed; }
+        .tag-100 { background: #dc2626; }
+        .tag-10 { background: #eab308; }
+        .tag-1 { background: #64748b; }
+
+        /* 直式排版區 */
+        .vertical-math {
+            display: inline-flex; flex-direction: column; align-items: flex-end;
+            background: #f8fafc; padding: 4px 10px; border-radius: 10px; border: 2px solid #cbd5e1;
+            font-family: monospace; font-size: 19px; font-weight: bold;
+        }
+        .math-row { display: flex; gap: 4px; width: 100%; justify-content: flex-end; margin: 1px 0; align-items: center; }
+        .math-line { width: 100%; height: 2px; background: #333; margin: 2px 0; }
+        .operator-cell { width: 16px; text-align: center; font-size: 16px; color: #333; flex-shrink: 0; }
+
+        .cell { width: 30px; height: 28px; text-align: center; display: flex; align-items: center; justify-content: center; background: #fff; border: 2px solid #cbd5e1; border-radius: 5px; color: #1e293b; font-size: 16px; flex-shrink: 0; transition: all 0.2s; }
+        .cell.answer-cell { border: 2px dashed #94a3b8; color: #cbd5e1; }
+        .cell.answer-cell.active { border: 2px solid #f59e0b; background: #fef08a; color: #b45309; animation: pulse 1s infinite; }
+        .cell.answer-cell.filled { border: 2px solid #16a34a; background: #dcfce7; color: #166534; }
+        .cell.row-dim { opacity: 0.35; }
+
+        /* 加總分欄時，用來提醒「這個格子現在要看」的樣式。
+           獨立出來是因為這些格子這時候通常已經是 filled（綠色）狀態，
+           如果直接沿用 active 樣式，會被 filled 的顏色蓋掉、看不出發光效果。 */
+        .cell.highlight-col {
+            box-shadow: 0 0 0 3px #f59e0b, 0 0 10px rgba(245,158,11,0.6);
+            animation: colPulse 1.1s infinite;
+        }
+        .cell.answer-cell.filled.highlight-col {
+            background: #fef9c3;
+            border-color: #f59e0b;
+        }
+        @keyframes colPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        /* 加總分欄時用的進位小方塊，跟欄位對齊，答對前一欄後才彈出顯示 */
+        .carry-cell {
+            width: 30px; height: 20px; text-align: center; display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; font-size: 11px; font-weight: bold; color: #ef4444;
+            background: #fee2e2; border: 2px dashed #ef4444; border-radius: 5px;
+            opacity: 0; transform: scale(0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .carry-cell.placeholder { visibility: hidden; }
+        .carry-cell.show {
+            opacity: 1; transform: scale(1);
+            background: #bbf7d0; border-color: #16a34a; color: #166534;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        #drop-game-container {
+            position: relative; width: 100%; height: 90px;
+            background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 8px;
+            overflow: hidden; touch-action: manipulation; flex-shrink: 0;
+        }
+
+        .falling-option {
+            position: absolute; width: 52px; height: 44px;
+            background: radial-gradient(circle, #fcd34d 60%, #f59e0b 100%);
+            border: 2px solid #d97706; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; font-weight: bold; color: #78350f;
+            cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            animation: fall linear forwards; z-index: 999;
+        }
+        .falling-option:active { transform: scale(0.9); }
+        .falling-option.hint-glow {
+            box-shadow: 0 0 0 4px #16a34a, 0 2px 6px rgba(0,0,0,0.3);
+            animation: fall linear forwards, glowPulse 1s ease-in-out infinite;
+        }
+        @keyframes glowPulse {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+
+        @keyframes fall {
+            0% { top: -45px; }
+            100% { top: 44px; }
+        }
+
+        #completeOverlay {
+            display: none;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.97); border-radius: 12px;
+            flex-direction: column; align-items: center; justify-content: center;
+            gap: 10px; z-index: 5000; text-align: center; padding: 16px;
+        }
+        #completeOverlay .equation {
+            font-family: monospace; font-size: 18px; font-weight: bold; color: #b45309;
+            background: #fffbeb; border: 3px solid #fde68a; border-radius: 10px; padding: 10px 14px;
+            line-height: 1.6;
+        }
+        #completeOverlay .cheer { font-size: 16px; font-weight: bold; color: #92400e; }
+    </style>
+</head>
+<body>
+
+    <div id="gameScreen">
+        <div id="startOverlay">
+            <div class="start-content-box">
+                <h2>👛 錢包直式進位加法 👛</h2>
+
+                <div class="intro-card">
+                    <h3>📖 遊戲使用說明</h3>
+                    <ul>
+                        <li><strong>由下往上問答：</strong>先算最小的錢幣總共多少元，再往上一層一層算，最後加總。</li>
+                        <li><strong>自然學會進位：</strong>當某一層的錢幣數量超過 9 個時，換算成錢會自然跨到下一個位，這就是進位！</li>
+                        <li><strong>正在算哪一層會亮起來：</strong>錢包清單跟直式算式都會同步標示。</li>
+                        <li><strong>卡住了嗎：</strong>按「💡提示」會給你線索！</li>
+                    </ul>
+                </div>
+
+                <div class="level-pick-title">請選擇關卡：</div>
+                <div id="levelList" style="width:100%;"></div>
+            </div>
+        </div>
+
+        <h1>👛 錢包直式進位加法</h1>
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="level-label" id="levelLabel">尚未選擇關卡</span>
+                <span id="score">已完成: 0 關</span>
+            </div>
+            <div class="btn-group">
+                <button class="control-btn hint-btn" onclick="useHint()">💡提示</button>
+                <button class="control-btn" onclick="manualSpeak()">🔊聽題目</button>
+                <button class="control-btn" id="pauseBtn" onclick="togglePause()">暫停</button>
+                <button class="control-btn switch-btn" onclick="showLevelSelect()">🔄換關卡</button>
+            </div>
+        </div>
+
+        <div class="speed-row">
+            <button class="speed-btn" id="speedSlow" onclick="setSpeed('slow')">🐢慢</button>
+            <button class="speed-btn active" id="speedNormal" onclick="setSpeed('normal')">🚶正常</button>
+            <button class="speed-btn" id="speedFast" onclick="setSpeed('fast')">🐇快</button>
+        </div>
+        
+        <div class="step-banner" id="stepBanner">準備開始！</div>
+
+        <!-- 錢包內容清單顯示區：最多4行，依關卡顯示/隱藏 -->
+        <div class="wallet-display-box" id="walletBox">
+            <div class="wallet-row" id="walletRow_th"><span>1000元紙鈔：<b id="txtTh">2</b> 張</span><span class="money-tag tag-1000">千元層</span></div>
+            <div class="wallet-row" id="walletRow_h"><span>100元紙鈔：<b id="txtH">12</b> 張</span><span class="money-tag tag-100">百元層</span></div>
+            <div class="wallet-row" id="walletRow_t"><span>10元硬幣：<b id="txtT">5</b> 個</span><span class="money-tag tag-10">十元層</span></div>
+            <div class="wallet-row" id="walletRow_u"><span>1元硬幣：<b id="txtU">9</b> 個</span><span class="money-tag tag-1">一元層</span></div>
+        </div>
+
+        <!-- 直式排版區：固定4欄，最多4層堆疊列 -->
+        <div class="vertical-math" id="mathBox">
+            <div class="math-row" id="rowLayer_th">
+                <div class="operator-cell"></div>
+                <div class="cell answer-cell" id="l_th_1">?</div>
+                <div class="cell answer-cell" id="l_th_2">?</div>
+                <div class="cell answer-cell" id="l_th_3">?</div>
+                <div class="cell answer-cell" id="l_th_4">?</div>
+            </div>
+            <div class="math-row" id="rowLayer_h">
+                <div class="operator-cell"></div>
+                <div class="cell answer-cell" id="l_h_1">?</div>
+                <div class="cell answer-cell" id="l_h_2">?</div>
+                <div class="cell answer-cell" id="l_h_3">?</div>
+                <div class="cell answer-cell" id="l_h_4">?</div>
+            </div>
+            <div class="math-row" id="rowLayer_t">
+                <div class="operator-cell"></div>
+                <div class="cell answer-cell" id="l_t_1">?</div>
+                <div class="cell answer-cell" id="l_t_2">?</div>
+                <div class="cell answer-cell" id="l_t_3">?</div>
+                <div class="cell answer-cell" id="l_t_4">?</div>
+            </div>
+            <div class="math-row" id="rowLayer_u">
+                <div class="operator-cell">+</div>
+                <div class="cell answer-cell" id="l_u_1">?</div>
+                <div class="cell answer-cell" id="l_u_2">?</div>
+                <div class="cell answer-cell" id="l_u_3">?</div>
+                <div class="cell answer-cell" id="l_u_4">?</div>
+            </div>
+
+            <div class="math-line"></div>
+
+            <div class="math-row" id="carryRow">
+                <div class="operator-cell"></div>
+                <div class="carry-cell placeholder" id="carryTh">1</div>
+                <div class="carry-cell placeholder" id="carryH">1</div>
+                <div class="carry-cell placeholder" id="carryT">1</div>
+                <div class="carry-cell placeholder"></div>
+            </div>
+
+            <div class="math-row">
+                <div class="operator-cell"></div>
+                <div class="cell answer-cell" id="ansTh">?</div>
+                <div class="cell answer-cell" id="ansH">?</div>
+                <div class="cell answer-cell" id="ansT">?</div>
+                <div class="cell answer-cell" id="ansU">?</div>
+            </div>
+        </div>
+
+        <div id="feedback" style="font-size: 12px; color: #d97706; font-weight: bold; min-height: 16px;"></div>
+        
+        <div id="drop-game-container"></div>
+
+        <div id="completeOverlay">
+            <div class="equation" id="completeEquation">2000 + 1200 + 50 + 9 = 3259</div>
+            <div class="cheer">🌟 太棒了，全部加起來算完了！</div>
+        </div>
+    </div>
+
+    <script>
+        /* ========================================================
+           每一關的「層」設定：由高到低排列（顯示用），但實際作答
+           順序一律「由下往上」，也就是先算最小的錢幣。
+           ======================================================== */
+        const LAYER_INFO = {
+            th: { label: '千元層', denom: 1000, unit: '張', money: '1000元紙鈔', tag: 'tag-1000' },
+            h:  { label: '百元層', denom: 100,  unit: '張', money: '100元紙鈔',  tag: 'tag-100' },
+            t:  { label: '十元層', denom: 10,   unit: '個', money: '10元硬幣',   tag: 'tag-10' },
+            u:  { label: '一元層', denom: 1,    unit: '個', money: '1元硬幣',    tag: 'tag-1' }
+        };
+        // 加總分欄用的位名、對齊格子編號（跟 padStart(4) 的字串位置對應：0=千,1=百,2=十,3=個）、進位小方塊
+        const COL_ORDER = ['u', 't', 'h', 'th']; // 加總一律由個位開始，由小到大
+        const COL_LABEL = { u: '個位', t: '十位', h: '百位', th: '千位' };
+        const COL_CELLNUM = { th: 1, h: 2, t: 3, u: 4 }; // 對應 l_${key}_N 跟 ans 系列的第幾格
+        const COL_POS = { th: 0, h: 1, t: 2, u: 3 };      // 對應 padStart(4) 字串的索引
+        const COL_ANSID = { th: 'ansTh', h: 'ansH', t: 'ansT', u: 'ansU' };
+        const COL_CARRYID = { t: 'carryT', h: 'carryH', th: 'carryTh' }; // 個位不會收到進位
+
+        function computeTotalColumns(activeLayerKeys, layerValues) {
+            const padded = {};
+            activeLayerKeys.forEach(k => { padded[k] = String(layerValues[k]).padStart(4, '0'); });
+            const cols = {};
+            let carry = 0;
+            COL_ORDER.forEach(colKey => {
+                const pos = COL_POS[colKey];
+                const contributions = activeLayerKeys.map(k => parseInt(padded[k][pos], 10));
+                const sum = contributions.reduce((a, b) => a + b, carry);
+                const digit = sum % 10;
+                const carryOut = Math.floor(sum / 10);
+                cols[colKey] = { digit, carryIn: carry, carryOut, contributions };
+                carry = carryOut;
+            });
+            return cols;
+        }
+
+        const LEVELS = [
+            { id: 1, name: '第一關：兩層(十元、一元)', desc: '從最簡單的兩層開始，練習由下往上加總。', layersHighToLow: ['t', 'u'], highCountRange: [1, 9], lowCountRange: [10, 19] },
+            { id: 2, name: '第二關：三層(百元、十元、一元)', desc: '加入百元層，練習三層堆疊進位。', layersHighToLow: ['h', 't', 'u'], highCountRange: [1, 9], lowCountRange: [10, 19] },
+            { id: 3, name: '第三關：四層(千元、百元、十元、一元)', desc: '挑戰完整四層，千元層數量最多也會用到唷！', layersHighToLow: ['th', 'h', 't', 'u'], highCountRange: [1, 4], lowCountRange: [10, 19] }
+        ];
+
+        let currentLevel = null;
+        let score = 0;
+        let layersLowToHigh = [];   // 作答順序：由下往上，如 ['u','t','h']
+        let counts = {}, values = {};
+        let totalVal = 0;
+        let totalCols = {};        // 加總分欄後每一欄的 {digit, carryIn, carryOut, contributions}
+        let allSteps = [];         // 統一的步驟佇列：先各層，再加總的個/十/百/千位
+        let stepIndex = 0;
+        let gameInterval = null;
+        let activeOptions = [];
+        let isLocked = false;
+        let isPaused = false;
+        let nextQuestionTimeout = null;
+        let actionTransitionTimeout = null;
+        let pendingAdvance = false;
+        let pendingNextQuestion = false;
+        let lastSpokenText = "";
+        let hintLevel = 0;
+        let hintActiveValue = null;
+        let speedMode = 'normal';
+        const SPEED_SETTINGS = {
+            slow:   { fallDuration: 8.5, spawnInterval: 2800 },
+            normal: { fallDuration: 5.5, spawnInterval: 2000 },
+            fast:   { fallDuration: 3.2, spawnInterval: 1300 }
+        };
+
+        // 語音：講完才繼續（onend + onerror 雙保險），並加上依文字長度估算的逾時保險
+        function speak(text, onEnd) {
+            lastSpokenText = text;
+            if (isPaused) { if (onEnd) onEnd(); return; }
+            if (!('speechSynthesis' in window)) { if (onEnd) onEnd(); return; }
+            try {
+                window.speechSynthesis.cancel();
+                let finished = false;
+                const trigger = () => { if (finished) return; finished = true; if (onEnd) onEnd(); };
+                setTimeout(() => {
+                    if (isPaused) { trigger(); return; }
+                    try {
+                        const utter = new SpeechSynthesisUtterance(text);
+                        utter.lang = 'zh-TW';
+                        utter.rate = 0.85;
+                        utter.volume = 1.0;
+                        utter.onend = trigger;
+                        utter.onerror = trigger;
+                        window.speechSynthesis.speak(utter);
+                        setTimeout(trigger, Math.max(1500, text.length * 280 / 0.85));
+                    } catch (e) { trigger(); }
+                }, 60);
+            } catch (e) { if (onEnd) onEnd(); }
+        }
+        function manualSpeak() { speak(lastSpokenText || "請依照步驟計算錢包的總金額。"); }
+        function boom() { try { confetti(); } catch (e) {} }
+
+        function renderLevelList() {
+            const container = document.getElementById('levelList');
+            container.innerHTML = '';
+            LEVELS.forEach(lv => {
+                const btn = document.createElement('div');
+                btn.className = 'level-btn';
+                btn.innerHTML = `<span class="lv-name">${lv.name}</span><span class="lv-desc">${lv.desc}</span>`;
+                btn.addEventListener('pointerdown', (e) => { e.preventDefault(); startGame(lv.id); });
+                container.appendChild(btn);
+            });
+        }
+
+        function showLevelSelect() {
+            isPaused = false;
+            pendingAdvance = false;
+            pendingNextQuestion = false;
+            if (gameInterval) clearInterval(gameInterval);
+            if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+            if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+            activeOptions.forEach(el => el.remove());
+            activeOptions = [];
+            hideCompletionScreen();
+            try { window.speechSynthesis.cancel(); } catch (e) {}
+            document.getElementById('startOverlay').style.display = 'flex';
+        }
+
+        function startGame(levelId) {
+            const overlay = document.getElementById('startOverlay');
+            if (overlay.style.display === 'none') return;
+            currentLevel = LEVELS.find(l => l.id === levelId);
+            document.getElementById('levelLabel').innerText = currentLevel.name;
+
+            if ('speechSynthesis' in window) {
+                try {
+                    window.speechSynthesis.cancel();
+                    window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+                } catch (e) {}
+            }
+
+            score = 0;
+            document.getElementById('score').innerText = `已完成: ${score} 關`;
+            overlay.style.display = 'none';
+            initQuestion();
+        }
+
+        function setSpeed(mode) {
+            speedMode = mode;
+            ['slow', 'normal', 'fast'].forEach(m => {
+                document.getElementById('speed' + m.charAt(0).toUpperCase() + m.slice(1)).classList.toggle('active', m === mode);
+            });
+            if (!isPaused && !isLocked && currentLevel) setupFalling();
+        }
+
+        function togglePause() {
+            if (!currentLevel) return;
+            isPaused = !isPaused;
+            const pauseBtn = document.getElementById('pauseBtn');
+            const options = document.querySelectorAll('.falling-option');
+
+            if (isPaused) {
+                pauseBtn.innerText = "繼續";
+                pauseBtn.style.backgroundColor = "#16a34a";
+                if (gameInterval) clearInterval(gameInterval);
+                if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+                try { window.speechSynthesis.cancel(); } catch (e) {}
+                options.forEach(el => el.style.animationPlayState = 'paused');
+                document.getElementById('feedback').innerText = "⏸️ 遊戲已暫停";
+            } else {
+                pauseBtn.innerText = "暫停";
+                pauseBtn.style.backgroundColor = "#f59e0b";
+                options.forEach(el => el.style.animationPlayState = 'running');
+                document.getElementById('feedback').innerText = "";
+                if (pendingNextQuestion) {
+                    pendingNextQuestion = false;
+                    hideCompletionScreen();
+                    initQuestion();
+                } else if (pendingAdvance) {
+                    pendingAdvance = false;
+                    runStep();
+                } else if (!isLocked) {
+                    setupFalling();
+                }
+            }
+        }
+
+        /* ========================================================
+           出題：最高層數量刻意壓低（避免溢出到更高一位），
+           其餘各層數量固定落在 10~19，確保每一層都會示範「數量
+           超過9換算成錢後，自然跨到下一位」這個進位概念。
+           ======================================================== */
+        function generateQuestion(level) {
+            const layers = level.layersHighToLow; // 由高到低
+            counts = {};
+            layers.forEach((key, idx) => {
+                const range = idx === 0 ? level.highCountRange : level.lowCountRange;
+                counts[key] = range[0] + Math.floor(Math.random() * (range[1] - range[0] + 1));
+            });
+            values = {};
+            layers.forEach(key => { values[key] = counts[key] * LAYER_INFO[key].denom; });
+            let total = 0;
+            layers.forEach(key => { total += values[key]; });
+            return { layers, total };
+        }
+
+        function initQuestion() {
+            if (isPaused || !currentLevel) return;
+            hideCompletionScreen();
+            isLocked = false;
+            hintLevel = 0;
+            hintActiveValue = null;
+
+            const q = generateQuestion(currentLevel);
+            layersLowToHigh = q.layers.slice().reverse(); // 作答順序：由下往上
+            totalVal = q.total;
+            totalCols = computeTotalColumns(currentLevel.layersHighToLow, values);
+
+            // 只問到總金額真正需要的位數為止：前面（更高位）如果本來就一定是0，
+            // 就不用再多問一次，直接視為已經算好。
+            const significantDigits = String(totalVal).length;
+            const askedCols = COL_ORDER.slice(0, significantDigits);
+            const skippedCols = COL_ORDER.slice(significantDigits);
+
+            allSteps = layersLowToHigh.map(key => ({ type: 'layer', key }))
+                .concat(askedCols.map(col => ({ type: 'total', col })));
+            stepIndex = 0;
+
+            // 重設加總區的進位小方塊
+            ['carryT', 'carryH', 'carryTh'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('show');
+            });
+
+            // 依關卡顯示/隱藏對應的錢包列與直式列
+            ['th', 'h', 't', 'u'].forEach(key => {
+                const active = currentLevel.layersHighToLow.includes(key);
+                document.getElementById('walletRow_' + key).style.display = active ? 'flex' : 'none';
+                document.getElementById('rowLayer_' + key).style.display = active ? 'flex' : 'none';
+                if (active) {
+                    document.getElementById('txt' + key.charAt(0).toUpperCase() + key.slice(1)).innerText = counts[key];
+                }
+                document.getElementById('walletRow_' + key).classList.remove('row-active');
+                for (let c = 1; c <= 4; c++) {
+                    const cell = document.getElementById(`l_${key}_${c}`);
+                    cell.innerText = '?';
+                    cell.className = 'cell answer-cell';
+                }
+            });
+            ['ansTh', 'ansH', 'ansT', 'ansU'].forEach(id => {
+                const el = document.getElementById(id);
+                el.innerText = '?';
+                el.className = 'cell answer-cell';
+            });
+            // 前面用不到的位數，直接顯示 0（不用再問一次一定是 0 的問題）
+            skippedCols.forEach(col => {
+                const el = document.getElementById(COL_ANSID[col]);
+                el.innerText = '0';
+                el.className = 'cell answer-cell filled';
+            });
+
+            const descParts = currentLevel.layersHighToLow.map(k => `${counts[k]} ${LAYER_INFO[k].unit} ${LAYER_INFO[k].money}`);
+            speak(`錢包裡有 ${descParts.join('，')}。我們從最下面一層開始算起。`, () => {
+                runStep();
+            });
+        }
+
+        function runStep() {
+            if (isPaused || !currentLevel) return;
+            isLocked = false;
+            const step = allSteps[stepIndex];
+            if (!step) return;
+
+            document.querySelectorAll('.wallet-row').forEach(el => el.classList.remove('row-active'));
+            document.querySelectorAll('.cell').forEach(el => el.classList.remove('active', 'highlight-col'));
+
+            if (step.type === 'layer') {
+                const key = step.key;
+                document.getElementById('walletRow_' + key).classList.add('row-active');
+                for (let c = 1; c <= 4; c++) document.getElementById(`l_${key}_${c}`).classList.add('active');
+
+                const info = LAYER_INFO[key];
+                document.getElementById('stepBanner').innerText =
+                    `請算：${counts[key]} ${info.unit} ${info.money}，總共是多少元？`;
+                speak(`請算，${counts[key]} ${info.unit} ${info.money}，總共是多少元呢？`);
+            } else {
+                // 加總分欄：從個位開始，每一欄都把每一層對應的數字加起來（有進位就再加上進位）
+                const col = step.col;
+                const cellNum = COL_CELLNUM[col];
+                currentLevel.layersHighToLow.forEach(key => {
+                    document.getElementById(`l_${key}_${cellNum}`).classList.add('highlight-col');
+                });
+                document.getElementById(COL_ANSID[col]).classList.add('active');
+
+                const info = totalCols[col];
+                const parts = info.contributions.join(' + ');
+                const carryPhrase = info.carryIn > 0 ? `，再加上進位的 ${info.carryIn}` : '';
+                document.getElementById('stepBanner').innerText =
+                    `請算「${COL_LABEL[col]}」：把每一層的${COL_LABEL[col]}數字加起來（${parts}）${carryPhrase}，等於多少？`;
+                speak(`請算${COL_LABEL[col]}，把每一層的數字加起來${carryPhrase}，等於多少呢？`);
+            }
+            setupFalling();
+        }
+
+        function setupFalling() {
+            if (isPaused || !currentLevel) return;
+            activeOptions.forEach(el => el.remove());
+            activeOptions = [];
+            if (gameInterval) clearInterval(gameInterval);
+
+            const step = allSteps[stepIndex];
+            if (!step) return;
+            const target = step.type === 'layer' ? values[step.key] : totalCols[step.col].digit;
+
+            let options = [target];
+            let attempts = 0;
+            while (options.length < 4 && attempts < 100) {
+                attempts++;
+                if (step.type === 'layer') {
+                    // 干擾選項落在同一層合理的數值範圍內（同樣是這個面額的倍數附近）
+                    const denom = LAYER_INFO[step.key].denom;
+                    const offsetCount = (Math.floor(Math.random() * 7) - 3);
+                    const r = target + offsetCount * denom;
+                    if (r > 0 && !options.includes(r)) options.push(r);
+                } else {
+                    // 加總分欄時目標是單一數字(0~9)，干擾選項就是隨機的個位數字（0也是合法選項）
+                    const r = Math.floor(Math.random() * 10);
+                    if (!options.includes(r)) options.push(r);
+                }
+            }
+            // 保險：極端情況湊不滿4個，直接用鄰近安全值補滿
+            let fallback = 1;
+            while (options.length < 4) {
+                if (step.type === 'layer') {
+                    const candidate = target + fallback;
+                    if (candidate > 0 && !options.includes(candidate)) options.push(candidate);
+                } else {
+                    const candidate = (target + fallback) % 10;
+                    if (!options.includes(candidate)) options.push(candidate);
+                }
+                fallback++;
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            let idx = 0;
+            const spawn = () => {
+                if (isLocked || isPaused) return;
+                if (idx >= options.length) idx = 0;
+                spawnFallingOption(options[idx]);
+                idx++;
+            };
+            spawn();
+            gameInterval = setInterval(spawn, SPEED_SETTINGS[speedMode].spawnInterval);
+        }
+
+        function useHint() {
+            if (isPaused || isLocked || !currentLevel) return;
+            hintLevel++;
+            const step = allSteps[stepIndex];
+            if (!step) return;
+            const target = step.type === 'layer' ? values[step.key] : totalCols[step.col].digit;
+
+            if (hintLevel === 1) {
+                let text;
+                if (step.type === 'layer') {
+                    const info = LAYER_INFO[step.key];
+                    text = `🔍 提示：${counts[step.key]} ${info.unit} ${info.denom}元，可以想成 ${info.denom} 乘以 ${counts[step.key]}！`;
+                } else {
+                    const info = totalCols[step.col];
+                    const parts = info.contributions.join(' + ') + (info.carryIn > 0 ? ` + ${info.carryIn}` : '');
+                    text = `🔍 提示：${COL_LABEL[step.col]}是 ${parts}，等於多少？`;
+                }
+                document.getElementById('feedback').innerText = text;
+                speak(text.replace('🔍 提示：', ''));
+            } else {
+                const text = `💡 答案是 ${target}！在畫面上找找看這個數字！`;
+                document.getElementById('feedback').innerText = text;
+                speak(`答案是 ${target}，找找看畫面上的這個數字！`);
+                hintActiveValue = target;
+                activeOptions.forEach(opt => {
+                    if (opt.dataset.val === String(target)) opt.classList.add('hint-glow');
+                });
+            }
+        }
+
+        function showCompletionScreen() {
+            const parts = currentLevel.layersHighToLow.map(k => values[k]);
+            document.getElementById('completeEquation').innerText = `${parts.join(' + ')} = ${totalVal}`;
+            document.getElementById('completeOverlay').style.display = 'flex';
+            const screen = document.getElementById('gameScreen');
+            if (screen) screen.scrollTop = 0;
+        }
+        function hideCompletionScreen() {
+            document.getElementById('completeOverlay').style.display = 'none';
+        }
+
+        function spawnFallingOption(val) {
+            if (isLocked || isPaused) return;
+            const container = document.getElementById('drop-game-container');
+            const el = document.createElement('div');
+            el.className = 'falling-option';
+            const step = allSteps[stepIndex];
+            el.innerText = (step && step.type === 'total') ? `${val}` : `${val}元`;
+            el.dataset.val = String(val);
+            if (hintActiveValue !== null && val === hintActiveValue) el.classList.add('hint-glow');
+
+            const randomX = Math.random() * (container.clientWidth - 52);
+            el.style.left = randomX + 'px';
+            el.style.animationDuration = SPEED_SETTINGS[speedMode].fallDuration + 's';
+            if (isPaused) el.style.animationPlayState = 'paused';
+
+            let isHandled = false;
+            const handleSelect = (e) => {
+                if (e) { e.preventDefault(); e.stopPropagation(); }
+                if (isLocked || isHandled || isPaused) return;
+
+                const curStep = allSteps[stepIndex];
+                if (!curStep) return;
+                const target = curStep.type === 'layer' ? values[curStep.key] : totalCols[curStep.col].digit;
+
+                if (val === target) {
+                    isHandled = true;
+                    isLocked = true;
+                    if (gameInterval) clearInterval(gameInterval);
+                    activeOptions.forEach(opt => opt.remove());
+                    activeOptions = [];
+                    handleCorrect(curStep, val);
+                } else {
+                    isHandled = true;
+                    speak("再算算看，是多少呢？");
+                    document.getElementById('feedback').innerText = "❌ 不對喔，再試一次！";
+                    el.style.opacity = "0";
+                    setTimeout(() => el.remove(), 300);
+                }
+            };
+
+            el.addEventListener('pointerdown', handleSelect);
+            el.addEventListener('animationend', () => {
+                el.remove();
+                activeOptions = activeOptions.filter(item => item !== el);
+            });
+
+            container.appendChild(el);
+            activeOptions.push(el);
+        }
+
+        function handleCorrect(step, val) {
+            boom();
+            const isLastOverall = stepIndex === allSteps.length - 1;
+
+            if (step.type === 'layer') {
+                const key = step.key;
+                const strVal = String(val).padStart(4, '0');
+                for (let c = 1; c <= 4; c++) {
+                    const cell = document.getElementById(`l_${key}_${c}`);
+                    cell.innerText = strVal[c - 1];
+                    cell.classList.remove('active');
+                    cell.classList.add('filled');
+                }
+                document.getElementById('feedback').innerText = `🎉 ${LAYER_INFO[key].label}算對了！${val} 元。`;
+
+                stepIndex++;
+                pendingAdvance = true;
+                const nextStep = allSteps[stepIndex];
+                const nextPrompt = nextStep.type === 'layer'
+                    ? `接下來，請算 ${counts[nextStep.key]} ${LAYER_INFO[nextStep.key].unit} ${LAYER_INFO[nextStep.key].money} 是多少元呢？`
+                    : `每一層都填好了！現在開始加總，我們從個位開始，一欄一欄算。請算個位，把每一層的個位數字加起來，等於多少？`;
+                const goToNext = () => {
+                    if (!pendingAdvance) return;
+                    if (isPaused) return;
+                    if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                    pendingAdvance = false;
+                    runStep();
+                };
+                speak(`${LAYER_INFO[key].label}算對了，${val} 元。${nextPrompt}`, () => {
+                    if (!pendingAdvance) return;
+                    if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                    actionTransitionTimeout = setTimeout(goToNext, 600);
+                });
+                if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                actionTransitionTimeout = setTimeout(goToNext, 5000);
+
+            } else {
+                // 加總分欄：填入這一欄的答案
+                const col = step.col;
+                const ansEl = document.getElementById(COL_ANSID[col]);
+                ansEl.innerText = val;
+                ansEl.classList.remove('active');
+                ansEl.classList.add('filled');
+
+                if (isLastOverall) {
+                    score++;
+                    document.getElementById('score').innerText = `已完成: ${score} 關`;
+                    document.getElementById('feedback').innerText = `🌟 太棒了！總金額是 ${totalVal} 元，恭喜過關！`;
+
+                    showCompletionScreen();
+                    pendingNextQuestion = true;
+                    const goNext = () => {
+                        if (!pendingNextQuestion) return;
+                        if (isPaused) return;
+                        if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+                        pendingNextQuestion = false;
+                        initQuestion();
+                    };
+                    speak(`太棒了，總金額是 ${totalVal} 元，恭喜過關！`, () => {
+                        if (!pendingNextQuestion) return;
+                        if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+                        nextQuestionTimeout = setTimeout(goNext, 1000);
+                    });
+                    if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+                    nextQuestionTimeout = setTimeout(goNext, 6000);
+                } else {
+                    const colInfo = totalCols[col];
+                    stepIndex++;
+                    const nextStep = allSteps[stepIndex];
+                    const nextCol = nextStep.col;
+                    let carryMsg = '';
+                    if (colInfo.carryOut > 0 && COL_CARRYID[nextCol]) {
+                        const carryEl = document.getElementById(COL_CARRYID[nextCol]);
+                        carryEl.innerText = colInfo.carryOut;
+                        carryEl.classList.add('show');
+                        carryMsg = `，向${COL_LABEL[nextCol]}進 ${colInfo.carryOut}`;
+                    }
+                    document.getElementById('feedback').innerText = `🎉 ${COL_LABEL[col]}算對了！${colInfo.carryOut > 0 ? '要向下一位進位囉！' : ''}`;
+
+                    pendingAdvance = true;
+                    const goToNext = () => {
+                        if (!pendingAdvance) return;
+                        if (isPaused) return;
+                        if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                        pendingAdvance = false;
+                        runStep();
+                    };
+                    speak(`${COL_LABEL[col]}算對了${carryMsg}。接下來，請算${COL_LABEL[nextCol]}。`, () => {
+                        if (!pendingAdvance) return;
+                        if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                        actionTransitionTimeout = setTimeout(goToNext, 600);
+                    });
+                    if (actionTransitionTimeout) clearTimeout(actionTransitionTimeout);
+                    actionTransitionTimeout = setTimeout(goToNext, 5000);
+                }
+            }
+        }
+
+        renderLevelList();
+    </script>
+</body>
+</html>
