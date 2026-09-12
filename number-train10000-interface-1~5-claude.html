@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>數字接力遊戲（間隔1~5．基礎版）</title>
+    <title>數學冒險：火車過山洞（火箭尋寶版．間隔1~5．由簡入難）</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
@@ -68,12 +68,23 @@
         .speed-btn:active { transform: scale(0.95); }
 
         #visual-area {
-            height: 110px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5vw;
+            min-height: 110px; max-height: 130px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5vw;
             flex-wrap: wrap;
             background: linear-gradient(to bottom, #e0f2fe 65%, #86efac 65%, #86efac 72%, #f8fafc 72%);
-            border-radius: 12px; border: 2px dashed #90caf9; padding: 4px; flex-shrink: 0; overflow: hidden;
+            border-radius: 12px; border: 2px dashed #90caf9; padding: 4px; flex-shrink: 0; overflow: visible;
         }
-        .train-car { font-size: 38px; line-height: 1; transition: transform 1.5s ease-in-out, opacity 1.5s ease-in-out; }
+        .train-car-wrapper { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .train-car {
+            font-size: 36px; line-height: 36px; height: 40px; width: 44px;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 1.5s ease-in-out, opacity 1.5s ease-in-out;
+        }
+        .train-car-num {
+            font-size: 16px; font-weight: bold; color: #1e3a8a;
+            background: #ffffff; border: 2px solid #90caf9; border-radius: 6px;
+            padding: 1px 8px; min-width: 20px; text-align: center;
+        }
+        .train-car-num.blank-num { background: #fef08a; border-color: #ca8a04; color: #92400e; }
         .entering { transform: translateX(40vw); opacity: 0; }
         .exiting { transform: translateX(40vw); opacity: 0; }
 
@@ -165,7 +176,7 @@
 
 <div class="main-wrapper">
     <div id="home-screen">
-        <h1>🚂 數字接力遊戲（間隔1~5．基礎版）</h1>
+        <h1>🚂 火車過山洞（火箭尋寶版）</h1>
         <p class="subtitle">🚀 間隔 1~5，由簡入難，全方位練習！</p>
 
         <div class="intro-card">
@@ -412,10 +423,21 @@
         let area = document.getElementById('visual-area');
         area.innerHTML = '';
         seq.forEach((num, idx) => {
+            let wrapper = document.createElement('div');
+            wrapper.className = 'train-car-wrapper';
+
             let t = document.createElement('div');
             t.className = 'train-car';
-            t.innerText = idx === blankIdx ? '🚃' : '🚃';
-            area.appendChild(t);
+            t.innerText = '🚃';
+
+            let numLabel = document.createElement('div');
+            numLabel.className = 'train-car-num';
+            if (idx === blankIdx) numLabel.classList.add('blank-num');
+            numLabel.innerText = idx === blankIdx ? '?' : num;
+
+            wrapper.appendChild(t);
+            wrapper.appendChild(numLabel);
+            area.appendChild(wrapper);
         });
         renderEquationLine(seq, blankIdx);
     }
