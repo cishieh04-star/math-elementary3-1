@@ -311,14 +311,6 @@
             pointer-events: auto;
             overflow: hidden;
         }
-        .falling-option::before {
-            content: ''; position: absolute; top: 0; left: 50%; width: 2px; height: 100%;
-            background: #5c3200; transform: translateX(-50%); z-index: 1;
-        }
-        .falling-option::after {
-            content: ''; position: absolute; left: 0; top: 50%; width: 100%; height: 2px;
-            background: #5c3200; transform: translateY(-50%); z-index: 1;
-        }
         .falling-option .ball-num {
             position: relative; z-index: 2;
             font-size: 15px; font-weight: bold; color: #ffffff;
@@ -372,10 +364,12 @@
             gap: 10px; z-index: 5000; text-align: center; padding: 16px;
         }
         #completeOverlay .equation {
-            font-family: monospace; font-size: 26px; font-weight: bold; color: #15803d;
-            background: #f0fdf4; border: 3px solid #86efac; border-radius: 10px; padding: 10px 18px;
+            font-family: monospace; font-size: 19px; font-weight: bold; color: #15803d;
+            background: #f0fdf4; border: 3px solid #86efac; border-radius: 10px; padding: 10px 14px;
+            max-width: 90%; word-break: break-word; text-align: center; line-height: 1.4;
         }
         #completeOverlay .cheer { font-size: 16px; font-weight: bold; color: #166534; }
+        #completeOverlay .interval-text { font-size: 14px; font-weight: bold; color: #0369a1; }
     </style>
 </head>
 <body>
@@ -430,6 +424,7 @@
 
         <div id="completeOverlay">
             <div class="equation" id="completeEquation">4213</div>
+            <div class="interval-text" id="completeIntervalText">每次間隔 10</div>
             <div class="cheer">🌟 太棒了，答對了！</div>
         </div>
     </div>
@@ -452,6 +447,14 @@
             if (questionCount < 14) return { forceDir: 'desc', blankMode: 'last' };
             if (questionCount < 20) return { forceDir: null, blankMode: 'last' };
             return { forceDir: null, blankMode: 'any' };
+        }
+
+        // 起始數字的千位也採漸進式：一開始比較小，之後才逐漸擴大到完整範圍，
+        // 讓小朋友從比較小、比較好掌握的數字開始練習。
+        function getMaxThousandsDigit() {
+            if (questionCount < 6) return 3;
+            if (questionCount < 12) return 5;
+            return 8;
         }
 
         let gameStarted = false;
@@ -534,7 +537,8 @@
         }
 
         function showCompletionScreen() {
-            document.getElementById('completeEquation').innerText = `${currentAns}`;
+            document.getElementById('completeEquation').innerText = trainSequence.join(' , ');
+            document.getElementById('completeIntervalText').innerText = `每次間隔 ${STEP}`;
             document.getElementById('completeOverlay').style.display = 'flex';
         }
         function hideCompletionScreen() {
@@ -664,7 +668,7 @@
                 baseH = safeDigit(0, 9, isAscending);        // 百位在變化
                 baseT = Math.floor(Math.random() * 10);
             } else {
-                baseTh = Math.floor(Math.random() * 8) + 1;
+                baseTh = 1 + Math.floor(Math.random() * getMaxThousandsDigit());
                 baseH = Math.floor(Math.random() * 9) + 1;
                 baseT = safeDigit(0, 9, isAscending);        // 十位在變化
             }
