@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>10,000以內的數字接力遊戲(間隔20)</title>
+    <title>10,000以內的數字互動遊戲(間隔20)</title>
     <!-- 引入灑花特效庫 -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
@@ -391,7 +391,7 @@
 
 <div class="main-wrapper">
     <div id="home-screen">
-        <h1>🚂 10,000以內的數字接力遊戲(間隔20)</h1>
+        <h1>🚂 10,000以內的數字互動遊戲(間隔20)</h1>
         <p class="subtitle">🌟 專屬練習：每次增加或減少 20 的十位規律！</p>
         
         <div class="intro-card">
@@ -759,10 +759,22 @@
             }, 2000);
         }
 
+        // 車廂色票：每一題隨機挑一種顏色，讓畫面不會每次都一樣，
+        // 增加新鮮感，同一題裡的所有車廂維持同一個顏色（除了黃色的空格車廂）。
+        const CAR_COLOR_POOL = [
+            { bg: '#3b82f6', border: '#1e40af' },
+            { bg: '#16a34a', border: '#14532d' },
+            { bg: '#db2777', border: '#831843' },
+            { bg: '#7c3aed', border: '#4c1d95' },
+            { bg: '#ea580c', border: '#7c2d12' },
+            { bg: '#0891b2', border: '#164e63' }
+        ];
+
         function renderTrain(seq, blankIdx) {
             let area = document.getElementById('visual-area');
             area.innerHTML = '';
-            
+            const carColor = CAR_COLOR_POOL[Math.floor(Math.random() * CAR_COLOR_POOL.length)];
+
             seq.forEach((num, idx) => {
                 let carriage = document.createElement('div');
                 carriage.className = 'train-carriage';
@@ -779,6 +791,8 @@
                     windowDiv.id = 'trainTarget';
                 } else {
                     windowDiv.innerText = num;
+                    box.style.background = carColor.bg;
+                    box.style.borderColor = carColor.border;
                 }
                 box.appendChild(windowDiv);
                 carriage.appendChild(box);
