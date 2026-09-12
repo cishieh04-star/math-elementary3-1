@@ -294,27 +294,42 @@
 
         /* 掉落的數字球選項 */
         /* 籃球造型：橘色球體 + 黑色接縫線，取代原本單純的藍色球 */
+        /* 籃球造型（升級版）：立體漸層＋正統十字接縫線，
+           數字改放在中間的白色圓形底牌上，不管接縫線怎麼畫都不會擋住數字。 */
         .falling-option {
             position: absolute;
             width: 64px;
             height: 64px;
-            background: radial-gradient(circle at 35% 30%, #ffb066, #f0810a 55%, #c25a00 100%);
-            border: 2px solid #7c3f00;
+            background: radial-gradient(circle at 32% 28%, #ffc27a, #f0810a 50%, #b34f00 85%, #8a3d00 100%);
+            border: 2px solid #6b3600;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.35), inset -6px -6px 10px rgba(0,0,0,0.25), inset 4px 4px 8px rgba(255,255,255,0.3);
             animation: fall linear forwards;
             z-index: 999;
             pointer-events: auto;
             overflow: hidden;
         }
-        .falling-option .ball-num {
+        .falling-option::before {
+            content: ''; position: absolute; top: 0; left: 50%; width: 2px; height: 100%;
+            background: rgba(50,25,0,0.6); transform: translateX(-50%); z-index: 1;
+        }
+        .falling-option::after {
+            content: ''; position: absolute; left: 0; top: 50%; width: 100%; height: 2px;
+            background: rgba(50,25,0,0.6); transform: translateY(-50%); z-index: 1;
+        }
+        .ball-badge {
             position: relative; z-index: 2;
-            font-size: 15px; font-weight: bold; color: #ffffff;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(255,255,255,0.95);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+        }
+        .falling-option .ball-num {
+            font-size: 15px; font-weight: bold; color: #8a3d00;
         }
         .falling-option:active { transform: scale(0.9); }
         .falling-option.hint-glow {
@@ -820,7 +835,7 @@
             const container = document.getElementById('drop-game-container');
             const el = document.createElement('div');
             el.className = 'falling-option';
-            el.innerHTML = `<span class="ball-num">${val}</span>`;
+            el.innerHTML = `<div class="ball-badge"><span class="ball-num">${val}</span></div>`;
             if (hintActiveValue !== null && val === hintActiveValue) {
                 el.classList.add('hint-glow');
             }
