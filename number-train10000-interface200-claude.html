@@ -293,24 +293,43 @@
         }
 
         /* 掉落的數字球選項 */
+        /* 籃球造型：橘色球體 + 黑色接縫線，取代原本單純的藍色球 */
+        /* 籃球造型（升級版）：立體漸層＋正統十字接縫線，
+           數字改放在中間的白色圓形底牌上，不管接縫線怎麼畫都不會擋住數字。 */
         .falling-option {
             position: absolute;
             width: 64px;
             height: 64px;
-            background: radial-gradient(circle, #38bdf8 60%, #0284c7 100%);
-            border: 3px solid #0369a1;
+            background: radial-gradient(circle at 32% 28%, #ffc27a, #f0810a 50%, #b34f00 85%, #8a3d00 100%);
+            border: 2px solid #6b3600;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px; 
-            font-weight: bold;
-            color: #ffffff;
             cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.35), inset -6px -6px 10px rgba(0,0,0,0.25), inset 4px 4px 8px rgba(255,255,255,0.3);
             animation: fall linear forwards;
             z-index: 999;
             pointer-events: auto;
+            overflow: hidden;
+        }
+        .falling-option::before {
+            content: ''; position: absolute; top: 0; left: 50%; width: 2px; height: 100%;
+            background: rgba(50,25,0,0.6); transform: translateX(-50%); z-index: 1;
+        }
+        .falling-option::after {
+            content: ''; position: absolute; left: 0; top: 50%; width: 100%; height: 2px;
+            background: rgba(50,25,0,0.6); transform: translateY(-50%); z-index: 1;
+        }
+        .ball-badge {
+            position: relative; z-index: 2;
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(255,255,255,0.95);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+        }
+        .falling-option .ball-num {
+            font-size: 15px; font-weight: bold; color: #8a3d00;
         }
         .falling-option:active { transform: scale(0.9); }
         .falling-option.hint-glow {
@@ -333,7 +352,7 @@
             flex-shrink: 0;
         }
 
-        button#start-btn, .control-btn { 
+        button.start-btn, button#start-btn, .control-btn { 
             padding: 12px 35px; 
             font-size: 18px; 
             background: #3b82f6; 
@@ -346,7 +365,7 @@
             touch-action: manipulation;
             z-index: 10;
         }
-        button#start-btn:active, .control-btn:active { background: #2563eb; transform: scale(0.95); }
+        button.start-btn:active, button#start-btn:active, .control-btn:active { background: #2563eb; transform: scale(0.95); }
         
         #pause-btn {
             background: #d97706;
@@ -360,10 +379,12 @@
             gap: 10px; z-index: 5000; text-align: center; padding: 16px;
         }
         #completeOverlay .equation {
-            font-family: monospace; font-size: 26px; font-weight: bold; color: #15803d;
-            background: #f0fdf4; border: 3px solid #86efac; border-radius: 10px; padding: 10px 18px;
+            font-family: monospace; font-size: 19px; font-weight: bold; color: #15803d;
+            background: #f0fdf4; border: 3px solid #86efac; border-radius: 10px; padding: 10px 14px;
+            max-width: 90%; word-break: break-word; text-align: center; line-height: 1.4;
         }
         #completeOverlay .cheer { font-size: 16px; font-weight: bold; color: #166534; }
+        #completeOverlay .interval-text { font-size: 14px; font-weight: bold; color: #0369a1; }
     </style>
 </head>
 <body>
@@ -381,17 +402,16 @@
                 <li><strong>點擊數字球通關：</strong>當畫面上方掉落正確答案時，點擊即可完成闖關！</li>
                 <li><strong>隨時聽題目：</strong>右上角「🔊 聽題目」按鈕，點擊即可重新朗讀！</li>
                 <li><strong>卡住了嗎：</strong>按「💡 提示」會給你線索！</li>
+                <li>題目會先從簡單的開始，慢慢加深難度喔！</li>
             </ul>
         </div>
 
-        <div class="level-pick-title">請選擇關卡：</div>
-        <div id="levelList" style="width:100%;"></div>
+        <button class="start-btn" id="startBtn" onclick="startGame()">🎮 開始遊戲</button>
     </div>
 
     <div id="game-ui">
         <div id="status-bar">
             <div class="status-left">
-                <span class="level-label" id="levelLabel">關卡</span>
                 <span id="score">闖關: 0</span>
             </div>
             <div class="status-right">
@@ -403,7 +423,7 @@
                 </div>
                 <button id="hint-btn" onclick="useHint()">💡提示</button>
                 <button id="repeat-audio-btn" onclick="repeatCurrentQuestion()">🔊聽題目</button>
-                <button id="switch-level-btn" onclick="showLevelSelect()">🔄換關卡</button>
+                <button id="switch-level-btn" onclick="restartGame()">🔄重新開始</button>
             </div>
         </div>
         
@@ -419,6 +439,7 @@
 
         <div id="completeOverlay">
             <div class="equation" id="completeEquation">4213</div>
+            <div class="interval-text" id="completeIntervalText">每次間隔 200</div>
             <div class="cheer">🌟 太棒了，答對了！</div>
         </div>
     </div>
@@ -432,14 +453,26 @@
         const UNIT_CHANGE = STEP / PLACE_VALUE; // 該位數字每次實際變化多少(1或2)
         // ================================================
 
-        const LEVELS = [
-            { id: 1, name: '第一關：遞增練習', desc: '車廂數字一路變大，空格都在最後一節，練習抓出下一個數字。', forceDir: 'asc', blankMode: 'last' },
-            { id: 2, name: '第二關：遞減練習', desc: '車廂數字一路變小，空格都在最後一節。', forceDir: 'desc', blankMode: 'last' },
-            { id: 3, name: '第三關：判斷方向', desc: '可能遞增也可能遞減，要先看出方向，空格還是在最後一節。', forceDir: null, blankMode: 'last' },
-            { id: 4, name: '第四關：綜合挑戰', desc: '方向不固定，空格也可能出現在車廂中間或最前面！', forceDir: null, blankMode: 'any' }
-        ];
+        let questionCount = 0; // 追蹤目前是第幾題，用來決定難度階段
 
-        let currentLevel = null;
+        // 難度隨題數漸進提升，前面安排較多簡單題：
+        // 先練習遞增（最簡單）、再遞減、再判斷方向，最後才是空格任意位置的綜合挑戰。
+        function getDifficultyForQuestion() {
+            if (questionCount < 8) return { forceDir: 'asc', blankMode: 'last' };
+            if (questionCount < 14) return { forceDir: 'desc', blankMode: 'last' };
+            if (questionCount < 20) return { forceDir: null, blankMode: 'last' };
+            return { forceDir: null, blankMode: 'any' };
+        }
+
+        // 起始數字的千位也採漸進式：一開始比較小，之後才逐漸擴大到完整範圍，
+        // 讓小朋友從比較小、比較好掌握的數字開始練習。
+        function getMaxThousandsDigit() {
+            if (questionCount < 6) return 3;
+            if (questionCount < 12) return 5;
+            return 8;
+        }
+
+        let gameStarted = false;
         let currentAns, score = 0;
         let gameInterval = null;
         let nextQuestionTimeout = null;
@@ -519,28 +552,19 @@
         }
 
         function showCompletionScreen() {
-            document.getElementById('completeEquation').innerText = `${currentAns}`;
+            document.getElementById('completeEquation').innerText = trainSequence.join(' , ');
+            document.getElementById('completeIntervalText').innerText = `每次間隔 ${STEP}`;
             document.getElementById('completeOverlay').style.display = 'flex';
         }
         function hideCompletionScreen() {
             document.getElementById('completeOverlay').style.display = 'none';
         }
 
-        function renderLevelList() {
-            const container = document.getElementById('levelList');
-            container.innerHTML = '';
-            LEVELS.forEach(lv => {
-                const btn = document.createElement('div');
-                btn.className = 'level-btn';
-                btn.innerHTML = `<span class="lv-name">${lv.name}</span><span class="lv-desc">${lv.desc}</span>`;
-                btn.onclick = () => startGame(lv.id);
-                container.appendChild(btn);
-            });
-        }
-
-        function showLevelSelect() {
+        function restartGame() {
             isPaused = false;
             pendingNextQuestion = false;
+            gameStarted = false;
+            questionCount = 0;
             if (gameInterval) clearInterval(gameInterval);
             if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
             activeOptions.forEach(el => el.remove());
@@ -551,9 +575,10 @@
             document.getElementById('home-screen').style.display = 'flex';
         }
 
-        function startGame(levelId) {
-            currentLevel = LEVELS.find(l => l.id === levelId);
-            document.getElementById('levelLabel').innerText = currentLevel.name;
+        function startGame() {
+            if (document.getElementById('home-screen').style.display === 'none') return;
+            gameStarted = true;
+            questionCount = 0;
 
             try {
                 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -583,7 +608,7 @@
         }
 
         function togglePause() {
-            if (!currentLevel) return;
+            if (!gameStarted) return;
             isPaused = !isPaused;
             const pauseBtn = document.getElementById('pause-btn');
             
@@ -639,8 +664,11 @@
             activeOptions = [];
             if (gameInterval) clearInterval(gameInterval);
 
-            let isAscending = currentLevel.forceDir === 'asc' ? true
-                : currentLevel.forceDir === 'desc' ? false
+            const tier = getDifficultyForQuestion();
+            questionCount++;
+
+            let isAscending = tier.forceDir === 'asc' ? true
+                : tier.forceDir === 'desc' ? false
                 : Math.random() < 0.5;
 
             let baseTh, baseH, baseT, baseU;
@@ -651,7 +679,7 @@
                 baseH = Math.floor(Math.random() * 9) + 1;
                 baseT = Math.floor(Math.random() * 10);
             } else if (PLACE_VALUE === 100) {
-                baseTh = Math.floor(Math.random() * 8) + 1;
+                baseTh = 1 + Math.floor(Math.random() * getMaxThousandsDigit());
                 baseH = safeDigit(0, 9, isAscending);        // 百位在變化
                 baseT = Math.floor(Math.random() * 10);
             } else {
@@ -668,7 +696,7 @@
                 trainSequence.push(startNum + (i * actualStep));
             }
 
-            let blankIndex = currentLevel.blankMode === 'last'
+            let blankIndex = tier.blankMode === 'last'
                 ? 3
                 : Math.floor(Math.random() * 4);
             currentAns = trainSequence[blankIndex];
@@ -772,7 +800,7 @@
 
         // 兩段式提示：第一次給線索（利用旁邊車廂的數字），第二次直接公布答案
         function useHint() {
-            if (isPaused || isAnswered || !currentLevel) return;
+            if (isPaused || isAnswered || !gameStarted) return;
             hintLevel++;
             let blankIndex = trainSequence.indexOf(currentAns);
             let isAscending = trainSequence.length > 1 && trainSequence[1] > trainSequence[0];
@@ -807,7 +835,7 @@
             const container = document.getElementById('drop-game-container');
             const el = document.createElement('div');
             el.className = 'falling-option';
-            el.innerText = val;
+            el.innerHTML = `<div class="ball-badge"><span class="ball-num">${val}</span></div>`;
             if (hintActiveValue !== null && val === hintActiveValue) {
                 el.classList.add('hint-glow');
             }
@@ -891,7 +919,6 @@
             activeOptions.push(el);
         }
 
-        renderLevelList();
     </script>
 </body>
 </html>
