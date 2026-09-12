@@ -88,27 +88,31 @@
     <script>
         const version = "11"; // 更新版本號以防快取
         const games = [
-            { name: "1.火車接力遊戲(10000以內，以10為間隔)", file: "number-train10000-interface10-claude.html" },
-            { name: "2.火車接力遊戲(10000以內，以20為間隔)", file: "number-train10000-interface20-claude.html" },
-            { name: "3.火車接力遊戲(10000以內，以100為間隔)", file: "number-train10000-interface100-claude.html" },
-            { name: "4.火車接力遊戲(10000以內，以200為間隔)", file: "number-train10000-interface200-claude.html" },
-            { name: "5.火車接力遊戲(10000以內，以1000為間隔)", file: "number-train10000-interface1000-claude.html" },
-            { name: "6.算算錢包有多少錢的有趣遊戲", file: "coin-counting-(2~4)layer-claude.html" },
-            { name: "7.二位數直式加法遊戲(無進位)", file: "2-digit-addition(basic).html" },
-            { name: "8.二位數直式加法遊戲(有進位)", file: "2-digit-addition.html" },
-            { name: "9.有趣的直式加法遊戲(無進位，3~5位數)", file: "3~5-digit-addition(basic)-claude.html" },
-            { name: "10.有趣的直式加法遊戲(有進位，3~5位數)", file: "3~5-digit-addition-claude.html" },
-            { name: "11.認識個十百位錢幣遊戲(10000以內)", file: "coin-counting-claude.html" },
-            { name: "12.購物付錢遊戲($50、$100、$500、$1000)", file: "payment-10000-claude.html" },
-            { name: "13.乘法基礎遊戲(1-4)", file: "payment-multiplication-basic(1-4)-claude.html" },
-            { name: "14.乘法基礎遊戲(5-9)", file: "payment-multiplication-basic(5-9)-claude.html" },
-            { name: "15.乘法分拆計算", file: "multiplication-decomposition-claude.html" }
+            /* 已清除手動編號，改由程式自動產生 */
+            { name: "火車接力遊戲(10000以內，以10為間隔)", file: "number-train10000-interface10-claude.html" },
+            { name: "火車接力遊戲(10000以內，以20為間隔)", file: "number-train10000-interface20-claude.html" },
+            { name: "火車接力遊戲(10000以內，以100為間隔)", file: "number-train10000-interface100-claude.html" },
+            { name: "火車接力遊戲(10000以內，以200為間隔)", file: "number-train10000-interface200-claude.html" },
+            { name: "火車接力遊戲(10000以內，以1000為間隔)", file: "number-train10000-interface1000-claude.html" },
+            { name: "算算錢包有多少錢的有趣遊戲", file: "coin-counting-(2~4)layer-claude.html" },
+            { name: "二位數直式加法遊戲(無進位)", file: "2-digit-addition(basic).html" },
+            { name: "二位數直式加法遊戲(有進位)", file: "2-digit-addition.html" },
+            { name: "有趣的直式加法遊戲(無進位，3~5位數)", file: "3~5-digit-addition(basic)-claude.html" },
+            { name: "有趣的直式加法遊戲(有進位，3~5位數)", file: "3~5-digit-addition-claude.html" },
+            { name: "認識個十百位錢幣遊戲(10000以內)", file: "coin-counting-claude.html" },
+            { name: "購物付錢遊戲($50、$100、$500、$1000)", file: "payment-10000-claude.html" },
+            { name: "乘法基礎遊戲(1-4)", file: "payment-multiplication-basic(1-4)-claude.html" },
+            { name: "乘法基礎遊戲(5-9)", file: "payment-multiplication-basic(5-9)-claude.html" },
+            { name: "乘法分拆計算", file: "multiplication-decomposition-claude.html" }
         ];
 
         const listElement = document.getElementById('game-list');
-        games.forEach(game => {
+        
+        /* 透過 JavaScript 自動計算並加上流水編號 */
+        games.forEach((game, index) => {
             const li = document.createElement('li');
-            li.innerHTML = `<div class="box game-link"><a href="${game.file}?v=${version}">${game.name}</a></div>`;
+            const displayNumber = index + 1;
+            li.innerHTML = `<div class="box game-link"><a href="${game.file}?v=${version}">${displayNumber}. ${game.name}</a></div>`;
             listElement.appendChild(li);
         });
     </script>
