@@ -526,6 +526,30 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
 .hlines li.cur{color:#c2410c}
 #home .bar .ttl{white-space:nowrap;font-size:min(calc(var(--u)*1.5),6vw)}
 
+.calcfig{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*.3);background:#fff;border:.15em dashed #e8b04a;border-radius:calc(var(--u)*.8);padding:calc(var(--u)*.3) calc(var(--u)*.6);flex:none!important;max-height:none!important}
+.cf-t{font-weight:900;color:#c2410c;font-size:calc(var(--u)*.9)}
+.cf-list{display:flex;gap:calc(var(--u)*.8);flex-wrap:wrap;justify-content:center}
+.cf-it{display:flex;align-items:center;gap:calc(var(--u)*.5)}
+.cf-it .vm.cfv{font-size:calc(var(--u)*1.6)}
+.cf-it .vm.cfv .vm-r:last-child i:not(:first-child){border:.06em dashed #b9a27a;border-radius:.15em;min-height:1.15em;margin:0 .03em;color:#0b6b36}
+.cf-it.done .vm.cfv .vm-r:last-child i:not(:first-child){border-color:#2fb86b;background:#e3f8ea}
+.cf-go{padding:calc(var(--u)*.35) calc(var(--u)*.7)!important;font-size:calc(var(--u)*1)!important}
+#ovCalc{z-index:110}#ovHelp{z-index:130}
+.calcpanel{width:min(100%,calc(var(--u)*30));gap:calc(var(--u)*.4)}
+.calcpanel h2{font-size:calc(var(--u)*1.3)}
+.cp-main{display:flex;flex-direction:column;gap:calc(var(--u)*.4);align-items:stretch}
+.cp-v{display:flex;justify-content:center}
+.cp-v .vc{--cw:calc(var(--u)*2.4)}.cp-v .vctip{font-size:calc(var(--u)*.85);min-height:2.4em}
+.cp-pad .vpad .k{min-height:calc(var(--u)*2.3);font-size:calc(var(--u)*1.4)}
+@media (min-aspect-ratio:13/10){.calcpanel{width:min(100%,calc(var(--u)*40))}.cp-main{flex-direction:row;align-items:center}.cp-main>*{flex:1}}
+
+.hcol{position:relative}
+.hc-car{position:absolute;left:-.2em;top:-.9em;transform:translateX(-60%);background:#e03131;color:#fff;font-weight:900;border-radius:99px;padding:.05em .5em;font-size:calc(var(--u)*.8);opacity:0;transition:opacity .3s;white-space:nowrap}
+.hc-car.on{opacity:1;animation:pop .5s}
+.hc-q.ok{color:#0b6b36;border-color:#2fb86b;background:#e3f8ea;border-style:solid}
+.hlines li{font-size:calc(var(--u)*1.15)}
+.hcol>*{flex:none}.hc-q{min-height:1.25em;display:grid;place-items:center}.hbox{align-items:flex-start}
+
 /* ===== 點數與角色 ===== */
 .av{position:relative;display:inline-flex;align-items:flex-end;line-height:1}
 .av-c{font-size:1.5em}.av-w{font-size:.85em;margin-left:-.35em;margin-bottom:-.1em}
@@ -1217,18 +1241,21 @@ const lenOf=n=>String(n).length;
 function mulPlan(a,m){
   const da=digs(a),La=lenOf(a),r=a*m,dr=digs(r),Lr=lenOf(r),steps=[];let c=0;
   for(let i=3;i>=4-La;i--){
-    const pn=PLN[i],d=da[i],s=d*m+c,st={i,digit:s%10,cin:c,top:d,marks:[]};
-    if(d===0&&!c){st.say=`${pn}：0乘${m}，還是0，寫0。`;st.short='';}
-    else st.say=`${pn}：${d}乘${m}，等於${d*m}${c?`，再加進位的${c}，等於${s}`:''}。`+(s>=10?`寫${s%10}，進${Math.floor(s/10)}到${PLN[i-1]}。`:`寫${s}。`);
-    st.short=s>=10?`寫${s%10}，進${Math.floor(s/10)}。`:(c?`加進位的${c}，寫${s}。`:'');
-    st.L=[{t:`看${pn}：${d} × ${m}`},{t:`${d} × ${m} ＝ ${d*m}`,s:`${d}乘${m}，等於${d*m}`}];
-    if(c)st.L.push({t:`右邊進位上來的 ${c}，要加進去：${d*m} ＋ ${c} ＝ ？`,s:`右邊進位上來的${c}，要加進去。${d*m}加${c}，等於多少？`});
-    else st.L.push({t:s>=10?`${d*m} 是幾個十、幾個一？`:`所以這一位寫幾？`});
-    if(s>=10)st.L.push({t:`只寫個位的數字，十位的數字進到${PLN[i-1]}`});
-    if(s>=10&&i>0)st.carry=[i-1,Math.floor(s/10)];
-    c=Math.floor(s/10);steps.push(st);
+    const pn=PLN[i],nx=PLN[i-1]||'',d=da[i],p=d*m,s=p+c,T=Math.floor(s/10),u=s%10,st={i,digit:u,cin:c,top:d,marks:[]};
+    const split=s>=10?(i===3?`${s}是${T*10}加${u}，${u}寫在${pn}，${T*10}是${T}個十，${T}進位到${nx}。`:`${s}是${T*10}加${u}，${u}寫在${pn}，${T}進位到${nx}。`):`寫${s}。`;
+    st.say=`${pn}：${d}乘${m}，等於${p}${c?`，再加進位的${c}，等於${s}`:''}。${split}`;
+    st.short=s>=10?`${u}寫在${pn}，${T}進位到${nx}。`:(c?`加進位的${c}，寫${s}。`:'');
+    st.L=[{t:`看${pn}：${d} × ${m}`},{t:`${d} × ${m} ＝ ${p}`,s:`${d}乘${m}，等於${p}`}];
+    if(c)st.L.push({t:`再加右邊進位的 ${c}：${p} ＋ ${c} ＝ ${s}`,s:`再加右邊進位的${c}，${p}加${c}，等於${s}`});
+    if(s>=10){
+      st.L.push({t:`${s} ＝ ${T*10} ＋ ${u}`,s:`${s}，是${T*10}加${u}`,split:[T*10,u]});
+      st.L.push({t:`${u} 寫在${pn}`,s:`${u}，寫在${pn}`,ans:1});
+      st.L.push(i===3?{t:`${T*10} 是 ${T} 個十，${T} 進位到${nx}`,s:`${T*10}是${T}個十，${T}進位到${nx}，寫在${nx}的上面`,car:T}:{t:`${T*10} 的 ${T}，進位到${nx}`,s:`${T*10}的${T}，進位到${nx}，寫在${nx}的上面`,car:T});
+      if(i>0)st.carry=[i-1,T];
+    }else st.L.push({t:`${s} 寫在${pn}`,s:`${s}，寫在${pn}`,ans:1});
+    c=T;steps.push(st);
   }
-  if(c){const i=4-La-1;steps.push({i,digit:c,lead:1,top:'',cin:c,say:`最後進位的${c}，沒有數可以乘了，直接寫在${PLN[i]}。`,short:`把進位的${c}寫下來。`,L:[{t:`${PLN[i]}上面沒有數字了`},{t:`進位上來的 ${c}，直接寫下來`}]})}
+  if(c){const i=4-La-1;steps.push({i,digit:c,lead:1,top:'',cin:c,say:`最後進位的${c}，沒有數可以乘了，直接寫在${PLN[i]}。`,short:`把進位的${c}寫下來。`,L:[{t:`${PLN[i]}上面沒有數字可以乘了`},{t:`進位上來的 ${c}，直接寫在${PLN[i]}`,s:`進位上來的${c}，直接寫在${PLN[i]}`,ans:1}]})}
   return {a,m,da,La,r,dr,Lr,steps};
 }
 function mulMount(host,a,m,o){
@@ -1285,10 +1312,10 @@ function showHelp4(st,m){
   let ov=document.getElementById('ovHelp');
   if(!ov){ov=document.createElement('div');ov.className='ov';ov.id='ovHelp';ov.innerHTML='<div class="panel hpanel"></div>';document.getElementById('app').appendChild(ov)}
   const pnl=ov.firstChild;
-  pnl.innerHTML=`<h2>教我如何計算</h2><div class="hbox"><div class="hcol"><div class="hc-h">${PLN[st.i]}</div><div class="hc-m">${st.cin?'＋'+st.cin:''}</div><div class="hc-t">${st.top}</div><div class="hc-b"><span>×</span>${st.lead?'':m}</div><div class="hc-l"></div><div class="hc-q">?</div></div><ol class="hlines">${st.L.map(l=>`<li>${esc(l.t)}</li>`).join('')}</ol></div><div class="les-btns"><button class="btn" id="hpAgain">再聽一次</button><button class="btn g big" id="hpBack">回去作答</button></div>`;
+  pnl.innerHTML=`<h2>教我如何計算</h2><div class="hbox"><div class="hcol"><div class="hc-car"></div><div class="hc-h">${PLN[st.i]}</div><div class="hc-m">${st.cin?'＋'+st.cin:''}</div><div class="hc-t">${st.top}</div><div class="hc-b"><span>×</span>${st.lead?'':m}</div><div class="hc-l"></div><div class="hc-q">?</div></div><ol class="hlines">${st.L.map(l=>`<li>${esc(l.t)}</li>`).join('')}</ol></div><div class="les-btns"><button class="btn" id="hpAgain">再聽一次</button><button class="btn g big" id="hpBack">回去作答</button></div>`;
   const lis=[...pnl.querySelectorAll('.hlines li')];
-  const play=()=>{lis.forEach(l=>l.classList.remove('on'));
-    speakSeq(st.L.map((l,i)=>({t:l.s||l.t,on:()=>{if(!ov.classList.contains('on'))return;lis.forEach(x=>x.classList.remove('cur'));lis[i].classList.add('on','cur')}})),
+  const play=()=>{lis.forEach(l=>l.classList.remove('on'));{const q=pnl.querySelector('.hc-q');q.textContent='?';q.classList.remove('ok','pop');const c=pnl.querySelector('.hc-car');c.textContent='';c.classList.remove('on')}
+    speakSeq(st.L.map((l,i)=>({t:l.s||l.t,on:()=>{if(!ov.classList.contains('on'))return;lis.forEach(x=>x.classList.remove('cur'));lis[i].classList.add('on','cur');if(l.ans){const q=pnl.querySelector('.hc-q');q.textContent=st.digit;q.classList.add('ok','pop')}if(l.car){const c=pnl.querySelector('.hc-car');c.textContent=`進 ${l.car} →`;c.classList.add('on')}}})),
       ()=>{lis.forEach(x=>x.classList.remove('cur'));const b=document.getElementById('hpBack');b&&b.classList.add('pulse');speakSeq(['想好了，就按「回去作答」。'])},450)};
   const close=()=>{TTS.stop();ov.classList.remove('on')};
   pnl.querySelector('#hpAgain').onclick=()=>{if(guard(300)){TTS.stop();play()}};
@@ -1326,11 +1353,11 @@ const MUL3_FIX=[[123,5],[327,3],[216,4],[311,5],[160,6],[125,7],[538,6],[316,5],
 /* ===== 攤 1：彈珠台（整十、整百）===== */
 function S1_pat(){
   const a=rnd(2,9),m=rnd(2,9),z=pick([1,2]),A=a*Math.pow(10,z),r=A*m;
-  return NQ(`${a} × ${m} ＝ ${a*m}\n${A} × ${m} ＝（　）`,[{b:0}],[r],{say:`${a}乘${m}等於${a*m}。那${A}乘${m}，等於多少？`,why:`${A}是${a}個${z===1?'十':'百'}，${a}個${z===1?'十':'百'}乘${m}，是${a*m}個${z===1?'十':'百'}，等於${r}。`,hint:`先算${a}×${m}，後面再補上${z}個0。`,src:'課本 P.58'});
+  return MU(A,m,{stem:`${a} × ${m} ＝ ${a*m}\n${A} × ${m} ＝ ？`,say:`${a}乘${m}等於${a*m}。那${A}乘${m}，等於多少？用直式算算看。`,why:`${A}是${a}個${z===1?'十':'百'}，乘${m}是${a*m}個${z===1?'十':'百'}，等於${r}。`,hint:'0乘任何數都是0，從個位開始乘。',src:'課本 P.58'});
 }
 function S1_zero(){
-  const a=rnd(2,9)*pick([10,100]),m=rnd(2,9),r=a*m,zs=String(a).length-1;
-  return M(`${a} × ${m} ＝ ？`,r,[r/10,r*10,r+a,r-a],{say:`${a}乘${m}，等於多少？`,why:`先算${a/Math.pow(10,zs)}×${m}＝${a/Math.pow(10,zs)*m}，後面補上${zs}個0，是${r}。`,hint:'先算前面的數字，再補上0。',src:'習作 P.44'});
+  const a=rnd(2,9)*pick([10,100]),m=rnd(2,9);
+  return MU(a,m,{src:'習作 P.44'});
 }
 function S1_swap(){
   const a=rnd(2,9),b=rnd(2,9);
@@ -1338,11 +1365,11 @@ function S1_swap(){
 }
 function S1_story(){
   return pick([
-    ()=>M('彈珠台玩一次20元，品睿玩了3次，一共花了多少元？',60,[23,600,50],{why:'20×3＝60，一共60元。',hint:'2個十乘3，是6個十。',src:'課本 P.54'}),
-    ()=>M('一碗豆花30元，爸爸買了4碗，要付多少元？',120,[34,1200,70],{why:'30×4＝120元。',hint:'3個十乘4，是12個十。',src:'課本 P.54'}),
-    ()=>M('一張明信片40元，姐姐買了5張，要付多少元？',200,[45,2000,90],{why:'40×5＝200元。',hint:'4個十乘5，是20個十。',src:'課本 P.54'}),
-    ()=>M('一張音樂會門票200元，4個人一起去，要付多少元？',800,[204,8000,80],{why:'200×4＝800元。',hint:'2個百乘4，是8個百。',src:'課本 P.58'}),
-    ()=>M('品睿帶了50元，姐姐帶的錢是品睿的6倍，姐姐帶了多少元？',300,[56,3000,44],{why:'50的6倍，就是50×6＝300元。',hint:'「幾倍」就是用乘法。',src:'課本 P.54'})])();
+    ()=>M('彈珠台玩一次20元，品睿玩了3次，一共花了多少元？',60,[23,600,50],{calc:[[20,3]],why:'20×3＝60，一共60元。',hint:'2個十乘3，是6個十。',src:'課本 P.54'}),
+    ()=>M('一碗豆花30元，爸爸買了4碗，要付多少元？',120,[34,1200,70],{calc:[[30,4]],why:'30×4＝120元。',hint:'3個十乘4，是12個十。',src:'課本 P.54'}),
+    ()=>M('一張明信片40元，姐姐買了5張，要付多少元？',200,[45,2000,90],{calc:[[40,5]],why:'40×5＝200元。',hint:'4個十乘5，是20個十。',src:'課本 P.54'}),
+    ()=>M('一張音樂會門票200元，4個人一起去，要付多少元？',800,[204,8000,80],{calc:[[200,4]],why:'200×4＝800元。',hint:'2個百乘4，是8個百。',src:'課本 P.58'}),
+    ()=>M('品睿帶了50元，姐姐帶的錢是品睿的6倍，姐姐帶了多少元？',300,[56,3000,44],{calc:[[50,6]],why:'50的6倍，就是50×6＝300元。',hint:'「幾倍」就是用乘法。',src:'課本 P.54'})])();
 }
 const LV1={id:1,ic:'🎰',name:'彈珠台',sub:'整十、整百來相乘',story:'夜市開張了！先到彈珠台，彈出整十、整百的乘法。',mk:[
   [1,S1_swap],[1,S1_pat],[1,S1_zero],[2,S1_pat],[2,S1_story],[2,S1_zero],[3,S1_story],[3,S1_pat],[3,S1_story]]};
@@ -1374,11 +1401,11 @@ function S4_who(){
   const ws=shuffle(w).slice(0,2),opts=shuffle([r,...ws]);
   const kids=['妮妮','豆豆','妙妙','奇奇'];
   return {type:'mc',stem:`${a} × ${m}\n哪一個小朋友算對了？`,opts:opts.map((v,i)=>({t:kids[i],html:vMul(a,m,v,'opt-vm'),say:`${kids[i]}算出${v}`})),ans:opts.indexOf(r),
-    why:`${a} × ${m} ＝ ${r}。要記得把進位的數加上去，0乘任何數都是0。`,hint:'自己先從個位開始乘一次。',src:'課本 P.60',oneCol:true};
+    why:`${a} × ${m} ＝ ${r}。要記得把進位的數加上去，0乘任何數都是0。`,hint:'自己先從個位開始乘一次。',src:'課本 P.60',oneCol:true,calc:[[a,m]]};
 }
 function S4_tf(){
   const [a,m]=pick([[406,5],[307,7],[405,4],[608,3],[209,6],[83,7],[57,4]]),r=a*m,ok=Math.random()<.4,sh=ok?r:pick(wrongs(a,m));
-  return TF(`這個直式算得對不對？`,ok,ok?`${a}×${m}＝${r}，算對了。`:`正確答案是${r}，不是${sh}。要加上進位的數。`,{fig:vMul(a,m,sh,'big'),say:`${a}乘${m}，算出來是${sh}。這個直式算得對不對？`,src:'習作 P.47'});
+  return TF(`這個直式算得對不對？`,ok,ok?`${a}×${m}＝${r}，算對了。`:`正確答案是${r}，不是${sh}。要加上進位的數。`,{calc:[[a,m]],fig:vMul(a,m,sh,'big'),say:`${a}乘${m}，算出來是${sh}。這個直式算得對不對？`,src:'習作 P.47'});
 }
 function S4_fix(){
   const [a,m]=pick([[406,5],[307,7],[405,4],[209,6]]);
@@ -1415,7 +1442,7 @@ const rU=(n,u)=>Math.round(n/u)*u;
 function S6_near(){
   for(let t=0;t<60;t++){const two=Math.random()<.5,a=two?rnd(21,98):rnd(102,898),m=rnd(2,9),u=two?10:100,ea=rU(a,u);if(Math.abs(a-ea)>(two?3:30))continue;
     const e=ea*m,w=[e-u*m,e+u*m].filter(x=>x>0);
-    return M(`估估看，${a} × ${m} 大約是多少？`,e,w,{say:`估估看，${a}乘${m}，大約是多少？`,why:`${a}大約是${ea}，${ea}×${m}＝${e}，所以大約是${e}。`,hint:`先把${a}想成整${two?'十':'百'}的數。`,src:'習作 P.49、評量卷'})}
+    return M(`估估看，${a} × ${m} 大約是多少？`,e,w,{calc:[[ea,m]],say:`估估看，${a}乘${m}，大約是多少？`,why:`${a}大約是${ea}，${ea}×${m}＝${e}，所以大約是${e}。`,hint:`先把${a}想成整${two?'十':'百'}的數。`,src:'習作 P.49、評量卷'})}
   return M('估估看，41 × 6 大約是多少？',240,[180,300],{why:'41大約是40，40×6＝240。',hint:'41大約是40。',src:'評量卷'});
 }
 function S6_expr(){
@@ -1424,13 +1451,13 @@ function S6_expr(){
 }
 function S6_enough(){
   return pick([
-    ()=>({type:'mc',stem:'姐姐給宥廷150元，買6盒32元的巧克力。錢夠不夠？',opts:[{t:'夠',say:'夠'},{t:'不夠',say:'不夠'}],ans:1,why:'32元比30元多，30×6＝180元，已經比150元多了，所以不夠。',hint:'32大約是30，買6盒大約要多少？',src:'課本 P.64'}),
-    ()=>({type:'mc',stem:'豆豆帶了500元，可以買5盒98元的動物餅乾嗎？',opts:[{t:'可以',say:'可以'},{t:'不可以',say:'不可以'}],ans:0,why:'98元比100元少，100×5＝500元，所以5盒比500元少，可以買。',hint:'98大約是100。',src:'課本 P.64'}),
-    ()=>({type:'mc',stem:'一包綠豆71元，買3包，給200元夠不夠？',opts:[{t:'夠',say:'夠'},{t:'不夠',say:'不夠'}],ans:1,why:'71大約70，70×3＝210元，比200元多，不夠。',hint:'71大約是70。',src:'重點整理'}),
-    ()=>TF('一個鉛筆盒特價109元，老師帶500元，夠買5個鉛筆盒。',false,'109比100多，100×5＝500，所以5個要比500元多，不夠。',{src:'評量卷'}),
-    ()=>TF('一瓶醬油109元，爸爸給哥哥300元，夠買2瓶醬油。',true,'109大約110，110×2＝220，比300少，夠。',{src:'評量卷'}),
-    ()=>({type:'mc',stem:'上衣一件399元，特賣會三件1000元。一次買三件，會比較便宜嗎？',opts:[{t:'會',say:'會'},{t:'不會',say:'不會'}],ans:0,why:'399大約是400，400×3＝1200，比1000元多，所以三件1000元比較便宜。',hint:'399大約400，三件大約多少？',src:'課本 P.65'}),
-    ()=>({type:'mc',stem:'螢光筆每箱68枝，準備9箱，夠不夠分給672位學生，每人1枝？',opts:[{t:'夠',say:'夠'},{t:'不夠',say:'不夠'}],ans:1,why:'68比70少，70×9＝630，比672還少，所以不夠。',hint:'68大約是70。',src:'評量卷'})])();
+    ()=>({type:'mc',stem:'姐姐給宥廷150元，買6盒32元的巧克力。錢夠不夠？',calc:[[30,6]],opts:[{t:'夠',say:'夠'},{t:'不夠',say:'不夠'}],ans:1,why:'32元比30元多，30×6＝180元，已經比150元多了，所以不夠。',hint:'32大約是30，買6盒大約要多少？',src:'課本 P.64'}),
+    ()=>({type:'mc',stem:'豆豆帶了500元，可以買5盒98元的動物餅乾嗎？',calc:[[100,5]],opts:[{t:'可以',say:'可以'},{t:'不可以',say:'不可以'}],ans:0,why:'98元比100元少，100×5＝500元，所以5盒比500元少，可以買。',hint:'98大約是100。',src:'課本 P.64'}),
+    ()=>({type:'mc',stem:'一包綠豆71元，買3包，給200元夠不夠？',calc:[[70,3]],opts:[{t:'夠',say:'夠'},{t:'不夠',say:'不夠'}],ans:1,why:'71大約70，70×3＝210元，比200元多，不夠。',hint:'71大約是70。',src:'重點整理'}),
+    ()=>TF('一個鉛筆盒特價109元，老師帶500元，夠買5個鉛筆盒。',false,'109比100多，100×5＝500，所以5個要比500元多，不夠。',{src:'評量卷',calc:[[109,5]]}),
+    ()=>TF('一瓶醬油109元，爸爸給哥哥300元，夠買2瓶醬油。',true,'109大約110，110×2＝220，比300少，夠。',{src:'評量卷',calc:[[109,2]]}),
+    ()=>({type:'mc',stem:'上衣一件399元，特賣會三件1000元。一次買三件，會比較便宜嗎？',calc:[[400,3]],opts:[{t:'會',say:'會'},{t:'不會',say:'不會'}],ans:0,why:'399大約是400，400×3＝1200，比1000元多，所以三件1000元比較便宜。',hint:'399大約400，三件大約多少？',src:'課本 P.65'}),
+    ()=>({type:'mc',stem:'螢光筆每箱68枝，準備9箱，夠不夠分給672位學生，每人1枝？',calc:[[70,9]],opts:[{t:'夠',say:'夠'},{t:'不夠',say:'不夠'}],ans:1,why:'68比70少，70×9＝630，比672還少，所以不夠。',hint:'68大約是70。',src:'評量卷'})])();
 }
 const LV6={id:6,ic:'🍡',name:'糖葫蘆',sub:'估一估，大約多少',story:'糖葫蘆攤人好多！不用紙筆，估一估就知道錢夠不夠。',mk:[
   [1,S6_near],[1,S6_expr],[1,S6_near],[2,S6_enough],[2,S6_expr],[2,S6_near],[3,S6_enough],[3,S6_enough],[3,S6_near]]};
@@ -1461,7 +1488,8 @@ const LV7={id:7,ic:'🧃',name:'果汁吧',sub:'看懂題目，列出乘法',sto
 /* ===== 攤 8：連乘兩步驟 ===== */
 function two(text,f1,a,b,f2,c,unit,first){
   const r1=a*b,r=r1*c;
-  const q1=NQ(`${text}\n先算：${first}\n${a} × ${b} ＝（　）`,[{b:0}],[r1],{say:`${text}先算${first}，${a}乘${b}，等於多少？`,why:`${a}×${b}＝${r1}，這是${first}。`,hint:'先算一份有多少。',src:'課本 P.62'});
+  const o1={say:`${text}先算${first}，${a}乘${b}，等於多少？`,why:`${a}×${b}＝${r1}，這是${first}。`,hint:'先算一份有多少。',src:'課本 P.62'};
+  const q1=a>=10?MU(a,b,Object.assign(o1,{stem:`${text}\n先算：${first}　${a} × ${b} ＝ ？`})):NQ(`${text}\n先算：${first}\n${a} × ${b} ＝（　）`,[{b:0}],[r1],o1);
   q1.then=MU(r1,c,{stem:`再算：${r1} × ${c} ＝ ？`,say:`再算，${r1}乘${c}，等於多少？`,why:`${a}×${b}＝${r1}，${r1}×${c}＝${r}，答案是${r}${unit}。`});
   return q1;
 }
@@ -1483,17 +1511,17 @@ const LV8={id:8,ic:'🎪',name:'馬戲棚',sub:'先算什麼，再算什麼',sto
 /* ===== 攤 9：夜市大挑戰（綜合）===== */
 function S9(){
   return pick([
-    ()=>M('一個59元的小披薩可以分給4個人吃。老師買了6個，共花了幾元？',354,[236,295,413],{why:'59×6＝354元。',hint:'問的是錢，用一個的價錢乘6。',src:'評量卷'}),
-    ()=>M('一瓶發酵乳12元，買3送1。郁芳拿了4瓶，要付多少元？',36,[48,12,24],{why:'買3送1，4瓶只要付3瓶的錢：12×3＝36元。',hint:'有1瓶是送的，不用付錢。',src:'評量卷'}),
-    ()=>M('軒軒把「× 6」看成「＋ 8」，算出來是274。原來的答案是多少？',1596,[1644,266,1652],{why:'274－8＝266，原來的數是266，266×6＝1596。',hint:'先找出原來的數：274減掉8。',src:'評量卷'}),
-    ()=>TF('一盒蘋果禮盒有6個蘋果，老闆賣出45盒，是賣了240個蘋果。',false,'45×6＝270，是270個，不是240個。'),
-    ()=>TF('上衣每件299元，褲子每件599元。阿姨買4件上衣，叔叔買2件褲子，阿姨花的錢比較多。',false,'299×4＝1196，599×2＝1198，叔叔多2元。'),
-    ()=>TF('子儀有10個十元硬幣，小夏有2個五十元硬幣，兩人的錢一樣多。',true,'10×10＝100，50×2＝100，一樣多。'),
-    ()=>M('一箱球鞋有8雙，6箱共有多少隻球鞋？',96,[48,72,108],{why:'一雙是2隻，2×8＝16隻，16×6＝96隻。',hint:'1雙有2隻。',src:'評量卷'}),
-    ()=>M('一包糖果502顆，明明有6包，均均有4包，兩人共有多少顆？',5020,[5010,5030,5040],{why:'6＋4＝10包，502×10＝5020顆。',hint:'先算兩人共有幾包。',src:'評量卷'}),
-    ()=>M('全票800元，優惠票490元。買4張優惠票比買4張全票省下多少元？',1240,[3200,1960,310],{why:'一張省800－490＝310元，4張省310×4＝1240元。',hint:'先算一張省多少。',src:'評量卷'}),
-    ()=>M('羊毛被一次付清1080元，分6期每期190元。分期比一次付清多付多少元？',60,[110,190,1140],{why:'190×6＝1140元，1140－1080＝60元。',hint:'先算分期一共付多少。',src:'評量卷'}),
-    ()=>M('一條繩子先用掉120公分，剩下的每18公分剪一段，剪了8段。原來長多少？',264,[144,296,196],{why:'18×8＝144，144＋120＝264公分。',hint:'先算剪掉的8段有多長。',src:'評量卷'})])();
+    ()=>M('一個59元的小披薩可以分給4個人吃。老師買了6個，共花了幾元？',354,[236,295,413],{calc:[[59,6]],why:'59×6＝354元。',hint:'問的是錢，用一個的價錢乘6。',src:'評量卷'}),
+    ()=>M('一瓶發酵乳12元，買3送1。郁芳拿了4瓶，要付多少元？',36,[48,12,24],{calc:[[12,3]],why:'買3送1，4瓶只要付3瓶的錢：12×3＝36元。',hint:'有1瓶是送的，不用付錢。',src:'評量卷'}),
+    ()=>M('軒軒把「× 6」看成「＋ 8」，算出來是274。原來的答案是多少？',1596,[1644,266,1652],{calc:[[266,6]],why:'274－8＝266，原來的數是266，266×6＝1596。',hint:'先找出原來的數：274減掉8。',src:'評量卷'}),
+    ()=>TF('一盒蘋果禮盒有6個蘋果，老闆賣出45盒，是賣了240個蘋果。',false,'45×6＝270，是270個，不是240個。',{calc:[[45,6]]}),
+    ()=>TF('上衣每件299元，褲子每件599元。阿姨買4件上衣，叔叔買2件褲子，阿姨花的錢比較多。',false,'299×4＝1196，599×2＝1198，叔叔多2元。',{calc:[[299,4],[599,2]]}),
+    ()=>TF('子儀有10個十元硬幣，小夏有2個五十元硬幣，兩人的錢一樣多。',true,'10×10＝100，50×2＝100，一樣多。',{calc:[[50,2]]}),
+    ()=>M('一箱球鞋有8雙，6箱共有多少隻球鞋？',96,[48,72,108],{calc:[[16,6]],why:'一雙是2隻，2×8＝16隻，16×6＝96隻。',hint:'1雙有2隻。',src:'評量卷'}),
+    ()=>M('一包糖果502顆，明明有6包，均均有4包，兩人共有多少顆？',5020,[5010,5030,5040],{calc:[[502,6],[502,4]],why:'6＋4＝10包，502×10＝5020顆。',hint:'先算兩人共有幾包。',src:'評量卷'}),
+    ()=>M('全票800元，優惠票490元。買4張優惠票比買4張全票省下多少元？',1240,[3200,1960,310],{calc:[[310,4]],why:'一張省800－490＝310元，4張省310×4＝1240元。',hint:'先算一張省多少。',src:'評量卷'}),
+    ()=>M('羊毛被一次付清1080元，分6期每期190元。分期比一次付清多付多少元？',60,[110,190,1140],{calc:[[190,6]],why:'190×6＝1140元，1140－1080＝60元。',hint:'先算分期一共付多少。',src:'評量卷'}),
+    ()=>M('一條繩子先用掉120公分，剩下的每18公分剪一段，剪了8段。原來長多少？',264,[144,296,196],{calc:[[18,8]],why:'18×8＝144，144＋120＝264公分。',hint:'先算剪掉的8段有多長。',src:'評量卷'})])();
 }
 const LV9={id:9,ic:'🏆',name:'夜市大挑戰',sub:'難題一起來',story:'最後一攤！挑戰夜市裡最難的題目。',mk:[[1,S9],[1,S9],[2,S9],[2,S9],[3,S9],[3,S9]]};
 
@@ -1520,6 +1548,35 @@ function demoCard(d,then){
   $('#dmAgain').onclick=()=>{if(!guard(400))return;TTS.stop();run()};
   RUN.resume=()=>{if(!fired)demoCard(d,then)};run();
 }
+
+/* ===== 直式小幫手：選擇題旁邊擺好直式，點「我來算」用直式算 ===== */
+function calcPanel(q,host){
+  const box=document.createElement('div');box.className='fig calcfig';
+  box.innerHTML=`<div class="cf-t">📝 直式小幫手</div><div class="cf-list">${q.calc.map(([a,m],i)=>`<div class="cf-it" data-i="${i}">${vMul(a,m,'',`cfv`)}<button class="btn y cf-go">我來算</button></div>`).join('')}</div>`;
+  const stem=host.querySelector('.stem');stem.after(box);
+  box.querySelectorAll('.cf-it').forEach(it=>{const i=+it.dataset.i,[a,m]=q.calc[i];
+    it.querySelector('.cf-go').onclick=e=>{e.stopPropagation();if(!guard(300))return;openCalc(a,m,r=>{const rs=it.querySelectorAll('.vm-r');const last=rs[rs.length-1];const pad=String(r).padStart(4,' ');const cells=last.querySelectorAll('i');pad.split('').forEach((d,k)=>cells[k+1].textContent=d.trim());it.classList.add('done');it.querySelector('.cf-go').textContent='再算一次'})}});
+}
+function openCalc(a,m,onRes){
+  let ov=document.getElementById('ovCalc');
+  if(!ov){ov=document.createElement('div');ov.className='ov';ov.id='ovCalc';ov.innerHTML='<div class="panel calcpanel"></div>';document.getElementById('app').appendChild(ov)}
+  const p=ov.firstChild;
+  p.innerHTML=`<h2>用直式算：${a} × ${m}</h2><div class="cp-main"><div class="cp-v"></div><div class="cp-pad"></div></div><div class="les-btns"><button class="btn b" id="cpDemo">看老闆算</button><button class="btn g big" id="cpBack">回去選答案</button></div>`;
+  let tok=0;
+  const mount=demo=>{
+    TTS.stop();tok++;const my=tok;const v=p.querySelector('.cp-v'),pad=p.querySelector('.cp-pad');v.innerHTML='';pad.innerHTML='';
+    const api=mulMount(v,a,m,{maxTries:2,onHint:()=>speakSeq(['再想一想。不會的話，可以按「教我如何計算」。']),
+      onCol:(st,ok,rev)=>{if(rev)speakSeq([st.say]);else if(st.short)speakSeq([st.short]);else TTS.stop()},
+      onDone:()=>{SFX.ok();onRes&&onRes(a*m);const b=p.querySelector('#cpBack');b.classList.add('pulse');later(()=>{if(ov.classList.contains('on'))speakSeq([`算好了，${a}乘${m}，等於${a*m}。按「回去選答案」。`])},400)}});
+    if(demo){api.demo(()=>{onRes&&onRes(a*m);p.querySelector('#cpBack').classList.add('pulse')},()=>tok===my&&ov.classList.contains('on'))}
+    else{api.start();pad.appendChild(makeVPad(k=>{if(!guard(200))return;if(k==='help'){api.help();return}TTS.stop();api.press(k)}));speakSeq([`${a}乘${m}。從個位開始，一位一位乘。`])}
+  };
+  const close=()=>{TTS.stop();tok++;ov.classList.remove('on')};
+  p.querySelector('#cpDemo').onclick=()=>{if(guard(300))mount(true)};
+  p.querySelector('#cpBack').onclick=close;
+  ov.classList.add('on');mount(false);
+}
+['mc','tf','num'].forEach(t=>{const f=REND[t];REND[t]=function(q,host,ctx){const r=f(q,host,ctx);if(q.calc&&q.calc.length){calcPanel(q,host);S.cfSaid=(S.cfSaid||0)+1;if(S.cfSaid<=3&&ctx.speakHead)ctx.speakHead.push('不會算的話，可以按「我來算」，用直式算算看。')}return r}});
 
 const PRIZES=[0,'🧸','🎈','🐠','🔍','🃏','🍡','🧃','🎪','🏆'];
 
