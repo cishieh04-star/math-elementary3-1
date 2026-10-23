@@ -428,6 +428,35 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
 .chain.sexp .ar{min-width:calc(var(--u)*1.7);font-size:calc(var(--u)*1.1)}
 .btn.nextb{background:#2fb344;color:#fff;border-color:#238636;box-shadow:0 .18em 0 #1e7a31}
 
+/* ===== 點數與角色 ===== */
+.av{position:relative;display:inline-flex;align-items:flex-end;line-height:1}
+.av-c{font-size:1.5em}.av-w{font-size:.85em;margin-left:-.35em;margin-bottom:-.1em}
+.av.big{font-size:calc(var(--u)*2.2)}
+.av.jump{animation:avj .6s}
+@keyframes avj{30%{transform:translateY(-.5em) scale(1.2)}60%{transform:translateY(0) scale(.95)}}
+.ptchip{display:flex;align-items:center;gap:.3em;padding:calc(var(--u)*.25) calc(var(--u)*.6)!important;font-size:calc(var(--u)*.95)!important;background:#fff8d6!important;box-shadow:0 .25em 0 #e2c04d!important}
+.ptchip .pc-p{color:#c27c00;font-weight:900}
+.ptchip .pc-n{max-width:4.5em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:430px){.ptchip .pc-n{display:none}}
+#avBox{position:relative;display:flex;align-items:center;gap:.25em;flex:none;font-size:calc(var(--u)*.85);background:#fff;border-radius:99px;padding:.05em .55em .05em .35em;box-shadow:0 .15em 0 #0002}
+#avBox b{color:#c27c00;font-size:calc(var(--u)*.95)}
+.ptfly{position:absolute;left:50%;top:-.2em;transform:translateX(-50%);font-weight:900;color:#e8590c;font-size:calc(var(--u)*1.2);white-space:nowrap;pointer-events:none;animation:ptfly 1.3s ease-out forwards;text-shadow:0 0 4px #fff,0 0 4px #fff;z-index:20}
+@keyframes ptfly{0%{opacity:0;transform:translate(-50%,.6em)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-2.6em)}}
+.ptgain{display:flex;align-items:center;gap:calc(var(--u)*.7);background:#fff8d6;border-radius:calc(var(--u)*1);padding:calc(var(--u)*.4) calc(var(--u)*1);box-shadow:0 .2em 0 #e2c04d}
+.pg-t{font-size:calc(var(--u)*.9);font-weight:700;color:#7a5a00}.pg-n{font-size:calc(var(--u)*1.7);font-weight:900;color:#c27c00}.pg-s{font-size:calc(var(--u)*.8);color:#7a5a00}
+.ptpanel{width:min(100%,calc(var(--u)*28));gap:calc(var(--u)*.5)}
+.ptabs{display:flex;gap:calc(var(--u)*.4)}.ptabs .btn{flex:1;padding:calc(var(--u)*.4) calc(var(--u)*.2);font-size:calc(var(--u)*.95)}.ptabs .btn.sel{background:var(--y);box-shadow:0 .25em 0 #d7a91c}
+.ptbody{overflow:auto;min-height:0;flex:1 1 auto}
+.chgrid,.shopg{display:grid;grid-template-columns:repeat(4,1fr);gap:calc(var(--u)*.4)}
+.chb,.shb{background:#f4f6fb;border-radius:calc(var(--u)*.7);padding:calc(var(--u)*.3) 0;display:flex;flex-direction:column;align-items:center;box-shadow:0 .15em 0 #c9d3e6;font-weight:800}
+.chb span,.shb span{font-size:calc(var(--u)*2)}.chb small,.shb small{font-size:calc(var(--u)*.75)}.shb em{font-style:normal;font-size:calc(var(--u)*.75);color:#c27c00}
+.chb.sel,.shb.sel{background:#fff3b0;outline:.2em solid #ffb400}
+.shb.own{background:#e6f7d9}.shb.own em{color:#2f9e44}
+.shb.no{animation:shake .4s}
+.nmrow input{font:inherit;font-weight:700;border:.12em solid #c9d3e6;border-radius:.5em;padding:.2em .5em;width:7em;user-select:text;-webkit-user-select:text}
+.ptnow{display:flex;align-items:center;justify-content:center;gap:.6em;font-size:calc(var(--u)*1.2);margin-bottom:.4em;color:#c27c00}
+.ptempty{text-align:center;font-weight:700;color:var(--ink2);padding:1.5em .5em;line-height:1.6}
+@media (max-height:520px){.chb span,.shb span{font-size:calc(var(--u)*1.4)}.chgrid,.shopg{grid-template-columns:repeat(6,1fr)}}
 </style>
 </head>
 <body>
@@ -2519,6 +2548,98 @@ function init(){
   go('cover');
 }
 init();
+
+/* ================= 點數、角色、獎勵商店（三個數學遊戲共用同一份點數） ================= */
+const PT={key:'math3-points-v1',d:{pts:0,ch:null,name:'',own:[],wear:null},round:0,combo:0,asked:false};
+try{const s=_store&&_store.getItem(PT.key);if(s)Object.assign(PT.d,JSON.parse(s))}catch(e){}
+function ptSave(){try{_store&&_store.setItem(PT.key,JSON.stringify(PT.d))}catch(e){}}
+const PT_CHARS=[['🐶','小狗'],['🐱','小貓'],['🐰','小兔子'],['🐼','熊貓'],['🦊','狐狸'],['🐸','青蛙'],['🐯','小老虎'],['🐧','企鵝'],['🦄','獨角獸'],['🐲','小龍'],['🐵','小猴子'],['🐨','無尾熊']];
+const PT_SHOP=[['🎈','氣球',30],['⭐','星星',30],['⚽','足球',40],['🍦','冰淇淋',40],['🎀','蝴蝶結',60],['🎩','魔術帽',60],['🕶️','墨鏡',80],['🧸','小熊',100],['🌈','彩虹',120],['🚲','腳踏車',150],['👑','皇冠',200],['🏆','大獎盃',300]];
+const chE=()=>PT.d.ch||'🙂',chN=()=>{const c=PT_CHARS.find(x=>x[0]===PT.d.ch);return PT.d.name||(c?c[1]:'小朋友')};
+const wearE=()=>PT.d.wear||'';
+function avHTML(cls){return `<span class="av ${cls||''}"><span class="av-c">${chE()}</span>${wearE()?`<span class="av-w">${wearE()}</span>`:''}</span>`}
+function ptRefresh(){
+  const hc=document.getElementById('ptChip');if(hc)hc.innerHTML=`${avHTML()}<span class="pc-n">${esc(chN())}</span><span class="pc-p">⭐ ${PT.d.pts}</span>`;
+  const lb=document.getElementById('avBox');if(lb)lb.innerHTML=`${avHTML()}<b>⭐${PT.d.pts}</b>`;
+}
+function ptAdd(n,why){
+  if(!n)return;PT.d.pts+=n;PT.round+=n;ptSave();ptRefresh();
+  const lb=document.getElementById('avBox');
+  if(lb&&CURSCR==='level'){const av=lb.querySelector('.av');if(av){av.classList.remove('jump');void av.offsetWidth;av.classList.add('jump')}
+    const f=document.createElement('span');f.className='ptfly';f.textContent=`+${n}`+(why?` ${why}`:'');lb.appendChild(f);setTimeout(()=>f.remove(),1300)}
+}
+/* ---- 包住原本的流程，加上點數 ---- */
+const _qmStart=qmStart;
+qmStart=function(qs,cfg){
+  const o=cfg.onAnswer;
+  cfg.onAnswer=(first,q,rev)=>{o&&o(first,q,rev);
+    if(RUN&&RUN.kind==='group')return;
+    if(first){PT.combo++;ptAdd(10);if(PT.combo>=3&&PT.combo%3===0)later(()=>ptAdd(5,'連續答對'),500)}
+    else{PT.combo=0;if(!rev)ptAdd(5)}};
+  return _qmStart(qs,cfg);
+};
+const _levelScreen=levelScreen;
+levelScreen=function(){PT.round=0;PT.combo=0;const r=_levelScreen();ptRefresh();return r};
+const _endFloor=endFloor;
+endFloor=function(lv,res){const st=calcStars(res);ptAdd(20+st*10);return _endFloor(lv,res)};
+const _endBoss=endBoss;
+endBoss=function(res){if(RUN&&RUN.hit>=Math.ceil(RUN.max*.6))ptAdd(100);return _endBoss(res)};
+const _endDaily=endDaily;
+endDaily=function(first,ds){ptAdd(first?30:10);return _endDaily(first,ds)};
+const _showResult=showResult;
+showResult=function(o){
+  if(PT.round>0&&RUN&&RUN.kind!=='group'){const n=PT.round;o=Object.assign({},o,{extra:(o.extra||'')+`<div class="ptgain">${avHTML('big')}<div><div class="pg-t">這一回得到</div><div class="pg-n">⭐ <span id="pgN">0</span> 點</div><div class="pg-s">一共有 ${PT.d.pts} 點</div></div></div>`,say:(o.say||'')+`這一回得到${n}點。`});
+    later(()=>{const e=document.getElementById('pgN');if(!e)return;let v=0;const step=Math.max(1,Math.round(n/20)),t=setInterval(()=>{v=Math.min(n,v+step);e.textContent=v;SFX.tap();if(v>=n)clearInterval(t)},50)},500);
+  }
+  PT.round=0;return _showResult(o);
+};
+const _go=go;
+go=function(id){const r=_go(id);if(id==='home'){ptRefresh();if(!PT.d.ch&&!PT.asked){PT.asked=true;later(()=>openChar(true),900)}}return r};
+const _openSettings=openSettings;
+openSettings=function(){
+  _openSettings();
+  const ok=document.getElementById('setOk');if(!ok)return;
+  ok.insertAdjacentHTML('beforebegin',`<div class="row"><span>點數（老師用）</span><button class="btn r" id="ptReset">點數歸零</button></div>`);
+  document.getElementById('ptReset').onclick=()=>{if(!guard(400))return;const b=document.getElementById('ptReset');
+    if(b.dataset.c!=='1'){b.dataset.c='1';b.textContent='再按一次，確定歸零';speakSeq(['再按一次，點數和買到的寶物都會清掉。']);return}
+    PT.d.pts=0;PT.d.own=[];PT.d.wear=null;ptSave();ptRefresh();b.textContent='已經歸零';speakSeq(['點數已經歸零。'])};
+};
+/* ---- 角色與商店視窗 ---- */
+function ptOv(){let ov=document.getElementById('ovPt');if(!ov){ov=document.createElement('div');ov.className='ov';ov.id='ovPt';ov.innerHTML='<div class="panel ptpanel"></div>';document.getElementById('app').appendChild(ov)}return ov}
+function openChar(first){
+  const ov=ptOv(),p=ov.firstChild;
+  p.innerHTML=`<h2>${first?'選一個你喜歡的角色':'我的角色'}</h2><div class="ptabs"><button class="btn sel" data-t="c">選角色</button><button class="btn" data-t="s">獎勵商店</button><button class="btn" data-t="b">我的寶物</button></div><div class="ptbody"></div><button class="btn g big" id="ptOk">好了</button>`;
+  const body=p.querySelector('.ptbody');
+  const tab=t=>{p.querySelectorAll('.ptabs .btn').forEach(b=>b.classList.toggle('sel',b.dataset.t===t));
+    if(t==='c'){
+      body.innerHTML=`<div class="chgrid">${PT_CHARS.map(c=>`<button class="chb ${PT.d.ch===c[0]?'sel':''}" data-c="${c[0]}"><span>${c[0]}</span><small>${c[1]}</small></button>`).join('')}</div><div class="row nmrow"><span>名字（可以不填）</span><input id="ptName" maxlength="6" value="${esc(PT.d.name)}" placeholder="打你的名字"></div>`;
+      body.querySelectorAll('.chb').forEach(b=>b.onclick=()=>{PT.d.ch=b.dataset.c;ptSave();ptRefresh();body.querySelectorAll('.chb').forEach(x=>x.classList.toggle('sel',x===b));SFX.ok();const c=PT_CHARS.find(x=>x[0]===PT.d.ch);speakSeq([`你選了${c[1]}。`])});
+      const ni=body.querySelector('#ptName');ni.oninput=()=>{PT.d.name=ni.value.trim().slice(0,6);ptSave();ptRefresh()};
+    }else if(t==='s'){
+      body.innerHTML=`<div class="ptnow">${avHTML('big')}<b>⭐ ${PT.d.pts} 點</b></div><div class="shopg">${PT_SHOP.map(s=>{const own=PT.d.own.includes(s[0]);return `<button class="shb ${own?'own':''}" data-e="${s[0]}"><span>${s[0]}</span><small>${s[1]}</small><em>${own?'已經有了':'⭐'+s[2]}</em></button>`}).join('')}</div>`;
+      body.querySelectorAll('.shb').forEach(b=>b.onclick=()=>{
+        if(!guard(300))return;const s=PT_SHOP.find(x=>x[0]===b.dataset.e);
+        if(PT.d.own.includes(s[0])){PT.d.wear=s[0];ptSave();ptRefresh();SFX.swap();speakSeq([`${chN()}帶上了${s[1]}。`]);tab('s');return}
+        if(PT.d.pts<s[2]){SFX.bad();speakSeq([`${s[1]}要${s[2]}點，還差${s[2]-PT.d.pts}點。多答對幾題就可以買了！`]);b.classList.remove('no');void b.offsetWidth;b.classList.add('no');return}
+        PT.d.pts-=s[2];PT.d.own.push(s[0]);PT.d.wear=s[0];ptSave();ptRefresh();SFX.fanfare();confetti(24,[s[0],'✨','⭐']);speakSeq([`買到了${s[1]}！${chN()}帶上了${s[1]}。`]);tab('s');
+      });
+    }else{
+      body.innerHTML=PT.d.own.length?`<div class="sub" style="text-align:center">點一下，讓角色帶上這個寶物</div><div class="shopg">${PT.d.own.map(e=>{const s=PT_SHOP.find(x=>x[0]===e)||[e,''];return `<button class="shb ${PT.d.wear===e?'sel':''}" data-e="${e}"><span>${e}</span><small>${s[1]}</small></button>`}).join('')}<button class="shb" data-e=""><span>🚫</span><small>不帶</small></button></div>`:`<div class="ptempty">還沒有寶物。<br>答對題目得到點數，就可以到「獎勵商店」買喔！</div>`;
+      body.querySelectorAll('.shb').forEach(b=>b.onclick=()=>{PT.d.wear=b.dataset.e||null;ptSave();ptRefresh();SFX.tap();tab('b')});
+    }};
+  p.querySelectorAll('.ptabs .btn').forEach(b=>b.onclick=()=>{SFX.tap();tab(b.dataset.t);
+    speakSeq([b.dataset.t==='c'?'選一個你喜歡的角色。':b.dataset.t==='s'?`你有${PT.d.pts}點。點一個寶物，就可以用點數買。`:'這些是你買到的寶物。'])});
+  p.querySelector('#ptOk').onclick=()=>{if(!PT.d.ch){PT.d.ch=PT_CHARS[0][0];ptSave()}ptRefresh();TTS.stop();ov.classList.remove('on')};
+  tab('c');ov.classList.add('on');
+  speakSeq([first?'選一個你喜歡的角色。答對題目，可以得到點數，再到獎勵商店買寶物喔！':'選角色，或用點數買寶物。']);
+}
+(function ptInit(){
+  const bar=document.querySelector('#home .bar'),sp=bar&&bar.querySelector('.sp');
+  if(sp)sp.insertAdjacentHTML('afterend','<button class="btn ptchip" id="ptChip"></button>');
+  const chip=document.getElementById('ptChip');if(chip)chip.onclick=()=>{if(guard(350))openChar(false)};
+  const row=document.querySelector('#level .row2');if(row)row.insertAdjacentHTML('afterbegin','<div id="avBox"></div>');
+  ptRefresh();
+})();
 
 </script>
 </body>
