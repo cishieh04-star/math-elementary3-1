@@ -46,7 +46,7 @@
             list-style-type: none; 
             padding: 0; 
             display: grid; 
-            /* 關鍵修改：強制設定為 4 個一排 */
+            /* 預設電腦版維持 4 個一排 */
             grid-template-columns: repeat(4, 1fr); 
             gap: 15px; 
         }
@@ -62,10 +62,16 @@
 
         a { text-decoration: none; color: inherit; width: 100%; }
 
-        /* RWD 微調：如果是在直立的小螢幕手機上觀看，字體自動縮小以防破版 */
+        /* RWD 微調：手機螢幕自動調整為 2 欄，避免過窄導致高矮不一與擠壓 */
         @media (max-width: 768px) {
-            .game-link { font-size: 0.9em; padding: 10px 5px; }
-            ul { gap: 10px; }
+            ul {
+                grid-template-columns: repeat(2, 1fr); /* 手機改為每行 2 個選項 */
+                gap: 10px;
+            }
+            .game-link { 
+                font-size: 0.9em; 
+                padding: 12px 6px; 
+            }
         }
     </style>
 </head>
@@ -79,7 +85,6 @@
     <script>
         const version = "1";
         const games = [
-
             { name: "單元一<br>10000以內的數字</a>", file: "math-3-1.html" },
             { name: "單元二<br>四位數的加減</a>", file: "math-3-2.html" },
             { name: "單元三<br>毫米</a>", file: "math-3-3.html" },
@@ -102,7 +107,6 @@
             { name: "乘法基礎遊戲<br>(1-4)</a>", file: "payment-multiplication-basic(1-4)-claude.html" },
             { name: "乘法基礎遊戲<br>(5-9)</a>", file: "payment-multiplication-basic(5-9)-claude.html" },
             { name: "乘法分拆計算", file: "multiplication-decomposition-claude.html" }
-           
         ];
 
         const listElement = document.getElementById('game-list');
