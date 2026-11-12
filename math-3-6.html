@@ -1374,7 +1374,7 @@ function figItems(svg,sh,o){
   const F=full.length,rows=[];
   full.forEach(x=>{let r=rows.find(r=>r.y===x.p.y);if(!r)rows.push(r={y:x.p.y,c:[]});r.c.push(x)});
   const isRect=!halves.length&&!tris.length&&rows.length>1&&rows.every((r,k)=>r.c.length===rows[0].c.length&&r.c[0].p.x===rows[0].c[0].p.x&&(!k||r.y===rows[k-1].y+1))&&rows[0].c.every((x,k)=>!k||x.p.x===rows[0].c[k-1].p.x+1);
-  if(!o.brief&&!o.quiet&&F)its.push({t:'每一個小方格，是1平方公分。',on:()=>{const x=full[0];setN(x.i,'1',PAIRC[1])}});
+  if(!o.brief&&!o.quiet&&F)its.push({t:'一個方格，每一邊的長度都是1公分。把方格塗滿，它的大小，叫做面積，是1平方公分。',on:()=>{const x=full[0];setN(x.i,'1',PAIRC[1])}});
   let cnt=0;
   if(F){
     if(o.brief){its.push({t:`完整的方格，有${F}格。`,on:()=>{full.forEach((x,k)=>setN(x.i,String(k+1)));eq(`完整的方格：<b>${F}</b> 格`)}})}
@@ -1437,7 +1437,7 @@ function blobItems(svg,sh,o){
   const I=QA('.bin').length,T=QA('.bout').length,est=o.est!=null?o.est:Math.round(blobArea(b));
   const its=[];
   if(svg&&svg.dataset.hg==='1')its.push({t:'把1平方公分的方格板，放在上面。',on:()=>{const g=Q('.gl');g&&g.setAttribute('opacity','1');SFX.swap()}});
-  its.push({t:'每一個小方格，是1平方公分。',on:()=>{}});
+  its.push({t:'一個方格，每一邊的長度都是1公分。把方格塗滿，它的大小，叫做面積，是1平方公分。',on:()=>{}});
   if(I)its.push({t:`裡面完整的方格，有${I}格。所以面積比${I}平方公分大。`,on:()=>{QA('.bin').forEach(e=>e.setAttribute('opacity','.55'));QA('.bn').forEach(e=>e.setAttribute('opacity','1'));SFX.tap();eq(`面積 ＞ <b>${I}</b>`)}});
   else its.push({t:'裡面沒有一個完整的方格，所以面積比1平方公分小一點，或差不多。',on:()=>{}});
   its.push({t:`整個圖形，都在這${T}格裡面。所以面積比${T}平方公分小。`,on:()=>{QA('.bout').forEach(e=>e.setAttribute('opacity','1'));SFX.tap();eq(`${I?`<b>${I}</b> ＜ `:''}面積 ＜ <b>${T}</b>`)}});
@@ -1555,7 +1555,7 @@ const LIB_T=[
 function L1_unit(){
   const opts=shuffle(['1平方公分','1公分','4平方公分','2平方公分']);
   return {type:'mc',stem:'每一邊都是1公分的正方形，面積是多少？',fig:unitSq(),opts,ans:opts.indexOf('1平方公分'),why:'邊長1公分的正方形，面積是1平方公分。',hint:'這是面積，單位是「平方公分」。',
-    teach:tLines(unitSq(true),['這是一個正方形。','上面這一邊是1公分，旁邊這一邊也是1公分。','邊長1公分的正方形，它的面積，叫做1平方公分。','1平方公分，也可以寫成1 cm²。','公分是量長度的；平方公分是量面積的。'])};
+    teach:tLines(unitSq(true),['這是一個正方形。','上面這一邊是1公分，旁邊這一邊也是1公分。','把這個正方形塗滿，它的大小，叫做面積。這個面積，叫做1平方公分。','1平方公分，也可以寫成1 cm²。','公分是量長度的；平方公分是量面積的。'])};
 }
 function L1_read(){
   const opts=shuffle(['平方公分','公分','公尺']);
@@ -1584,7 +1584,7 @@ function L1_bigger(){
     shs:[{n:'甲',sh:a,fill:'#9fd0ff'},{n:'乙',sh:b,fill:'#ffd27a'}],why:`甲是${A}平方公分，乙是${B}平方公分，${big}比較大。`,hint:'兩個都數一數，格子多的比較大。',
     more:()=>[{t:`${Math.max(A,B)}比${Math.min(A,B)}多，所以${big}的面積比較大。`,on:()=>{}}]};
 }
-const LV1={first:L1_unit,id:1,ic:'🧽',name:'認識平方公分',sub:'1格就是1平方公分',mk:[
+const LV1={first:L1_unit,id:1,ic:'🧽',name:'認識平方公分',sub:'邊長1公分的方格，塗滿是1平方公分',mk:[
   [1,L1_unit],[1,L1_join],[1,L1_read],
   [2,L1_tile],[2,L1_count],[2,L1_bigger],[2,L1_join],
   [3,L1_countF],[3,L1_tf],[3,L1_bigger],[3,L1_count]]};
@@ -1604,7 +1604,7 @@ function L2_match(){
   const shs=[];const used=new Set();
   while(shs.length<3){const s=pick(LIB_F.concat(LIB_SMALL));const A=areaOf(s);if(!used.has(A)){used.add(A);shs.push(s)}}
   const NM=['甲','乙','丙'];
-  return {type:'match',stem:'每一格是1平方公分。把圖形和它的面積連起來。',pairs:shs.map((s,i)=>[{t:NM[i],html:gridSVG(s,{pad:.2,fill:FILLS[i]})},areaOf(s)+' 平方公分']),
+  return {type:'match',stem:'每個方格，每一邊的長度都是1公分。把圖形和它的面積連起來。',pairs:shs.map((s,i)=>[{t:NM[i],html:gridSVG(s,{pad:.2,fill:FILLS[i]})},areaOf(s)+' 平方公分']),
     shs:shs.map((s,i)=>({n:NM[i],sh:s,fill:FILLS[i]})),why:'圖形和面積都連對了。',hint:'先數左邊圖形有幾格。',noGroup:true};
 }
 const LV2={id:2,ic:'🔲',name:'數方格',sub:'一格一格數出面積',mk:[
@@ -1704,7 +1704,7 @@ const LV3={id:3,ic:'🧮',name:'一排一排算',sub:'一排有幾格？有幾�
 function L4_two(){
   const g=pick([['◢◣'],['◣◢'],['◢','◥'],['◣','◤'],['◤◥'],['◢◤']]),sh=sq(g,{fill:pickFill()});
   const opts=shuffle(['1平方公分','2平方公分','3平方公分']);
-  return {type:'mc',stem:'這兩個三角形，各是一個方格的一半。合起來的面積是多少？',fig:gridSVG(sh),sh,opts,ans:opts.indexOf('1平方公分'),why:'兩個半格拼起來，剛好是1格，就是1平方公分。',hint:'把一個三角形搬過去，和另一個拼一拼。',
+  return {type:'mc',stem:'這兩個三角形，各是一個方格的一半。合起來的面積是多少？',fig:gridSVG(sh),sh,opts,ans:opts.indexOf('1平方公分'),why:'兩個半格拼起來，剛好是一個完整的方格，面積是1平方公分。',hint:'把一個三角形搬過去，和另一個拼一拼。',
     more:()=>[{t:'方格沿著斜線剪開，會變成兩個一樣大的三角形；兩個拼回去，又是1格。',on:()=>{}}]};
 }
 function L4_mc(){const s=pick(LIB_H);return areaMCq('下面圖形的面積是幾平方公分？',s,{fill:pickFill(),hint:'先數完整的方格，再把半格兩個兩個拼起來。'})}
@@ -1759,7 +1759,7 @@ function L6_cmp(){
   if(Math.random()<.35){const A=areaOf(a);const same=pool.filter(s=>s!==a&&areaOf(s)===A);b=same.length?pick(same):pick(pool)}else b=pick(pool);
   const A=areaOf(a),B=areaOf(b),ans=A>B?'>':A<B?'<':'=';
   const shs=[{n:'左邊',sh:a},{n:'右邊',sh:b}];
-  return {type:'cmp',stem:'每一格是1平方公分。比一比，哪一邊的面積比較大？',say:'每一格是1平方公分。比一比，左邊和右邊，哪一邊的面積比較大？',left:{html:gridSVG(a,{pad:.3,fill:'#9fd0ff'}),t:'左邊'},right:{html:gridSVG(b,{pad:.3,fill:'#ffd27a'}),t:'右邊'},ans,shs,
+  return {type:'cmp',stem:'每個方格，每一邊的長度都是1公分。比一比，哪一邊的面積比較大？',say:'每個方格，每一邊的長度都是1公分。比一比，左邊和右邊，哪一邊的面積比較大？',left:{html:gridSVG(a,{pad:.3,fill:'#9fd0ff'}),t:'左邊'},right:{html:gridSVG(b,{pad:.3,fill:'#ffd27a'}),t:'右邊'},ans,shs,
     why:`左邊是${A}平方公分，右邊是${B}平方公分。`+(ans==='='?'一樣大。':''),hint:'兩邊都數一數，再比。',
     more:()=>[{t:ans==='='?`${A}和${B}一樣，所以面積一樣大。形狀不一樣，面積也可以一樣大。`:`${Math.max(A,B)}比${Math.min(A,B)}大，所以${ans==='>'?'左邊':'右邊'}比較大。`,on:()=>{}}]};
 }
@@ -1884,13 +1884,13 @@ function L8_cookie(){
   const c=pick(COOKIES),sh={g:[],blob:c.b,W:c.W,H:c.H},est=Math.round(blobArea(c.b));
   const opts=['比9平方公分小','比9大，比15小','比15平方公分大'];
   const endT=[`大約是${est}平方公分，比9小。`,`大約是${est}平方公分，比9大，又比15小。`,`大約是${est}平方公分，比15大。`][c.ans];
-  return {type:'mc',stem:'每一格是1平方公分。估一估，這片餅乾的面積有多大？',fig:gridSVG(sh),sh,est,estEnd:'不完整的格子，拼一拼。'+endT,opts:opts.map(t=>({t,say:t.replace('，','，又')})),ans:c.ans,why:endT,hint:'先數完整的方格，再看不完整的。'};
+  return {type:'mc',stem:'每個方格，每一邊的長度都是1公分。估一估，這片餅乾的面積有多大？',fig:gridSVG(sh),sh,est,estEnd:'不完整的格子，拼一拼。'+endT,opts:opts.map(t=>({t,say:t.replace('，','，又')})),ans:c.ans,why:endT,hint:'先數完整的方格，再看不完整的。'};
 }
 function L8_pattern(){
   const kind=pick([{b:{t:'ell',x:.3,y:.3,w:6.2,h:5,deco:'pig'},W:7,H:6,opts:[8,24,40]},{b:{t:'ell',x:.3,y:.4,w:5.2,h:3.2,deco:'leaf'},W:6,H:4,opts:[6,13,25]}]);
   const sh={g:[],blob:kind.b,W:kind.W,H:kind.H},est=Math.round(blobArea(kind.b)),right=kind.opts.reduce((a,b)=>Math.abs(b-est)<Math.abs(a-est)?b:a);
   const nm=kind.b.deco==='pig'?'這個小豬圖案':'這片葉子';
-  return {type:'mc',stem:`每一格是1平方公分。${nm}的面積，大約是多少？`,fig:gridSVG(sh),sh,est:right,opts:kind.opts.map(x=>x+'平方公分'),ans:kind.opts.indexOf(right),why:`大約是${right}平方公分。`,hint:'裡面完整的方格有幾格？外面圍起來有幾格？'};
+  return {type:'mc',stem:`每個方格，每一邊的長度都是1公分。${nm}的面積，大約是多少？`,fig:gridSVG(sh),sh,est:right,opts:kind.opts.map(x=>x+'平方公分'),ans:kind.opts.indexOf(right),why:`大約是${right}平方公分。`,hint:'裡面完整的方格有幾格？外面圍起來有幾格？'};
 }
 function L8_between(){
   const kind=pick([{b:{t:'ell',x:.3,y:.3,w:6.2,h:5,deco:'pig'},W:7,H:6},{b:{t:'ell',x:.4,y:.3,w:5.2,h:4.4,deco:'flower'},W:6,H:5}]);
@@ -2120,7 +2120,8 @@ unit:{f:S=>{
     {t:'拿一個小方塊，靠在尺上。',on:()=>{sv.querySelector('.ut').setAttribute('opacity','1');SFX.place()}},
     {t:'看橘色的尺：小方塊上面的邊，剛好1公分。',on:()=>{seg('rsT',0,'.9');S.eq('上面的邊：<b>1</b> 公分')}},
     {t:'看藍色的尺：小方塊旁邊的邊，也剛好1公分。',on:()=>{seg('rsL',0,'.9');S.eq('上面 1 公分，旁邊 1 公分')}},
-    {t:'每一邊都是1公分的小正方形，大家約定：它的大小，叫做1平方公分，寫成1 cm²。',on:()=>S.eq('每一邊 1 公分的小正方形 ＝ <b>1 平方公分</b>（1 cm²）')},
+    {t:'這個方格，每一邊的長度都是1公分。把方格塗滿，它的大小，叫做面積。',on:()=>{const u=lsvg().querySelector('.ut rect');u&&u.setAttribute('fill','#51cf66');S.eq('每一邊都是 1 公分，塗滿的大小 ＝ <b>面積</b>')}},
+    {t:'大家約定：這個面積，叫做1平方公分，寫成1 cm²。',on:()=>S.eq('每一邊 1 公分的方格，塗滿 ＝ <b>1 平方公分</b>（1 cm²）')},
     {t:'這是大家說好的名字，就像大家說好，尺上的一小段叫做1公分。'},
     {t:'1公分，是一小段線；1平方公分，是一小塊面。',on:()=>{sv.querySelector('.cmpL').setAttribute('opacity','1');S.eq('1 公分 ＝ 一段<b>線</b>　　1 平方公分 ＝ 一塊<b>面</b>')}}],()=>S.ready());
 }},
@@ -2149,7 +2150,7 @@ rules:{q:true,f:S=>{
 count:{q:true,f:S=>{
   const n=rnd(3,6),sh=Object.assign(randPoly(n,3,3),{fill:'#a8e6b2'});
   S.stage(gridSVG(sh,{pad:1}));
-  const t='每一格，都是1平方公分。這個圖形的面積，是幾平方公分？';S.say(t);
+  const t='每個方格，每一邊的長度都是1公分。這個圖形的面積，是幾平方公分？';S.say(t);
   const Q=S.q({say:t,opts:[n,n+1,n-1],hint:'一格一格數。',good(){S.sp(figItems(lq('.les-stage svg.ag'),sh,{eq:S.eq,quiet:true}).items,()=>S.ready())}});
   S.wait(()=>Q.read(),300);
 }},
@@ -2183,7 +2184,7 @@ grid:{f:S=>{
         S.say('點一點紅色的記號，畫出橫橫的線。');
         taps('L',h,()=>{
           const it=[{t:`格子畫好了！藍色的邊${h}公分，就分成${h}排。`,on:()=>S.eq(`${w} 公分 → 一排 <b>${w}</b> 格　　${h} 公分 → <b>${h}</b> 排`)},
-            {t:'每一個小格子，每一邊都是1公分，就是1平方公分。現在一排一排數。',on:()=>QA('.rsL').forEach(e=>e.setAttribute('opacity','0'))}];
+            {t:'每一個方格，每一邊的長度都是1公分。把方格塗滿，它的大小是1平方公分。現在一排一排數。',on:()=>QA('.rsL').forEach(e=>e.setAttribute('opacity','0'))}];
           const parts=[];
           for(let r=0;r<h;r++){parts.push(w);const pp=parts.slice(),tot=(r+1)*w;
             it.push({t:r?`加上第${r+1}排，一共${tot}格。`:`第1排，有${w}格。`,gap:500,on:()=>{QA(`.cf[data-r="${r}"],.cn[data-r="${r}"]`).forEach(e=>e.setAttribute('opacity','1'));SFX.tap();S.eq(pp.join(' ＋ ')+' ＝ <b>'+tot+'</b>')}})}
@@ -2208,7 +2209,7 @@ two:{q:true,f:S=>{
       {t:'所以是4平方公分，不是2喔！邊長是2公分，面積卻是4平方公分。'},
       {t:'那，每一邊都是1公分的小正方形呢？',on:()=>{S.stage(whySVG(1,1));S.eq('')}},
       {t:'橘色的邊1公分，一排放1格；藍色的邊1公分，只有1排。',on:()=>{tile(0,0,1);S.eq('一排 1 格，有 1 排')}},
-      {t:'一共1格。1乘以1，等於1，就是1平方公分。',on:()=>{SFX.ok();S.eq('<b class="big">1 × 1 ＝ 1</b>（平方公分）')}},
+      {t:'一共1格。1乘以1，等於1，面積是1平方公分。',on:()=>{SFX.ok();S.eq('<b class="big">1 × 1 ＝ 1</b>（平方公分）')}},
       {t:'原來，1乘以1，就是在數：一排1格，有1排，一共1格。'}],()=>S.ready())}});
   S.wait(()=>Q.read(),300);
 }},
@@ -2216,8 +2217,8 @@ two:{q:true,f:S=>{
 cut:{f:S=>{
   S.stage(`<svg class="cutsq" viewBox="0 0 200 130"><g class="tA"><polygon points="60,15 140,15 60,95" fill="#ff8fab" stroke="#c2255c" stroke-width="2"/></g><g class="tB"><polygon points="140,15 140,95 60,95" fill="#7bdff2" stroke="#1971c2" stroke-width="2"/></g><line class="cutl" x1="140" y1="15" x2="60" y2="95" stroke="#333" stroke-width="3" stroke-dasharray="6 5"/><text x="100" y="122" text-anchor="middle" font-size="15" font-weight="900" fill="#1d2b3a">1 平方公分</text></svg>`);
   const sv=lq('.cutsq');
-  S.sp([{t:'這是1格，就是1平方公分。'},{t:'沿著斜線，剪一刀。',on:()=>{sv.classList.add('cut');SFX.swap()}},{t:'變成兩個一樣大的三角形。每一個，都是半格。',on:()=>S.eq('1 格 → 2 個半格')},
-    {t:'把兩個半格拼回去，又變成1格。',on:()=>{sv.classList.remove('cut');SFX.place()}},{t:'剪開再拼，沒有變多，也沒有變少。兩個半格，拼成1格，就是1平方公分。',on:()=>S.eq('半格 ＋ 半格 ＝ <b>1 格</b>')}],()=>S.ready());
+  S.sp([{t:'這個方格，每一邊的長度都是1公分。把方格塗滿，它的大小是1平方公分。'},{t:'沿著斜線，剪一刀。',on:()=>{sv.classList.add('cut');SFX.swap()}},{t:'變成兩個一樣大的三角形。每一個，都是半格。',on:()=>S.eq('1 格 → 2 個半格')},
+    {t:'把兩個半格拼回去，又變成1格。',on:()=>{sv.classList.remove('cut');SFX.place()}},{t:'剪開再拼，沒有變多，也沒有變少。兩個半格，拼成一個完整的方格，面積是1平方公分。',on:()=>S.eq('半格 ＋ 半格 ＝ <b>1 格</b>')}],()=>S.ready());
 }},
 halfq:{q:true,f:S=>{
   const sh=Object.assign({},pick([sq(['◢##◣']),sq(['.◢◣.','####']),sq(['◢#◣','###'])]),{fill:'#d0bfff'}),A=areaOf(sh);
@@ -2227,8 +2228,8 @@ halfq:{q:true,f:S=>{
   S.wait(()=>Q.read(),300);
 }},
 sum1:{f:S=>{
-  S.stage(`<div class="sumb3"><div><span>①</span>面積，是<b>裡面塗滿的大小</b>有多大</div><div><span>②</span>每一邊1公分的小正方形，是<b>1平方公分</b></div><div><span>③</span>鋪的時候，<b>不留縫、不重疊</b></div><div><span>④</span>鋪了幾塊，面積就是<b>幾平方公分</b></div></div>`);
-  S.sp([{t:'記住囉。'},{t:'第一，面積是裡面塗滿的大小有多大。'},{t:'第二，每一邊1公分的小正方形，是1平方公分。'},{t:'第三，鋪的時候，不留縫、不重疊。'},{t:'第四，鋪了幾塊，面積就是幾平方公分。'}],()=>S.ready());
+  S.stage(`<div class="sumb3"><div><span>①</span>面積，是<b>裡面塗滿的大小</b>有多大</div><div><span>②</span>方格每一邊都是1公分，<b>塗滿是1平方公分</b></div><div><span>③</span>鋪的時候，<b>不留縫、不重疊</b></div><div><span>④</span>鋪了幾塊，面積就是<b>幾平方公分</b></div></div>`);
+  S.sp([{t:'記住囉。'},{t:'第一，面積是裡面塗滿的大小有多大。'},{t:'第二，一個方格，每一邊的長度都是1公分，把方格塗滿，它的大小是1平方公分。'},{t:'第三，鋪的時候，不留縫、不重疊。'},{t:'第四，鋪了幾塊，面積就是幾平方公分。'}],()=>S.ready());
 }},
 sum3:{f:S=>{
   S.stage(`<div class="sumb3"><div><span>①</span>用尺，<b>每1公分</b>做一個記號</div><div><span>②</span>連起來，就是<b>格子</b></div><div><span>③</span>邊有幾公分，就分成<b>幾格</b></div><div><span>④</span>一排幾格 <b>×</b> 幾排 ＝ 面積</div></div>`);
@@ -2621,7 +2622,7 @@ function clsRows(st){
     $$('#clsFig .tl,#clsFig .ll').forEach(e=>e.setAttribute('opacity','0'));
     const say=h=>{$('#clsSay').innerHTML=h};
     const intro=[{t:'面積，就是長方形裡面，有幾個小方格。',on:()=>say('面積 ＝ 裡面有幾個<b>小方格</b>')},
-      {t:'每一個小方格，每一邊都是1公分，它的面積是1平方公分。',on:()=>{const p=svg.querySelector('.pc');p.setAttribute('fill','#ff8fab');p.setAttribute('stroke','#ff8fab');say('1 個小方格 ＝ <b>1 平方公分</b>')}},
+      {t:'一個方格，每一邊的長度都是1公分。把方格塗滿，它的大小，叫做面積，是1平方公分。',on:()=>{const p=svg.querySelector('.pc');p.setAttribute('fill','#ff8fab');p.setAttribute('stroke','#ff8fab');say('每一邊 1 公分的方格，塗滿 ＝ <b>1 平方公分</b>')}},
       {t:'所以，有幾個小方格，面積就是幾平方公分。',on:()=>say('有幾格，就是幾<b>平方公分</b>')}];
     const it=figItems(svg,rectSh(CLS.w,CLS.h),{eq:say,quiet:true}).items;
     speakSeq(intro.concat(it).map(x=>({t:x.t,gap:x.gap,on:()=>{x.on&&x.on();$('#clsSay2').textContent=x.t.length>2?x.t:$('#clsSay2').textContent}})),()=>{$('#clsNum').innerHTML=`${CLS.w} × ${CLS.h} ＝ <b>${CLS.w*CLS.h}</b>`},400)};
@@ -2638,7 +2639,7 @@ function clsHalf(st){
   <div class="cl-b"><div class="fig" id="clsFig"></div><div class="cbtns"><button class="btn y" id="hcNew">換一個圖形</button><button class="btn g" id="clsSayIt">數給我聽</button></div></div>`;
   const sv=$('.cutsq',st);
   $('#hcCut').onclick=()=>{if(!guard(300))return;sv.classList.add('cut');SFX.swap();$('#clsSay').textContent='剪開以後，變成兩個一樣大的三角形，每個是半格。';speakSeq(['剪開以後，變成兩個一樣大的三角形，每一個都是半格。'])};
-  $('#hcJoin').onclick=()=>{if(!guard(300))return;sv.classList.remove('cut');SFX.place();$('#clsSay').textContent='兩個半格拼起來，又變回1格。';speakSeq(['兩個半格拼起來，又變回1格，就是1平方公分。'])};
+  $('#hcJoin').onclick=()=>{if(!guard(300))return;sv.classList.remove('cut');SFX.place();$('#clsSay').textContent='兩個半格拼起來，又變回1格。';speakSeq(['兩個半格拼起來，又變回一個完整的方格，面積是1平方公分。'])};
   let sh=null;
   const draw=()=>{sh=Object.assign({},pick(LIB_H),{fill:pickFill()});$('#clsFig').innerHTML=gridSVG(sh,{lab:true,pad:.7})};
   $('#hcNew').onclick=()=>{if(!guard(300))return;TTS.stop();SFX.tap();draw()};
